@@ -1,277 +1,467 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
-  >
+  <meta name="theme-color" content="#071c2c">
+  <meta name="description" content="ColdTrack Control - Monitoramento inteligente da cadeia fria.">
 
-  <title>ColdTrack Control</title>
+  <title>ColdTrack Control | Monitoramento da Cadeia Fria</title>
 
-  <link rel="stylesheet" href="css/style.css">
-  <meta name="theme-color" content="#0b1f33">
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="css/home.css">
 
-<meta
-  name="description"
-  content="ColdTrack Control - Monitoramento IoT de transporte refrigerado"
->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
-<link rel="manifest" href="manifest.json">
-
-<link
-  rel="apple-touch-icon"
-  href="assets/icons/icon-192.png"
->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 
 <body>
 
-  <aside class="sidebar">
+  <header class="header" id="header">
+    <div class="container nav">
 
-    <div class="brand">
-      <div class="brand-icon">❄</div>
+      <a href="#inicio" class="logo">
+        <span class="logo-icon">❄</span>
 
-      <div>
-        <strong>ColdTrack</strong>
-        <span>CONTROL</span>
-      </div>
+        <span>
+          <strong>ColdTrack</strong>
+          <small>CONTROL</small>
+        </span>
+      </a>
+
+      <button class="menu-toggle" id="menuToggle" aria-label="Abrir menu" aria-expanded="false">
+        ☰
+      </button>
+
+      <nav class="menu" id="menu">
+        <a href="#inicio">Início</a>
+        <a href="#projeto">Projeto</a>
+        <a href="#diferencial">Diferencial</a>
+        <a href="#quem-somos">Quem somos</a>
+        <a href="#contato">Contato</a>
+      </nav>
+
+      <a href="#login" class="btn-login">Entrar</a>
+
     </div>
-
-    <nav>
-      <a href="#" class="active">▦ Dashboard</a>
-      <a href="#">🚚 Veículos</a>
-      <a href="#">↗ Viagens</a>
-      <a href="#">⚠ Alertas</a>
-      <a href="#">▤ Relatórios</a>
-      <a href="#">⚙ Configurações</a>
-    </nav>
-
-    <div class="sidebar-footer">
-      <span class="online-dot"></span>
-      Sistema Online
-    </div>
-
-  </aside>
+  </header>
 
 
-  <main class="main">
+  <main>
 
-    <header class="topbar">
+    <!-- HERO -->
+    <section class="hero" id="inicio">
 
-      <div>
-        <h1>Visão Geral</h1>
-        <p>Monitoramento da cadeia fria</p>
+      <div class="slides">
+
+        <!-- SLIDE 01 - LOGÍSTICA -->
+        <article class="slide active" style="
+      background-image:
+        linear-gradient(
+          90deg,
+          rgba(3,18,31,.94) 0%,
+          rgba(3,18,31,.70) 38%,
+          rgba(3,18,31,.18) 75%
+        ),
+        url('assets/images/1.png');
+    "></article>
+
+
+        <!-- SLIDE 02 - AGRONEGÓCIO -->
+        <article class="slide" style="
+      background-image:
+        linear-gradient(
+          90deg,
+          rgba(3,18,31,.94) 0%,
+          rgba(3,18,31,.70) 38%,
+          rgba(3,18,31,.18) 75%
+        ),
+        url('assets/images/2.png');
+    "></article>
+
+
+        <!-- SLIDE 03 - MONITORAMENTO DA CARGA -->
+        <article class="slide" style="
+      background-image:
+        linear-gradient(
+          90deg,
+          rgba(3,18,31,.94) 0%,
+          rgba(3,18,31,.65) 38%,
+          rgba(3,18,31,.12) 75%
+        ),
+        url('assets/images/3.png');
+    "></article>
+
+      
+
       </div>
 
-      <div class="connection">
-        <span class="online-dot"></span>
-        ThingSpeak conectado
-      </div>
+      <div class="container hero-grid">
 
-    </header>
+        <div class="hero-content">
 
+          <span class="eyebrow">
+            IoT • Cadeia Fria • Telemetria
+          </span>
 
-    <section class="cards">
+          <h1>
+            Da origem ao destino,
+            <span>sua carga monitorada.</span>
+          </h1>
 
-      <article class="card">
-        <span>Temperatura atual</span>
+          <p>
+            Tecnologia IoT para monitoramento de temperatura,
+            umidade e conectividade durante o transporte
+            refrigerado de mercadorias.
+          </p>
 
-        <strong id="temperatura">
-          -- °C
-        </strong>
+          <div class="hero-actions">
+            <a href="dashboard.html" class="btn-primary">
+              Acessar Dashboard →
+            </a>
 
-        <small id="tempStatus">
-          Aguardando dados
-        </small>
-      </article>
+            <a href="#projeto" class="btn-secondary">
+              Conheça o projeto
+            </a>
+          </div>
 
-
-      <article class="card">
-        <span>Umidade relativa</span>
-
-        <strong id="umidade">
-          -- %
-        </strong>
-
-        <small>
-          Compartimento de carga
-        </small>
-      </article>
-
-
-      <article class="card">
-        <span>Sinal Wi-Fi</span>
-
-        <strong id="rssi">
-          -- dBm
-        </strong>
-
-        <small id="rssiStatus">
-          Aguardando dados
-        </small>
-      </article>
-
-
-      <article class="card status-card">
-
-        <span>Status da carga</span>
-
-        <div
-          id="statusCarga"
-          class="status aguardando"
-        >
-          AGUARDANDO
         </div>
 
-        <small>
-          Processamento Edge
-        </small>
 
-      </article>
+        <div class="telemetry-card">
 
+          <div class="live">
+            <span></span>
+            MONITORAMENTO
+          </div>
+
+          <h3>Condição da carga</h3>
+
+          <div class="telemetry-item">
+            <div>
+              <small>TEMPERATURA</small>
+              <strong id="heroTemp">12.4 °C</strong>
+            </div>
+
+            <span>🌡️</span>
+          </div>
+
+          <div class="telemetry-item">
+            <div>
+              <small>UMIDADE</small>
+              <strong id="heroHumidity">68 %</strong>
+            </div>
+
+            <span>💧</span>
+          </div>
+
+          <div class="telemetry-item">
+            <div>
+              <small>WI-FI</small>
+              <strong id="heroRssi">-61 dBm</strong>
+            </div>
+
+            <span>📶</span>
+          </div>
+
+          <div class="cargo-status">
+            ✓ Condições normais
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <button class="slider-arrow prev" id="prevSlide">‹</button>
+      <button class="slider-arrow next" id="nextSlide">›</button>
+
+    <div class="slider-dots" id="sliderDots">
+  <button class="active" aria-label="Slide 1"></button>
+  <button aria-label="Slide 2"></button>
+  <button aria-label="Slide 3"></button>
+  <button aria-label="Slide 4"></button>
+</div>
     </section>
 
 
-    <section class="content-grid">
+    <!-- PROJETO -->
+    <section class="section" id="projeto">
 
-      <article class="panel principal">
+      <div class="container">
 
-        <div class="panel-header">
+        <div class="section-heading">
+          <span class="eyebrow blue">TECNOLOGIA APLICADA</span>
 
-          <div>
-            <h2>Monitoramento em tempo real</h2>
-            <p>ColdTrack Edge • CT-001</p>
-          </div>
-
-          <span class="badge">
-            Transporte Refrigerado
-          </span>
-
-        </div>
-
-
-        <div class="vehicle">
-
-          <div class="truck">
-            🚚
-          </div>
-
-          <div>
-            <span>VEÍCULO</span>
-            <strong>CT-001</strong>
-          </div>
-
-          <div>
-            <span>CARGA</span>
-            <strong>Mercadoria Refrigerada</strong>
-          </div>
-
-          <div>
-            <span>DISPOSITIVO</span>
-            <strong>ESP32-C3</strong>
-          </div>
-
-        </div>
-
-
-        <div class="chart-placeholder">
-
-          <div class="chart-title">
-            Histórico de temperatura
-          </div>
-
-          <div id="historico">
-            Carregando dados do ThingSpeak...
-          </div>
-
-        </div>
-
-      </article>
-
-
-      <article class="panel">
-
-        <h2>Última telemetria</h2>
-
-        <div class="telemetry">
-
-          <div>
-            <span>Temperatura</span>
-            <strong id="tempDetalhe">--</strong>
-          </div>
-
-          <div>
-            <span>Umidade</span>
-            <strong id="umidadeDetalhe">--</strong>
-          </div>
-
-          <div>
-            <span>RSSI</span>
-            <strong id="rssiDetalhe">--</strong>
-          </div>
-
-          <div>
-            <span>Atualização</span>
-            <strong id="ultimaAtualizacao">--</strong>
-          </div>
-
-        </div>
-
-
-        <div
-          id="alerta"
-          class="alert hidden"
-        >
-          <strong>⚠ Alerta de temperatura</strong>
+          <h2>O que é o <span>ColdTrack?</span></h2>
 
           <p>
-            A temperatura da carga está fora
-            da condição normal.
+            Uma solução de monitoramento IoT criada para aumentar
+            a visibilidade das condições ambientais da cadeia fria.
           </p>
         </div>
 
-      </article>
 
+        <div class="features">
+
+          <article class="feature">
+            <div>🌡️</div>
+            <h3>Temperatura</h3>
+            <p>Monitoramento das condições térmicas da carga.</p>
+          </article>
+
+          <article class="feature">
+            <div>💧</div>
+            <h3>Umidade</h3>
+            <p>Acompanhamento da umidade relativa do ambiente.</p>
+          </article>
+
+          <article class="feature">
+            <div>📶</div>
+            <h3>Conectividade</h3>
+            <p>Telemetria através da conectividade Wi-Fi.</p>
+          </article>
+
+          <article class="feature">
+            <div>☁️</div>
+            <h3>Cloud</h3>
+            <p>Dados enviados e armazenados no ThingSpeak.</p>
+          </article>
+
+          <article class="feature">
+            <div>📊</div>
+            <h3>Dashboard</h3>
+            <p>Informações transformadas em indicadores operacionais.</p>
+          </article>
+
+        </div>
+
+      </div>
     </section>
 
 
-    <footer>
-      ColdTrack Edge • Projeto Integrador 2026
-    </footer>
+    <!-- DIFERENCIAL -->
+    <section class="section dark-section" id="diferencial">
+
+      <div class="container differential">
+
+        <div class="differential-content">
+
+          <span class="eyebrow">NOSSA PROPOSTA</span>
+
+          <h2>
+            Tecnologia acessível para
+            <span>proteger a cadeia fria.</span>
+          </h2>
+
+          <p>
+            O ColdTrack une hardware de baixo custo, processamento
+            Edge, conectividade e uma interface intuitiva para
+            acompanhar condições importantes durante o transporte.
+          </p>
+
+          <ul class="check-list">
+            <li>✓ Monitoramento praticamente em tempo real</li>
+            <li>✓ Hardware IoT de baixo custo</li>
+            <li>✓ Integração com serviços em nuvem</li>
+            <li>✓ Dashboard responsivo e PWA</li>
+            <li>✓ Arquitetura preparada para evolução</li>
+          </ul>
+
+        </div>
+
+
+        <div class="architecture-card">
+
+          <span>DHT11</span>
+          <b>↓</b>
+
+          <span>ESP32-C3</span>
+          <b>↓</b>
+
+          <span>Wi-Fi</span>
+          <b>↓</b>
+
+          <span>ThingSpeak</span>
+          <b>↓</b>
+
+          <span>ColdTrack Control</span>
+
+        </div>
+
+      </div>
+    </section>
+
+
+    <!-- QUEM SOMOS -->
+    <section class="section" id="quem-somos">
+
+      <div class="container about-grid">
+
+        <div>
+
+          <span class="eyebrow blue">NOSSA EQUIPE</span>
+
+          <h2>Quem <span>somos</span></h2>
+
+          <p class="about-text">
+            Somos uma equipe de estudantes do 4º período,
+            unidos pelo interesse em tecnologia, inovação e
+            aplicações voltadas ao agronegócio.
+          </p>
+
+          <p class="about-text">
+            O ColdTrack foi desenvolvido como parte do Projeto
+            Integrador, transformando conhecimentos de IoT,
+            programação e computação em nuvem em uma solução
+            aplicada a um problema real.
+          </p>
+
+        </div>
+
+
+        <div class="team">
+
+          <div>Antonio Henzo</div>
+          <div>Everson</div>
+          <div>Emerson Luiz</div>
+          <div>Gabriel Eduardo</div>
+          <div>José Alanberg</div>
+          <div>Marcelo Barbosa</div>
+
+        </div>
+
+      </div>
+    </section>
+
+
+    <!-- LOGIN -->
+    <section class="section login-section" id="login">
+
+      <div class="container login-grid">
+
+        <div>
+
+          <span class="eyebrow blue">COLDTRACK CONTROL</span>
+
+          <h2>
+            Acesse o ambiente de
+            <span>monitoramento.</span>
+          </h2>
+
+          <p>
+            Acompanhe temperatura, umidade, conectividade
+            e situação operacional da carga em um único painel.
+          </p>
+
+        </div>
+
+
+        <form class="login-card" id="loginForm">
+
+          <h3>Acesse sua conta</h3>
+
+          <label for="email">E-mail</label>
+
+          <input type="email" id="email" placeholder="seu@email.com" required>
+
+          <label for="password">Senha</label>
+
+          <input type="password" id="password" placeholder="••••••••" required>
+
+          <button type="submit" class="btn-primary full">
+            Entrar
+          </button>
+
+          <small>
+            Ambiente demonstrativo do protótipo.
+          </small>
+
+        </form>
+
+      </div>
+    </section>
+
+
+    <!-- CONTATO -->
+    <section class="contact" id="contato">
+
+      <div class="container contact-grid">
+
+        <div>
+
+          <span class="eyebrow">FALE CONOSCO</span>
+
+          <h2>Entre em <span>contato</span></h2>
+
+          <p>
+            Estamos abertos a parcerias, sugestões e oportunidades
+            relacionadas à tecnologia, IoT e cadeia fria.
+          </p>
+
+        </div>
+
+
+        <div class="contact-items">
+
+          <div>
+            <strong>📧 E-mail</strong>
+            <span>contato@coldtrack.com</span>
+          </div>
+
+          <div>
+            <strong>📍 Região</strong>
+            <span>Petrolina/PE • Juazeiro/BA</span>
+          </div>
+
+          <div>
+            <strong>🎓 Projeto</strong>
+            <span>Projeto Integrador — 4º Período</span>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
 
   </main>
 
 
-  <script src="js/config.js"></script>
-<script src="js/app.js"></script>
+  <footer>
 
-<script>
-  if ("serviceWorker" in navigator) {
+    <div class="container footer-content">
 
-    window.addEventListener("load", () => {
+      <div class="logo">
+        <span class="logo-icon">❄</span>
+        <span>
+          <strong>ColdTrack</strong>
+          <small>CONTROL</small>
+        </span>
+      </div>
 
-      navigator.serviceWorker
-        .register("./sw.js")
+      <p>Projeto Integrador — 2026</p>
 
-        .then(() => {
-          console.log(
-            "ColdTrack PWA ativo."
-          );
-        })
+      <p>Da origem ao destino, sua carga monitorada.</p>
 
-        .catch(error => {
-          console.error(
-            "Erro ao registrar Service Worker:",
-            error
-          );
-        });
+    </div>
 
-    });
+  </footer>
 
-  }
-</script>
+
+  <script src="js/home.js"></script>
+
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("./sw.js");
+      });
+    }
+  </script>
 
 </body>
+
 </html>
