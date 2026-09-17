@@ -1,24 +1,25 @@
-
 {
   "name": "ColdTrack Control",
   "short_name": "ColdTrack",
-  "description": "Monitoramento IoT de transporte refrigerado",
-  "start_url": "./",
+  "description": "Monitoramento IoT para transporte refrigerado e cadeia fria.",
+  "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#f4f7fa",
-  "theme_color": "#0b1f33",
-  "orientation": "any",
+  "background_color": "#061B2B",
+  "theme_color": "#061B2B",
+  "orientation": "portrait-primary",
   "icons": [
     {
       "src": "assets/icons/icon-192.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     },
     {
       "src": "assets/icons/icon-512.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     }
   ]
 }
