@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>ColdTrack Control</title>
+
+  <link rel="stylesheet" href="css/style.css">
+  <meta name="theme-color" content="#0b1f33">
+
+<meta
+  name="description"
+  content="ColdTrack Control - Monitoramento IoT de transporte refrigerado"
+>
+
+<link rel="manifest" href="manifest.json">
+
+<link
+  rel="apple-touch-icon"
+  href="assets/icons/icon-192.png"
+>
+</head>
+
+<body>
+
+  <aside class="sidebar">
+
+    <div class="brand">
+      <div class="brand-icon">❄</div>
+
+      <div>
+        <strong>ColdTrack</strong>
+        <span>CONTROL</span>
+      </div>
+    </div>
+
+    <nav>
+      <a href="#" class="active">▦ Dashboard</a>
+      <a href="#">🚚 Veículos</a>
+      <a href="#">↗ Viagens</a>
+      <a href="#">⚠ Alertas</a>
+      <a href="#">▤ Relatórios</a>
+      <a href="#">⚙ Configurações</a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <span class="online-dot"></span>
+      Sistema Online
+    </div>
+
+  </aside>
+
+
+  <main class="main">
+
+    <header class="topbar">
+
+      <div>
+        <h1>Visão Geral</h1>
+        <p>Monitoramento da cadeia fria</p>
+      </div>
+
+      <div class="connection">
+        <span class="online-dot"></span>
+        ThingSpeak conectado
+      </div>
+
+    </header>
+
+
+    <section class="cards">
+
+      <article class="card">
+        <span>Temperatura atual</span>
+
+        <strong id="temperatura">
+          -- °C
+        </strong>
+
+        <small id="tempStatus">
+          Aguardando dados
+        </small>
+      </article>
+
+
+      <article class="card">
+        <span>Umidade relativa</span>
+
+        <strong id="umidade">
+          -- %
+        </strong>
+
+        <small>
+          Compartimento de carga
+        </small>
+      </article>
+
+
+      <article class="card">
+        <span>Sinal Wi-Fi</span>
+
+        <strong id="rssi">
+          -- dBm
+        </strong>
+
+        <small id="rssiStatus">
+          Aguardando dados
+        </small>
+      </article>
+
+
+      <article class="card status-card">
+
+        <span>Status da carga</span>
+
+        <div
+          id="statusCarga"
+          class="status aguardando"
+        >
+          AGUARDANDO
+        </div>
+
+        <small>
+          Processamento Edge
+        </small>
+
+      </article>
+
+    </section>
+
+
+    <section class="content-grid">
+
+      <article class="panel principal">
+
+        <div class="panel-header">
+
+          <div>
+            <h2>Monitoramento em tempo real</h2>
+            <p>ColdTrack Edge • CT-001</p>
+          </div>
+
+          <span class="badge">
+            Transporte Refrigerado
+          </span>
+
+        </div>
+
+
+        <div class="vehicle">
+
+          <div class="truck">
+            🚚
+          </div>
+
+          <div>
+            <span>VEÍCULO</span>
+            <strong>CT-001</strong>
+          </div>
+
+          <div>
+            <span>CARGA</span>
+            <strong>Mercadoria Refrigerada</strong>
+          </div>
+
+          <div>
+            <span>DISPOSITIVO</span>
+            <strong>ESP32-C3</strong>
+          </div>
+
+        </div>
+
+
+        <div class="chart-placeholder">
+
+          <div class="chart-title">
+            Histórico de temperatura
+          </div>
+
+          <div id="historico">
+            Carregando dados do ThingSpeak...
+          </div>
+
+        </div>
+
+      </article>
+
+
+      <article class="panel">
+
+        <h2>Última telemetria</h2>
+
+        <div class="telemetry">
+
+          <div>
+            <span>Temperatura</span>
+            <strong id="tempDetalhe">--</strong>
+          </div>
+
+          <div>
+            <span>Umidade</span>
+            <strong id="umidadeDetalhe">--</strong>
+          </div>
+
+          <div>
+            <span>RSSI</span>
+            <strong id="rssiDetalhe">--</strong>
+          </div>
+
+          <div>
+            <span>Atualização</span>
+            <strong id="ultimaAtualizacao">--</strong>
+          </div>
+
+        </div>
+
+
+        <div
+          id="alerta"
+          class="alert hidden"
+        >
+          <strong>⚠ Alerta de temperatura</strong>
+
+          <p>
+            A temperatura da carga está fora
+            da condição normal.
+          </p>
+        </div>
+
+      </article>
+
+    </section>
+
+
+    <footer>
+      ColdTrack Edge • Projeto Integrador 2026
+    </footer>
+
+  </main>
+
+
+  <script src="js/config.js"></script>
+<script src="js/app.js"></script>
+
+<script>
+  if ("serviceWorker" in navigator) {
+
+    window.addEventListener("load", () => {
+
+      navigator.serviceWorker
+        .register("./sw.js")
+
+        .then(() => {
+          console.log(
+            "ColdTrack PWA ativo."
+          );
+        })
+
+        .catch(error => {
+          console.error(
+            "Erro ao registrar Service Worker:",
+            error
+          );
+        });
+
+    });
+
+  }
+</script>
+
+</body>
+</html>
