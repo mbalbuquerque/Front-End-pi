@@ -221,6 +221,14 @@ nav a.active {
 
 /* STATUS */
 
+/* Empilha rótulo, selo e legenda como nos demais cards
+   (sem isso ficam na mesma linha em telas largas). */
+.status-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
 .status {
   display: inline-block;
 
