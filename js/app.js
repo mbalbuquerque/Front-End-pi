@@ -1,43 +1,99 @@
-const channelId =
-  CONFIG.THINGSPEAK_CHANNEL_ID;
+// Cada fonte devolve os registros no mesmo formato do ThingSpeak
+// (created_at, field1 = temperatura, field2 = umidade, field3 = RSSI),
+// do mais antigo para o mais recente. Assim o restante do dashboard
+// não depende de onde os dados vêm.
 
-const apiUrl =
-  `https://api.thingspeak.com/channels/${channelId}/feeds.json?results=20`;
+async function buscarThingSpeak() {
+
+  const url =
+    `https://api.thingspeak.com/channels/${CONFIG.THINGSPEAK_CHANNEL_ID}/feeds.json?results=${CONFIG.HISTORY_SIZE}`;
+
+  const response = await fetch(url);
+
+  if (!response.ok) {
+    throw new Error(
+      `HTTP ${response.status}`
+    );
+  }
+
+  const data = await response.json();
+
+  return data.feeds || [];
+
+}
+
+
+async function buscarAzure() {
+
+  const url =
+    `${CONFIG.AZURE_API_URL}?deviceId=${encodeURIComponent(CONFIG.DEVICE_ID)}&limite=${CONFIG.HISTORY_SIZE}`;
+
+  const response = await fetch(url);
+
+  if (!response.ok) {
+    throw new Error(
+      `HTTP ${response.status}`
+    );
+  }
+
+  const data = await response.json();
+
+  // A API devolve da mais recente para a mais antiga.
+  return (data.leituras || [])
+    .slice()
+    .reverse()
+    .map(leitura => ({
+      created_at: leitura.recebidoEm,
+      field1: leitura.temperatura,
+      field2: leitura.umidade,
+      field3: leitura.rssi
+    }));
+
+}
+
+
+function nomeFonte() {
+
+  return CONFIG.DATA_SOURCE === "azure"
+    ? "Azure"
+    : "ThingSpeak";
+
+}
 
 
 async function carregarDados() {
 
   try {
 
-    const response = await fetch(apiUrl);
+    const feeds =
+      CONFIG.DATA_SOURCE === "azure"
+        ? await buscarAzure()
+        : await buscarThingSpeak();
 
-    if (!response.ok) {
-      throw new Error(
-        `HTTP ${response.status}`
-      );
-    }
-
-    const data = await response.json();
-
-    if (!data.feeds || data.feeds.length === 0) {
+    if (feeds.length === 0) {
       throw new Error(
         "Canal sem telemetria."
       );
     }
 
     const ultimo =
-      data.feeds[data.feeds.length - 1];
+      feeds[feeds.length - 1];
 
     atualizarDashboard(ultimo);
 
-    atualizarHistorico(data.feeds);
+    atualizarHistorico(feeds);
+
+    document.getElementById(
+      "fonteDados"
+    ).textContent =
+      `${nomeFonte()} conectado`;
 
   }
 
   catch (erro) {
 
     console.error(
-      "Erro ao consultar ThingSpeak:",
+      `Erro ao consultar ${CONFIG.DATA_SOURCE}:`,
       erro
     );
 
@@ -45,6 +101,11 @@ async function carregarDados() {
       "historico"
     ).textContent =
       "Não foi possível carregar a telemetria.";
+
+    document.getElementById(
+      "fonteDados"
+    ).textContent =
+      `Sem conexão com ${nomeFonte()}`;
 
   }
 
@@ -59,8 +120,14 @@ function atualizarDashboard(feed) {
   const umidade =
     parseFloat(feed.field2);
 
+  // RSSI pode vir vazio (o simulador Wokwi não informa um valor real).
   const rssi =
     parseInt(feed.field3);
+
+  const rssiTexto =
+    Number.isNaN(rssi)
+      ? "--"
+      : `${rssi} dBm`;
 
 
   document.getElementById(
@@ -78,7 +145,7 @@ function atualizarDashboard(feed) {
   document.getElementById(
     "rssi"
   ).textContent =
-    `${rssi} dBm`;
+    rssiTexto;
 
 
   document.getElementById(
@@ -96,7 +163,7 @@ function atualizarDashboard(feed) {
   document.getElementById(
     "rssiDetalhe"
   ).textContent =
-    `${rssi} dBm`;
+    rssiTexto;
 
 
   const data =
@@ -188,7 +255,11 @@ function atualizarRSSI(rssi) {
 
   let texto = "Sinal fraco";
 
-  if (rssi >= -60) {
+  if (Number.isNaN(rssi)) {
+    texto = "Sinal não informado";
+  }
+
+  else if (rssi >= -60) {
     texto = "Sinal excelente";
   }
 

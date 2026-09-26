@@ -1,8 +1,11 @@
-const CACHE_NAME = "coldtrack-v1";
+const CACHE_NAME = "coldtrack-v2";
 
 const APP_SHELL = [
   "./",
   "./index.html",
+  "./dashboard.html",
+  "./css/home.css",
+  "./js/home.js",
   "./css/style.css",
   "./js/config.js",
   "./js/app.js",
@@ -50,10 +53,13 @@ self.addEventListener("activate", event => {
 // Interceptação das requisições
 self.addEventListener("fetch", event => {
 
-  // Não armazenamos a API do ThingSpeak no cache.
+  // Não armazenamos as APIs de telemetria no cache.
   if (
     event.request.url.includes(
       "api.thingspeak.com"
+    ) ||
+    event.request.url.includes(
+      ".azurewebsites.net"
     )
   ) {
     return;

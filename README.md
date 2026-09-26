@@ -83,6 +83,18 @@ Os campos utilizados são:
 
 O front-end consulta a API do ThingSpeak periodicamente e atualiza automaticamente o dashboard.
 
+## ☁️ Integração com Azure
+
+Com `DATA_SOURCE: "azure"` (padrão), o dashboard lê as leituras gravadas no Azure Cosmos DB pela rota pública de consulta da Azure Function:
+
+```text
+GET https://func-coldtrack-7319.azurewebsites.net/api/leituras?deviceId=coldtrack-01&limite=20
+```
+
+A rota é somente leitura e liberada via CORS para o Live Server (`http://127.0.0.1:5500` e `http://localhost:5500`). Ao publicar o dashboard em outro endereço, esse endereço precisa ser adicionado ao CORS do Function App.
+
+O dashboard fica em `dashboard.html` (acessado pelo botão da página inicial).
+
 ---
 
 ## 🛠️ Tecnologias
@@ -142,6 +154,8 @@ Identidade visual, layout, cards, estados da carga e responsividade.
 
 Configurações públicas da aplicação, como:
 
+- fonte da telemetria (`DATA_SOURCE`: `"azure"` ou `"thingspeak"`);
+- endereço da API de leitura no Azure e ID do dispositivo;
 - ID do canal ThingSpeak;
 - intervalo de atualização;
 - limites demonstrativos de temperatura.
