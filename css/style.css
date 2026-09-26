@@ -11,7 +11,8 @@
   --background: #f4f7fa;
   --white: #ffffff;
   --text: #17212b;
-  --muted: #73808c;
+  --muted: #5f6b76;
+  --blue-text: #0f5fd6;
 
   --green: #19a463;
   --yellow: #e5a500;
@@ -25,6 +26,10 @@ body {
     Inter,
     Arial,
     sans-serif;
+
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.4;
 
   background: var(--background);
   color: var(--text);
@@ -101,7 +106,8 @@ nav a {
 
   border-radius: 9px;
 
-  transition: 0.2s;
+  transition: background-color 150ms cubic-bezier(0.23, 1, 0.32, 1),
+    color 150ms cubic-bezier(0.23, 1, 0.32, 1);
 }
 
 nav a:hover,
@@ -304,7 +310,8 @@ nav a.active {
 
 .badge {
   background: var(--ice);
-  color: var(--blue);
+  color: var(--blue-text);
+  font-weight: 600;
 
   padding: 8px 12px;
 
@@ -431,7 +438,7 @@ nav a.active {
 }
 
 .alert strong {
-  color: var(--red);
+  color: #a82424;
 }
 
 .alert p {

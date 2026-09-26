@@ -282,47 +282,83 @@ function atualizarRSSI(rssi) {
 
 function atualizarHistorico(feeds) {
 
-  const temperaturas =
+  // "Tempo real": últimos 30 min a partir da leitura mais recente.
+  const JANELA_MS = 30 * 60 * 1000;
+
+  const maisRecente =
+    new Date(feeds[feeds.length - 1].created_at);
+
+  // Converte para o formato de leitura do gráfico (as duas fontes).
+  const leituras =
     feeds
-      .map(feed =>
-        parseFloat(feed.field1)
+      .filter(feed =>
+        maisRecente - new Date(feed.created_at) <= JANELA_MS
       )
-      .filter(valor =>
-        !Number.isNaN(valor)
+      .map(feed => {
+
+        const temperatura =
+          parseFloat(feed.field1);
+
+        return {
+          temperatura,
+          medidoEm: feed.created_at,
+          status: classificarTemperatura(temperatura)
+        };
+
+      })
+      .filter(leitura =>
+        !Number.isNaN(leitura.temperatura)
       );
 
 
-  if (temperaturas.length === 0) {
+  if (leituras.length === 0) {
     return;
   }
 
 
-  const minimo =
-    Math.min(...temperaturas);
+  const r =
+    resumir(leituras);
 
-  const maximo =
-    Math.max(...temperaturas);
+  const historico =
+    document.getElementById(
+      "historico"
+    );
 
-  document.getElementById(
-    "historico"
-  ).innerHTML = `
+  historico.classList.add("com-grafico");
 
-    <strong>
-      ${temperaturas.length}
-      registros recebidos
-    </strong>
+  historico.innerHTML = `
 
-    <br><br>
+    <p class="historico-resumo">
+      <strong>${r.total} leituras nos últimos 30 min</strong>
+      · mínima ${formatarTemp(r.minima)}
+      · máxima ${formatarTemp(r.maxima)}
+    </p>
 
-    Mínima:
-    ${minimo.toFixed(1)} °C
-
-    &nbsp; • &nbsp;
-
-    Máxima:
-    ${maximo.toFixed(1)} °C
+    <div id="graficoTemperatura"></div>
 
   `;
+
+  desenharGrafico(
+    document.getElementById(
+      "graficoTemperatura"
+    ),
+    leituras
+  );
+
+}
+
+
+function classificarTemperatura(temperatura) {
+
+  if (temperatura <= CONFIG.TEMP_NORMAL_MAX) {
+    return "NORMAL";
+  }
+
+  if (temperatura <= CONFIG.TEMP_ATENCAO_MAX) {
+    return "ATENCAO";
+  }
+
+  return "CRITICO";
 
 }
 

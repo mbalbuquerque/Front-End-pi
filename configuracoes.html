@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Configurações · ColdTrack Control</title>
+
+  <meta name="theme-color" content="#0b1f33">
+  <meta name="description" content="ColdTrack Control - Faixas de temperatura, dispositivo e fonte de dados">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/telas.css">
+
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="assets/icons/icon-192.png">
+</head>
+
+<body>
+
+  <aside class="sidebar" id="sidebar"></aside>
+
+  <main class="main">
+
+    <header class="topbar">
+      <div>
+        <h1>Configurações</h1>
+        <p>Faixas de temperatura, dispositivo e fonte de dados</p>
+      </div>
+
+      <div class="connection">
+        <span class="online-dot"></span>
+        <span id="fonteDados">Conectando...</span>
+      </div>
+    </header>
+
+    <div id="conteudo" class="page-grid">
+      <div class="estado">Carregando leituras…</div>
+    </div>
+
+    <footer>
+      ColdTrack Edge • Projeto Integrador 2026
+    </footer>
+
+  </main>
+
+  <script src="js/config.js"></script>
+  <script src="js/comum.js"></script>
+  <script src="js/grafico.js"></script>
+  <script src="js/configuracoes.js"></script>
+
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("./sw.js");
+      });
+    }
+  </script>
+
+</body>
+</html>

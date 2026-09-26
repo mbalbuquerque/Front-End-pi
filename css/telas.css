@@ -1,0 +1,515 @@
+/* ==========================================================
+   COMPONENTES DAS TELAS (alertas, relatórios, veículos,
+   viagens, configurações e gráfico do dashboard).
+   Vocabulário: mesmos tokens de style.css.
+   ========================================================== */
+
+
+/* PÁGINA ------------------------------------------------- */
+
+.page-grid {
+  display: grid;
+  gap: 20px;
+}
+
+/* Item de grid não encolhe abaixo do conteúdo por padrão; sem isso a
+   tabela larga empurra a página para fora da tela no celular. */
+.page-grid > *,
+.resumo > *,
+.lista-cards > * {
+  min-width: 0;
+}
+
+.panel h2 + p {
+  margin-bottom: 18px;
+}
+
+.section-gap {
+  margin-top: 22px;
+}
+
+
+/* HISTÓRICO DO DASHBOARD --------------------------------- */
+
+#historico.com-grafico {
+  text-align: left;
+  padding-top: 0;
+}
+
+.historico-resumo {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.historico-resumo strong {
+  color: var(--text);
+}
+
+.chart-placeholder .chart-title {
+  margin-bottom: 6px;
+}
+
+
+/* ESTADOS ------------------------------------------------ */
+
+.estado {
+  color: var(--muted);
+  padding: 28px 0;
+  text-align: center;
+}
+
+.estado strong {
+  display: block;
+  color: var(--text);
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.planejado {
+  display: inline-block;
+
+  background: var(--ice);
+  color: var(--blue-text);
+
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+
+  padding: 4px 9px;
+  border-radius: 20px;
+
+  vertical-align: middle;
+}
+
+.nota {
+  margin-top: 16px;
+  padding: 14px 16px;
+
+  background: #f8fafc;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.nota strong {
+  color: var(--text);
+}
+
+
+/* FILTRO DE PERÍODO -------------------------------------- */
+
+.filtro {
+  display: inline-flex;
+
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+
+  padding: 4px;
+  gap: 4px;
+}
+
+.filtro button {
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+
+  color: var(--muted);
+  background: transparent;
+
+  border: 0;
+  border-radius: 7px;
+
+  padding: 8px 14px;
+
+  cursor: pointer;
+}
+
+.filtro button[aria-pressed="true"] {
+  background: var(--navy);
+  color: white;
+}
+
+.acoes {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+
+  margin-bottom: 20px;
+}
+
+.botao {
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+
+  color: white;
+  background: var(--blue-text);
+
+  border: 0;
+  border-radius: 10px;
+
+  padding: 10px 16px;
+
+  cursor: pointer;
+}
+
+.botao:disabled {
+  background: #9aa6b1;
+  cursor: not-allowed;
+}
+
+.filtro button:focus-visible,
+.botao:focus-visible,
+nav a:focus-visible {
+  outline: 3px solid var(--blue);
+  outline-offset: 2px;
+}
+
+
+/* TABELA ------------------------------------------------- */
+
+.tabela-wrap {
+  overflow-x: auto;
+}
+
+.tabela {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.tabela th {
+  text-align: left;
+
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 600;
+
+  padding: 10px 12px;
+
+  border-bottom: 1px solid var(--border);
+
+  white-space: nowrap;
+}
+
+.tabela td {
+  padding: 12px;
+
+  border-bottom: 1px solid var(--border);
+
+  white-space: nowrap;
+}
+
+.tabela td.num,
+.tabela th.num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.tabela tbody tr {
+  transition: background-color 150ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.tabela tbody tr:hover {
+  background: var(--background);
+}
+
+.tabela .status {
+  margin: 0;
+  padding: 5px 10px;
+  font-size: 12px;
+}
+
+
+/* NÚMEROS DE RESUMO -------------------------------------- */
+
+.resumo {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 18px;
+}
+
+.resumo .card small {
+  display: block;
+}
+
+.resumo .card strong.critico {
+  color: #a82424;
+}
+
+.resumo .card strong.atencao {
+  color: #946600;
+}
+
+
+/* GRÁFICO DE TEMPERATURA --------------------------------- */
+
+.grafico {
+  position: relative;
+  margin-top: 10px;
+}
+
+.grafico svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.grafico .eixo text {
+  fill: var(--muted);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.grafico .grade {
+  stroke: var(--border);
+  stroke-width: 1;
+}
+
+.grafico .banda {
+  fill: var(--ice);
+}
+
+.grafico .limite {
+  stroke-width: 1.5;
+  stroke-dasharray: 5 4;
+}
+
+.grafico .limite.atencao {
+  stroke: var(--yellow);
+}
+
+.grafico .limite.critico {
+  stroke: var(--red);
+}
+
+.grafico .rotulo-limite {
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.grafico .rotulo-limite.atencao {
+  fill: #946600;
+}
+
+.grafico .rotulo-limite.critico {
+  fill: #a82424;
+}
+
+.grafico .rotulo-limite.banda-rotulo {
+  fill: var(--blue-text);
+}
+
+.grafico .linha {
+  fill: none;
+  stroke: var(--blue);
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.grafico .ponto-fora {
+  stroke: white;
+  stroke-width: 2;
+}
+
+.grafico .ponto-fora.atencao {
+  fill: var(--yellow);
+}
+
+.grafico .ponto-fora.critico {
+  fill: var(--red);
+}
+
+.grafico .cruz {
+  stroke: var(--muted);
+  stroke-width: 1;
+}
+
+.grafico .marcador {
+  fill: var(--blue);
+  stroke: white;
+  stroke-width: 2;
+}
+
+.grafico .alvo {
+  fill: transparent;
+  cursor: crosshair;
+}
+
+.tooltip {
+  position: absolute;
+  top: 0;
+  left: 0;
+
+  pointer-events: none;
+
+  background: var(--navy);
+  color: white;
+
+  font-size: 13px;
+  font-weight: 600;
+
+  padding: 8px 11px;
+  border-radius: 8px;
+
+  white-space: nowrap;
+}
+
+.tooltip span {
+  display: block;
+  color: #c9d6e3;
+  font-size: 11px;
+}
+
+
+/* VEÍCULOS / VIAGENS ------------------------------------- */
+
+.lista-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 18px;
+}
+
+.item-card {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 22px;
+}
+
+.item-card header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+
+  margin-bottom: 16px;
+}
+
+.item-card h3 {
+  font-size: 19px;
+  font-weight: 700;
+}
+
+.item-card header p {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.item-card .status {
+  margin: 0;
+}
+
+.campos {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px 18px;
+}
+
+.campos span {
+  display: block;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  margin-bottom: 3px;
+}
+
+.campos strong {
+  font-weight: 700;
+}
+
+.rota {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  margin-bottom: 16px;
+  font-weight: 700;
+}
+
+.rota .seta {
+  color: var(--muted);
+}
+
+
+/* RESPONSIVO --------------------------------------------- */
+
+@media (max-width: 1050px) {
+
+  .resumo {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 720px) {
+
+  /* No celular a sidebar vira uma faixa de navegação no topo. */
+  .sidebar {
+    display: flex;
+
+    position: static;
+    width: 100%;
+    min-height: 0;
+
+    padding: 14px 16px;
+  }
+
+  .brand {
+    margin-bottom: 12px;
+  }
+
+  .sidebar {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .sidebar nav {
+    flex-direction: row;
+    overflow-x: auto;
+    gap: 6px;
+
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .main {
+    min-width: 0;
+  }
+
+  .sidebar nav a {
+    white-space: nowrap;
+    padding: 9px 12px;
+  }
+
+  .sidebar-footer {
+    display: none;
+  }
+
+  body {
+    flex-direction: column;
+  }
+
+  .resumo {
+    grid-template-columns: 1fr;
+  }
+
+  .campos {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+  nav a,
+  .tabela tbody tr {
+    transition: none;
+  }
+}

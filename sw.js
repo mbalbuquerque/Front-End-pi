@@ -1,9 +1,22 @@
-const CACHE_NAME = "coldtrack-v3";
+const CACHE_NAME = "coldtrack-v5";
 
 const APP_SHELL = [
   "./",
   "./index.html",
   "./dashboard.html",
+  "./alertas.html",
+  "./relatorios.html",
+  "./veiculos.html",
+  "./viagens.html",
+  "./configuracoes.html",
+  "./css/telas.css",
+  "./js/comum.js",
+  "./js/grafico.js",
+  "./js/alertas.js",
+  "./js/relatorios.js",
+  "./js/veiculos.js",
+  "./js/viagens.js",
+  "./js/configuracoes.js",
   "./css/home.css",
   "./js/home.js",
   "./css/style.css",
@@ -65,15 +78,31 @@ self.addEventListener("fetch", event => {
     return;
   }
 
+  // Só GET entra no cache.
+  if (event.request.method !== "GET") {
+    return;
+  }
+
+  // Rede primeiro: cada publicação chega na hora.
+  // Sem internet, usa a última cópia guardada.
   event.respondWith(
 
-    caches.match(event.request)
+    fetch(event.request)
       .then(response => {
 
-        return response ||
-          fetch(event.request);
+        if (response.ok) {
+
+          const copia = response.clone();
+
+          caches.open(CACHE_NAME)
+            .then(cache => cache.put(event.request, copia));
+
+        }
+
+        return response;
 
       })
+      .catch(() => caches.match(event.request))
 
   );
 
