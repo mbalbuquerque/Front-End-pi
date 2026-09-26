@@ -294,11 +294,11 @@ Uma possível aplicação é o acompanhamento das condições ambientais durante
 
 **Projeto Integrador – 4º Período**
 
-- Antonio Henzo
+- Enzo Antônio
 - Everson
 - Emerson Luiz
 - Gabriel Eduardo
-- José Alanberg
+- José Allamberg
 - Marcelo Barbosa
 
 ---
