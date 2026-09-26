@@ -91,7 +91,19 @@ Com `DATA_SOURCE: "azure"` (padrão), o dashboard lê as leituras gravadas no Az
 GET https://func-coldtrack-7319.azurewebsites.net/api/leituras?deviceId=coldtrack-01&limite=20
 ```
 
-A rota é somente leitura e liberada via CORS para o Live Server (`http://127.0.0.1:5500` e `http://localhost:5500`). Ao publicar o dashboard em outro endereço, esse endereço precisa ser adicionado ao CORS do Function App.
+A rota é somente leitura e liberada via CORS para o Live Server (`http://127.0.0.1:5500` e `http://localhost:5500`) e para o endereço publicado. Ao publicar o dashboard em outro endereço, esse endereço precisa ser adicionado ao CORS do Function App.
+
+### Publicação
+
+O site está publicado no Azure Storage (site estático, região Brazil South):
+
+**https://stcoldtrackweb7319.z15.web.core.windows.net**
+
+O Azure Static Web Apps não está disponível nas regiões liberadas para a assinatura Azure for Students da instituição, por isso foi usado o site estático do Storage. Para publicar uma nova versão:
+
+```bash
+az storage blob upload-batch --account-name stcoldtrackweb7319 -s <pasta-do-site> -d '$web' --overwrite
+```
 
 O dashboard fica em `dashboard.html` (acessado pelo botão da página inicial).
 
