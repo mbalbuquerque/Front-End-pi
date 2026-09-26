@@ -43,7 +43,8 @@ async function buscarAzure() {
     .slice()
     .reverse()
     .map(leitura => ({
-      created_at: leitura.recebidoEm,
+      // Horário da medição (leituras guardadas offline chegam depois).
+      created_at: leitura.medidoEm || leitura.recebidoEm,
       field1: leitura.temperatura,
       field2: leitura.umidade,
       field3: leitura.rssi
