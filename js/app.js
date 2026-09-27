@@ -2,10 +2,15 @@
 // (created_at, field1 = temperatura, field2 = umidade, field3 = RSSI),
 // do mais antigo para o mais recente.
 
+// Veículo mostrado e faixa da carga dele (carregados uma vez).
+let escolha = null;
+
+
 async function buscarAzure() {
 
   const leituras =
     await buscarLeituras({
+      deviceId: escolha.veiculo.deviceId,
       limite: CONFIG.HISTORY_SIZE
     });
 
@@ -18,7 +23,8 @@ async function buscarAzure() {
       created_at: leitura.medidoEm || leitura.recebidoEm,
       field1: leitura.temperatura,
       field2: leitura.umidade,
-      field3: leitura.rssi
+      field3: leitura.rssi,
+      status: leitura.status
     }));
 
 }
@@ -27,6 +33,22 @@ async function buscarAzure() {
 async function carregarDados() {
 
   try {
+
+    if (!escolha) {
+
+      escolha = await escolherVeiculo();
+      montarSeletorVeiculo(escolha);
+      mostrarVeiculo(escolha);
+
+    }
+
+    if (!escolha.veiculo) {
+
+      marcarConexao(true);
+      document.getElementById("historico").innerHTML = SEM_VEICULO;
+      return;
+
+    }
 
     const feeds =
       await buscarAzure();
@@ -130,14 +152,14 @@ function atualizarDashboard(feed) {
     data.toLocaleString("pt-BR");
 
 
-  atualizarStatus(temperatura);
+  atualizarStatus(feed.status || classificarTemperatura(temperatura));
 
   atualizarRSSI(rssi);
 
 }
 
 
-function atualizarStatus(temperatura) {
+function atualizarStatus(situacao) {
 
   const status =
     document.getElementById(
@@ -154,54 +176,18 @@ function atualizarStatus(temperatura) {
       "alerta"
     );
 
+  const textos = {
+    NORMAL: "Temperatura dentro da faixa da carga",
+    ATENCAO: "Temperatura em atenção",
+    CRITICO: "Temperatura crítica"
+  };
 
-  status.className = "status";
+  const info = STATUS_INFO[situacao] || STATUS_INFO.NORMAL;
 
-
-  if (
-    temperatura <=
-    CONFIG.TEMP_NORMAL_MAX
-  ) {
-
-    status.textContent = "NORMAL";
-
-    status.classList.add("normal");
-
-    tempStatus.textContent =
-      "Temperatura dentro do limite";
-
-    alerta.classList.add("hidden");
-
-  }
-
-  else if (
-    temperatura <=
-    CONFIG.TEMP_ATENCAO_MAX
-  ) {
-
-    status.textContent = "ATENÇÃO";
-
-    status.classList.add("atencao");
-
-    tempStatus.textContent =
-      "Temperatura em atenção";
-
-    alerta.classList.remove("hidden");
-
-  }
-
-  else {
-
-    status.textContent = "CRÍTICO";
-
-    status.classList.add("critico");
-
-    tempStatus.textContent =
-      "Temperatura crítica";
-
-    alerta.classList.remove("hidden");
-
-  }
+  status.className = `status ${info.classe}`;
+  status.textContent = info.texto;
+  tempStatus.textContent = textos[situacao] || textos.NORMAL;
+  alerta.classList.toggle("hidden", situacao === "NORMAL");
 
 }
 
@@ -256,7 +242,7 @@ function atualizarHistorico(feeds) {
         return {
           temperatura,
           medidoEm: feed.created_at,
-          status: classificarTemperatura(temperatura)
+          status: feed.status || classificarTemperatura(temperatura)
         };
 
       })
@@ -296,23 +282,44 @@ function atualizarHistorico(feeds) {
     document.getElementById(
       "graficoTemperatura"
     ),
-    leituras
+    leituras,
+    { faixa: escolha.faixa }
   );
 
 }
 
 
+// Leitura antiga, gravada antes da faixa por carga, não traz status.
 function classificarTemperatura(temperatura) {
 
-  if (temperatura <= CONFIG.TEMP_NORMAL_MAX) {
+  const f = escolha ? escolha.faixa : FAIXA_PADRAO;
+  const minimo = f.min == null ? -Infinity : f.min;
+
+  if (temperatura >= minimo && temperatura <= f.max) {
     return "NORMAL";
   }
 
-  if (temperatura <= CONFIG.TEMP_ATENCAO_MAX) {
+  if (temperatura >= minimo - f.margem && temperatura <= f.max + f.margem) {
     return "ATENCAO";
   }
 
   return "CRITICO";
+
+}
+
+
+function mostrarVeiculo({ veiculo, perfil, faixa }) {
+
+  if (!veiculo) {
+    return;
+  }
+
+  document.getElementById("veiculoCodigo").textContent = veiculo.id;
+  document.getElementById("veiculoCarga").textContent =
+    `${perfil ? perfil.nome : veiculo.perfil} · normal ${descreverNormal(faixa)}`;
+  document.getElementById("veiculoSensor").textContent = veiculo.deviceId;
+  document.getElementById("subtituloVeiculo").textContent =
+    `${veiculo.tipo} • ${veiculo.id}`;
 
 }
 

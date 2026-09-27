@@ -14,9 +14,10 @@ async function carregarViagens() {
 
   try {
 
-    const [{ viagens }, { veiculos }] = await Promise.all([
+    const [{ viagens }, { veiculos }, perfis] = await Promise.all([
       api("/viagens"),
-      api("/veiculos")
+      api("/veiculos"),
+      carregarPerfis()
     ]);
 
     // Em andamento primeiro; depois as mais recentes.
@@ -51,7 +52,9 @@ async function carregarViagens() {
       const alvo = document.getElementById(`graficoViagem${i}`);
 
       if (alvo && dados[i]) {
-        desenharGrafico(alvo, dados[i]);
+        const veiculo = veiculos.find(v => v.id === viagem.veiculo);
+        const perfil = perfis.find(p => p.id === veiculo?.perfil);
+        desenharGrafico(alvo, dados[i], { faixa: faixaDoPerfil(perfil) });
       }
 
     });

@@ -530,8 +530,15 @@ details.panel[open] summary {
 
 .acoes-item {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
   margin-top: 16px;
+}
+
+a.botao {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
 }
 
 
@@ -550,6 +557,7 @@ details.panel[open] summary {
 }
 
 .usuario-menu span {
+  display: block;
   color: #b9c6d1;
   font-size: 12px;
 }
@@ -700,4 +708,249 @@ details.panel[open] summary {
   .tabela tbody tr {
     transition: none;
   }
+}
+
+
+/* SELETOR DE VEÍCULO (topo) ------------------------------ */
+
+.seletor-veiculo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.seletor-veiculo select {
+  font: inherit;
+  font-size: 15px;
+  color: var(--text);
+
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+
+  padding: 8px 12px;
+}
+
+.seletor-veiculo select:focus-visible {
+  outline: 3px solid var(--blue);
+  outline-offset: 2px;
+}
+
+
+/* CALOR NA ROTA (dashboard) ------------------------------ */
+
+.risco {
+  margin-top: 20px;
+}
+
+.faixa-horas {
+  display: grid;
+  grid-template-columns: repeat(24, minmax(0, 1fr));
+  gap: 4px;
+
+  list-style: none;
+  margin: 18px 0 12px;
+  padding: 0;
+}
+
+.hora-risco {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+
+  padding: 6px 0;
+  border-radius: 8px;
+
+  background: var(--ice);
+  color: var(--text);
+}
+
+.hora-risco span {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.hora-risco strong {
+  font-size: 13px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.hora-risco.quente {
+  background: #fff2c9;
+  color: #946600;
+}
+
+.hora-risco.forte {
+  background: #ffe1e1;
+  color: #a82424;
+}
+
+.legenda-risco {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+
+  list-style: none;
+  margin: 0;
+  padding: 0;
+
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.legenda-risco i {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  margin-right: 4px;
+  vertical-align: -1px;
+  background: var(--ice);
+}
+
+.legenda-risco i.quente { background: #f3d77a; }
+.legenda-risco i.forte { background: #f2a3a3; }
+
+/* No celular, 24 horas em duas linhas de 12. */
+@media (max-width: 720px) {
+  .faixa-horas {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+  }
+}
+
+.login-ajuda a {
+  color: var(--blue-text);
+  font-weight: 700;
+}
+
+
+/* SENSORES ----------------------------------------------- */
+
+.acoes-tabela {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.chave-nova {
+  border: 2px solid var(--blue-text);
+}
+
+.trecho-codigo {
+  margin: 14px 0;
+  padding: 14px 16px;
+
+  background: var(--navy);
+  color: white;
+  border-radius: 10px;
+
+  font-family: ui-monospace, "Cascadia Mono", Consolas, monospace;
+  font-size: 13px;
+  line-height: 1.5;
+
+  overflow-x: auto;
+  white-space: pre;
+}
+
+
+/* ETIQUETA QR DO VEÍCULO --------------------------------- */
+
+.etiqueta {
+  /* O reset de style.css zera a margem que centraliza o dialog. */
+  margin: auto;
+  border: 0;
+  border-radius: 16px;
+  padding: 24px;
+  max-width: calc(100vw - 32px);
+}
+
+.etiqueta::backdrop {
+  background: rgba(11, 31, 51, 0.55);
+}
+
+.etiqueta-conteudo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+
+  width: 260px;
+  max-width: 100%;
+  text-align: center;
+}
+
+.etiqueta-qr {
+  width: 100%;
+}
+
+.etiqueta-qr svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.etiqueta-conteudo strong {
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.etiqueta-conteudo span {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.etiqueta-acoes {
+  justify-content: center;
+  margin-top: 16px;
+}
+
+/* Na impressão sai só a etiqueta. */
+@media print {
+  body:has(.etiqueta[open]) > *:not(.etiqueta) {
+    display: none;
+  }
+
+  .etiqueta {
+    position: static;
+    padding: 0;
+  }
+
+  .etiqueta-acoes {
+    display: none;
+  }
+}
+
+.aviso-ok {
+  margin-top: 10px;
+  color: #087443;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.dialogo-form {
+  display: grid;
+  gap: 12px;
+  width: 340px;
+  max-width: 100%;
+}
+
+.dialogo-form h2 {
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.campos a,
+.estado a,
+.panel p a {
+  color: var(--blue-text);
+  font-weight: 700;
 }

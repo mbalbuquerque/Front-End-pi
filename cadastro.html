@@ -4,10 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>Entrar · ColdTrack Control</title>
+  <title>Cadastrar empresa · ColdTrack Control</title>
 
   <meta name="theme-color" content="#0b1f33">
-  <meta name="description" content="ColdTrack Control - acesso ao painel de monitoramento da cadeia fria">
+  <meta name="description" content="ColdTrack Control - cadastro de transportadora no painel de monitoramento">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -32,10 +32,20 @@
       </div>
     </div>
 
-    <form class="login-cartao" id="formLogin" novalidate>
+    <form class="login-cartao" id="formCadastro" novalidate>
 
-      <h1>Entrar no painel</h1>
-      <p>Acompanhe a temperatura da carga em tempo real.</p>
+      <h1>Cadastrar empresa</h1>
+      <p>Crie o acesso da sua transportadora. Você entra como gestor e depois registra sensores, veículos e a equipe.</p>
+
+      <label class="campo">
+        <span>Nome da empresa</span>
+        <input name="empresa" autocomplete="organization" required>
+      </label>
+
+      <label class="campo">
+        <span>Seu nome</span>
+        <input name="nome" autocomplete="name" required>
+      </label>
 
       <label class="campo">
         <span>E-mail</span>
@@ -43,16 +53,15 @@
       </label>
 
       <label class="campo">
-        <span>Senha</span>
-        <input type="password" name="senha" autocomplete="current-password" required>
+        <span>Senha (mínimo 8 caracteres)</span>
+        <input type="password" name="senha" autocomplete="new-password" minlength="8" required>
       </label>
 
-      <button type="submit" class="botao botao-cheio" id="botaoEntrar">Entrar</button>
+      <button type="submit" class="botao botao-cheio" id="botaoCadastrar">Cadastrar empresa</button>
 
-      <p class="erro-form" id="erroLogin" role="alert" hidden></p>
+      <p class="erro-form" id="erroCadastro" role="alert" hidden></p>
 
-      <p class="login-ajuda">Sem acesso? Peça ao gestor da sua equipe para criar seu usuário.
-        Empresa nova? <a href="cadastro.html">Cadastre sua empresa</a>.</p>
+      <p class="login-ajuda">Já tem acesso? <a href="login.html">Entrar</a>.</p>
 
     </form>
 
@@ -60,7 +69,7 @@
 
   <script src="js/config.js"></script>
   <script src="js/comum.js"></script>
-  <script src="js/login.js"></script>
+  <script src="js/cadastro.js"></script>
 
 </body>
 </html>

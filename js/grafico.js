@@ -20,8 +20,12 @@ function elementoSvg(tag, atributos = {}) {
 
 function desenharGrafico(container, leituras, opcoes = {}) {
 
-  const normalMax = opcoes.normalMax ?? CONFIG.TEMP_NORMAL_MAX;
-  const atencaoMax = opcoes.atencaoMax ?? CONFIG.TEMP_ATENCAO_MAX;
+  // Faixa do perfil da carga: normal [min, max], atenção até `margem` °C fora.
+  const faixa = opcoes.faixa || FAIXA_PADRAO;
+  const normalMax = faixa.max;
+  const atencaoMax = faixa.max + faixa.margem;
+  const normalMin = faixa.min;
+  const atencaoMin = faixa.min == null ? null : faixa.min - faixa.margem;
 
   const pontos = leituras
     .filter(l => typeof l.temperatura === "number")
@@ -48,7 +52,7 @@ function desenharGrafico(container, leituras, opcoes = {}) {
 
   const temps = pontos.map(p => p.temp);
 
-  const yMin = Math.floor(Math.min(...temps, normalMax) - 3);
+  const yMin = Math.floor(Math.min(...temps, normalMax, atencaoMin ?? Infinity) - 3);
   const yMax = Math.ceil(Math.max(...temps, atencaoMax) + 3);
 
   const t0 = pontos[0].data.getTime();
@@ -72,13 +76,13 @@ function desenharGrafico(container, leituras, opcoes = {}) {
   });
 
 
-  // Banda da faixa normal (do piso do eixo até o limite normal).
+  // Banda da faixa normal (do mínimo do perfil, ou do piso do eixo, até o máximo).
   svg.appendChild(elementoSvg("rect", {
     class: "banda",
     x: m.esq,
     y: y(normalMax),
     width: larg,
-    height: y(yMin) - y(normalMax)
+    height: y(normalMin ?? yMin) - y(normalMax)
   }));
 
   const rotuloBanda = elementoSvg("text", {
@@ -137,7 +141,11 @@ function desenharGrafico(container, leituras, opcoes = {}) {
   // Linhas de limite com rótulo direto à direita.
   [
     [normalMax, "atencao", `Atenção > ${normalMax}°`],
-    [atencaoMax, "critico", `Crítico > ${atencaoMax}°`]
+    [atencaoMax, "critico", `Crítico > ${atencaoMax}°`],
+    ...(normalMin == null ? [] : [
+      [normalMin, "atencao", `Atenção < ${normalMin}°`],
+      [atencaoMin, "critico", `Crítico < ${atencaoMin}°`]
+    ])
   ].forEach(([valor, classe, rotulo]) => {
 
     svg.appendChild(elementoSvg("line", {

@@ -17,7 +17,19 @@ async function carregarVeiculos() {
 
   try {
 
-    const { veiculos } = await api("/veiculos");
+    const [{ veiculos }, { dispositivos }, perfis] = await Promise.all([
+      api("/veiculos"),
+      api("/dispositivos"),
+      carregarPerfis()
+    ]);
+
+    perfisCarga = perfis;
+
+    // Sensores ainda sem veículo: as opções do cadastro.
+    const livres = dispositivos
+      .map(d => d.id)
+      .filter(id => !veiculos.some(v => v.deviceId === id))
+      .sort();
 
     const ultimas = await Promise.all(
       veiculos.map(v =>
@@ -30,7 +42,7 @@ async function carregarVeiculos() {
 
     conteudo.innerHTML = `
 
-      ${ehGestor() ? formularioVeiculo() : ""}
+      ${ehGestor() ? formularioVeiculo(livres) : ""}
 
       ${veiculos.length
         ? `<section class="lista-cards">${veiculos.map((v, i) => cardVeiculo(v, ultimas[i])).join("")}</section>`
@@ -55,10 +67,23 @@ async function carregarVeiculos() {
 }
 
 
-function formularioVeiculo() {
+function formularioVeiculo(livres) {
 
-  const perfis = CONFIG.PERFIS
-    .map(p => `<option value="${p.id}">${texto(p.nome)}</option>`)
+  const perfis = perfisCarga
+    .map(p => `<option value="${texto(p.id)}">${texto(p.nome)} (normal ${descreverNormal(faixaDoPerfil(p))})</option>`)
+    .join("");
+
+  if (!livres.length) {
+    return `
+      <div class="panel estado">
+        <strong>Nenhum sensor livre para um veículo novo.</strong>
+        Registre o sensor em <a href="sensores.html">Sensores</a> e volte aqui.
+      </div>
+    `;
+  }
+
+  const sensores = livres
+    .map(id => `<option value="${texto(id)}">${texto(id)}</option>`)
     .join("");
 
   return `
@@ -68,7 +93,7 @@ function formularioVeiculo() {
       <form id="formVeiculo" class="form-grade" novalidate>
         <label class="campo"><span>Código</span><input name="id" placeholder="CT-002" required></label>
         <label class="campo"><span>Tipo</span><input name="tipo" placeholder="Caminhão baú refrigerado" required></label>
-        <label class="campo"><span>ID do sensor</span><input name="deviceId" placeholder="coldtrack-02" required></label>
+        <label class="campo"><span>Sensor</span><select name="deviceId">${sensores}</select></label>
         <label class="campo"><span>Dispositivo</span><input name="dispositivo" placeholder="ESP32-C3 + DHT11"></label>
         <label class="campo"><span>Perfil da carga</span><select name="perfil">${perfis}</select></label>
         <button type="submit" class="botao">Cadastrar</button>
@@ -83,7 +108,7 @@ function formularioVeiculo() {
 
 function cardVeiculo(veiculo, ultima) {
 
-  const perfil = CONFIG.PERFIS.find(p => p.id === veiculo.perfil);
+  const perfil = perfisCarga.find(p => p.id === veiculo.perfil);
 
   let situacao = seloStatus(null);
   let comunicacao = "nunca enviou dados";
@@ -129,7 +154,7 @@ function cardVeiculo(veiculo, ultima) {
         </div>
         <div>
           <span>Perfil da carga</span>
-          <strong>${texto(perfil ? perfil.nome : veiculo.perfil)}</strong>
+          <strong>${texto(perfil ? perfil.nome : veiculo.perfil)} · normal ${descreverNormal(faixaDoPerfil(perfil))}</strong>
         </div>
         <div>
           <span>Dispositivo</span>
@@ -141,10 +166,11 @@ function cardVeiculo(veiculo, ultima) {
         </div>
       </div>
 
-      ${ehGestor() ? `
-        <div class="acoes-item">
-          <button type="button" class="botao perigo" data-remover="${texto(veiculo.id)}">Remover veículo</button>
-        </div>` : ""}
+      <div class="acoes-item">
+        <a class="botao secundario" href="dashboard.html?veiculo=${encodeURIComponent(veiculo.id)}">Ver no painel</a>
+        <button type="button" class="botao secundario" data-etiqueta="${texto(veiculo.id)}">Etiqueta QR</button>
+        ${ehGestor() ? `<button type="button" class="botao perigo" data-remover="${texto(veiculo.id)}">Remover veículo</button>` : ""}
+      </div>
 
     </article>
   `;
@@ -188,6 +214,10 @@ function ligarAcoes() {
 
   }
 
+  document.querySelectorAll("[data-etiqueta]").forEach(botao => {
+    botao.addEventListener("click", () => abrirEtiqueta(botao.dataset.etiqueta));
+  });
+
   document.querySelectorAll("[data-remover]").forEach(botao => {
 
     botao.addEventListener("click", async () => {
@@ -208,6 +238,46 @@ function ligarAcoes() {
     });
 
   });
+
+}
+
+
+// Etiqueta para colar no baú: o QR abre o painel já neste veículo.
+// Quem escaneia precisa de login; a etiqueta não dá acesso sozinha.
+function abrirEtiqueta(codigo) {
+
+  const pasta = location.pathname.replace(/[^/]*$/, "");
+  const endereco = `${location.origin}${pasta}dashboard.html?veiculo=${encodeURIComponent(codigo)}`;
+
+  const qr = qrcode(0, "M");
+  qr.addData(endereco);
+  qr.make();
+
+  let dialogo = document.getElementById("etiqueta");
+
+  if (!dialogo) {
+    dialogo = document.createElement("dialog");
+    dialogo.id = "etiqueta";
+    dialogo.className = "etiqueta";
+    document.body.appendChild(dialogo);
+  }
+
+  dialogo.innerHTML = `
+    <div class="etiqueta-conteudo">
+      <div class="etiqueta-qr">${qr.createSvgTag({ cellSize: 6, margin: 2, scalable: true })}</div>
+      <strong>${texto(codigo)}</strong>
+      <span>ColdTrack · aponte a câmera para ver a temperatura da carga</span>
+    </div>
+    <div class="acoes-item etiqueta-acoes">
+      <button type="button" class="botao" id="imprimirEtiqueta">Imprimir</button>
+      <button type="button" class="botao secundario" id="fecharEtiqueta">Fechar</button>
+    </div>
+  `;
+
+  dialogo.querySelector("#imprimirEtiqueta").addEventListener("click", () => window.print());
+  dialogo.querySelector("#fecharEtiqueta").addEventListener("click", () => dialogo.close());
+
+  dialogo.showModal();
 
 }
 

@@ -120,6 +120,7 @@ if (document.getElementById("sidebar") && !lerSessao()) {
 const PAGINAS = [
   { href: "dashboard.html", icone: "▦", nome: "Dashboard" },
   { href: "veiculos.html", icone: "🚚", nome: "Veículos" },
+  { href: "sensores.html", icone: "📡", nome: "Sensores" },
   { href: "viagens.html", icone: "↗", nome: "Viagens" },
   { href: "alertas.html", icone: "⚠", nome: "Alertas" },
   { href: "relatorios.html", icone: "▤", nome: "Relatórios" },
@@ -161,6 +162,7 @@ function montarMenu() {
       <div class="usuario-menu">
         <strong>${texto(usuarioAtual()?.nome || "")}</strong>
         <span>${usuarioAtual()?.perfil === "gestor" ? "Gestor" : "Operador logístico"}</span>
+        <span>${texto(usuarioAtual()?.empresa || "")}</span>
       </div>
       <button type="button" class="sair" id="botaoSair">Sair</button>
     </div>
@@ -172,10 +174,138 @@ function montarMenu() {
 
 
 // ---------------------------------------------------------
+// VEÍCULO ESCOLHIDO E FAIXA DA CARGA
+// ---------------------------------------------------------
+
+// Faixa do perfil demonstrativo: vale enquanto o perfil não carrega.
+const FAIXA_PADRAO = { min: null, max: 15, margem: 5 };
+
+const CHAVE_VEICULO = "coldtrack.veiculo";
+
+let perfisCarga = null;
+
+
+// Perfis de carga e faixas vêm da API: a mesma regra do sensor e da nuvem.
+async function carregarPerfis() {
+
+  if (!perfisCarga) {
+    const response = await fetch(`${CONFIG.API_URL}/perfis`);
+    perfisCarga = (await response.json()).perfis;
+  }
+
+  return perfisCarga;
+
+}
+
+
+function faixaDoPerfil(perfil) {
+
+  return perfil ? { min: perfil.min, max: perfil.max, margem: perfil.margem } : FAIXA_PADRAO;
+
+}
+
+
+// "de 10 a 13 °C" ou "até 15 °C"
+function descreverNormal(faixa) {
+
+  return faixa.min == null
+    ? `até ${faixa.max} °C`
+    : `de ${faixa.min} a ${faixa.max} °C`;
+
+}
+
+
+// "acima de 20 °C" ou "abaixo de 7 °C ou acima de 16 °C"
+function descreverCritico(faixa) {
+
+  const acima = `acima de ${faixa.max + faixa.margem} °C`;
+
+  return faixa.min == null
+    ? acima
+    : `abaixo de ${faixa.min - faixa.margem} °C ou ${acima}`;
+
+}
+
+
+// Veículo da tela: ?veiculo= na URL (etiqueta QR), o último escolhido ou o primeiro.
+async function escolherVeiculo() {
+
+  const [{ veiculos }, perfis] = await Promise.all([api("/veiculos"), carregarPerfis()]);
+
+  veiculos.sort((a, b) => a.id.localeCompare(b.id));
+
+  let salvo = null;
+
+  try {
+    salvo = localStorage.getItem(CHAVE_VEICULO);
+  } catch (erro) {
+    // sem armazenamento: fica o primeiro
+  }
+
+  const pedido = new URLSearchParams(location.search).get("veiculo");
+
+  const veiculo =
+    veiculos.find(v => v.id === pedido) ||
+    veiculos.find(v => v.id === salvo) ||
+    veiculos[0] ||
+    null;
+
+  const perfil = perfis.find(p => p.id === (veiculo?.perfil || "demonstrativo"));
+
+  return { veiculos, veiculo, perfil, faixa: faixaDoPerfil(perfil) };
+
+}
+
+
+// Seletor de veículo no topo da tela (só aparece com mais de um veículo).
+function montarSeletorVeiculo({ veiculos, veiculo }) {
+
+  const topo = document.querySelector(".topbar");
+
+  if (!topo || veiculos.length < 2 || document.getElementById("seletorVeiculo")) {
+    return;
+  }
+
+  const rotulo = document.createElement("label");
+  rotulo.className = "seletor-veiculo";
+  rotulo.innerHTML = `
+    <span>Veículo</span>
+    <select id="seletorVeiculo">
+      ${veiculos.map(v => `<option value="${texto(v.id)}"${v.id === veiculo?.id ? " selected" : ""}>${texto(v.id)}</option>`).join("")}
+    </select>
+  `;
+
+  topo.insertBefore(rotulo, topo.querySelector(".connection"));
+
+  rotulo.querySelector("select").addEventListener("change", evento => {
+
+    try {
+      localStorage.setItem(CHAVE_VEICULO, evento.target.value);
+    } catch (erro) {
+      // sem armazenamento
+    }
+
+    // Tira o ?veiculo= da URL para a escolha valer.
+    location.href = location.pathname;
+
+  });
+
+}
+
+
+const SEM_VEICULO = `
+  <div class="panel estado">
+    <strong>Nenhum veículo cadastrado.</strong>
+    Registre o sensor em Sensores e depois cadastre o veículo em Veículos.
+  </div>
+`;
+
+
+// ---------------------------------------------------------
 // DADOS (Azure Function)
 // ---------------------------------------------------------
 
-async function buscarLeituras({ deviceId = CONFIG.DEVICE_ID, limite = 50, horas, status } = {}) {
+async function buscarLeituras({ deviceId, limite = 50, horas, status } = {}) {
 
   const params = new URLSearchParams({
     deviceId,

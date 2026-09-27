@@ -1,15 +1,20 @@
-// Tela de configurações: o que está valendo hoje no sistema (somente leitura).
+// Tela de configurações: minha conta (troca de senha), faixas das cargas,
+// sensores, fonte de dados e, para o gestor, os usuários da empresa.
 
 async function carregarConfiguracoes() {
 
   const conteudo = document.getElementById("conteudo");
 
-  let ultima = null;
+  let perfis = [];
+  let dispositivos = [];
   let conectado = true;
 
   try {
 
-    ultima = (await buscarLeituras({ limite: 1 }))[0] || null;
+    [perfis, { dispositivos }] = await Promise.all([
+      carregarPerfis(),
+      api("/dispositivos")
+    ]);
 
   }
 
@@ -22,60 +27,80 @@ async function carregarConfiguracoes() {
 
   marcarConexao(conectado);
 
-  const perfis = CONFIG.PERFIS.map(p => `
-    <tr>
-      <td><strong>${texto(p.nome)}</strong></td>
-      <td>${p.ativo
-        ? `Normal até ${p.normalMax} °C · atenção até ${p.atencaoMax} °C · crítico acima`
-        : `Faixa ideal ${texto(p.faixa)}`}</td>
-      <td>${p.ativo
-        ? '<span class="status normal">EM USO</span>'
-        : '<span class="planejado">PLANEJADO</span>'}</td>
-    </tr>
-  `).join("");
+  const linhasPerfis = perfis.map(p => {
+
+    const faixa = faixaDoPerfil(p);
+
+    return `
+      <tr>
+        <td><strong>${texto(p.nome)}</strong></td>
+        <td>${descreverNormal(faixa)}</td>
+        <td>até ${faixa.margem} °C fora da faixa</td>
+        <td>${descreverCritico(faixa)}</td>
+      </tr>
+    `;
+
+  }).join("");
+
+  const usuario = usuarioAtual();
 
   conteudo.innerHTML = `
 
     <article class="panel">
-      <h2>Faixas de temperatura</h2>
-      <p>Definem quando a carga está normal, em atenção ou crítica. Valem no sensor, na nuvem e no painel.</p>
+      <h2>Minha conta</h2>
+      <p>${texto(usuario?.nome)} · ${texto(usuario?.id)} · ${texto(usuario?.empresa)}</p>
 
-      <div class="tabela-wrap">
-        <table class="tabela">
-          <thead>
-            <tr>
-              <th>Perfil de carga</th>
-              <th>Faixa</th>
-              <th>Situação</th>
-            </tr>
-          </thead>
-          <tbody>${perfis}</tbody>
-        </table>
-      </div>
+      <form id="formSenha" class="form-grade" novalidate>
+        <label class="campo"><span>Senha atual</span><input name="atual" type="password" autocomplete="current-password" required></label>
+        <label class="campo"><span>Nova senha (mín. 8)</span><input name="nova" type="password" autocomplete="new-password" minlength="8" required></label>
+        <button type="submit" class="botao">Trocar senha</button>
+      </form>
+      <p class="erro-form" id="erroSenha" role="alert" hidden></p>
+      <p class="aviso-ok" id="okSenha" role="status" hidden>Senha trocada. Os outros aparelhos conectados saem da conta.</p>
+    </article>
+
+    <article class="panel">
+      <h2>Faixas de temperatura</h2>
+      <p>Cada veículo usa a faixa do perfil da carga. A mesma regra vale no sensor (LED), na nuvem e no painel: o sensor recebe a faixa do veículo a cada envio.</p>
+
+      ${conectado ? `
+        <div class="tabela-wrap">
+          <table class="tabela">
+            <thead>
+              <tr>
+                <th>Perfil de carga</th>
+                <th>Normal</th>
+                <th>Atenção</th>
+                <th>Crítico</th>
+              </tr>
+            </thead>
+            <tbody>${linhasPerfis}</tbody>
+          </table>
+        </div>` : '<div class="estado">Sem conexão com o Azure.</div>'}
 
       <div class="nota">
-        Os perfis de manga e uva usam faixas de referência de pós-colheita e ainda precisam ser
-        validados com o produtor. <strong>Trocar a faixa pela tela</strong> depende de enviar
-        a nova faixa ao sensor, previsto para a versão com conexão celular.
+        Manga e uva usam faixas de referência de pós-colheita, ainda a validar com o produtor.
+        Frio demais também conta: abaixo da faixa a fruta sofre dano por frio.
+        <strong>O DHT11 não mede abaixo de 0 °C</strong>: para uva, usar DHT22 ou sonda DS18B20.
       </div>
     </article>
 
     <article class="panel">
-      <h2>Dispositivo e comunicação</h2>
-      <p>Sensor instalado no compartimento de carga.</p>
+      <h2>Sensores e comunicação</h2>
+      <p>Sensores instalados nos compartimentos de carga.</p>
 
       <div class="campos section-gap">
         <div>
-          <span>ID do sensor</span>
-          <strong>${texto(CONFIG.DEVICE_ID)}</strong>
+          <span>Sensores registrados</span>
+          <strong>${conectado ? dispositivos.length : "sem conexão"} · <a href="sensores.html">ver sensores</a></strong>
         </div>
         <div>
           <span>Intervalo de envio</span>
           <strong>${CONFIG.UPDATE_INTERVAL / 1000} s</strong>
         </div>
         <div>
-          <span>Última leitura recebida</span>
-          <strong>${ultima ? formatarDataHora(horarioDe(ultima)) : conectado ? "nenhuma" : "sem conexão"}</strong>
+          <span>Acesso do sensor</span>
+          <strong>Chave própria por sensor</strong>
         </div>
         <div>
           <span>Guarda leituras sem sinal</span>
@@ -105,12 +130,53 @@ async function carregarConfiguracoes() {
         </div>
         <div>
           <span>Acesso</span>
-          <strong>Login com perfis: operador e gestor</strong>
+          <strong>Login com perfis; cada empresa vê só os próprios dados</strong>
         </div>
       </div>
     </article>
 
   `;
+
+}
+
+
+function ligarTrocaSenha() {
+
+  const form = document.getElementById("formSenha");
+
+  if (!form) {
+    return;
+  }
+
+  form.addEventListener("submit", async evento => {
+
+    evento.preventDefault();
+
+    const erro = document.getElementById("erroSenha");
+    const ok = document.getElementById("okSenha");
+    erro.hidden = true;
+    ok.hidden = true;
+
+    try {
+
+      const { token, usuario } = await api("/senha", {
+        metodo: "POST",
+        corpo: Object.fromEntries(new FormData(form))
+      });
+
+      // A troca derruba o token antigo: guarda o novo para seguir logado aqui.
+      salvarSessao(token, usuario);
+      form.reset();
+      ok.hidden = false;
+
+    } catch (falha) {
+
+      erro.textContent = falha.message;
+      erro.hidden = false;
+
+    }
+
+  });
 
 }
 
@@ -141,15 +207,16 @@ async function carregarUsuarios() {
         <td><strong>${texto(u.nome)}</strong></td>
         <td>${texto(u.id)}</td>
         <td>${u.perfil === "gestor" ? "Gestor" : "Operador logístico"}</td>
-        <td>${u.id === eu
+        <td class="acoes-tabela">${u.id === eu
           ? "você"
-          : `<button type="button" class="botao perigo" data-remover-usuario="${texto(u.id)}">Remover</button>`}</td>
+          : `<button type="button" class="botao secundario" data-redefinir="${texto(u.id)}">Redefinir senha</button>
+             <button type="button" class="botao perigo" data-remover-usuario="${texto(u.id)}">Remover</button>`}</td>
       </tr>
     `).join("");
 
   painel.innerHTML = `
     <h2>Usuários</h2>
-    <p>Quem acessa o painel. Operador acompanha a carga; gestor também cadastra veículos, viagens e usuários.</p>
+    <p>Quem acessa o painel. Operador acompanha a carga; gestor também cadastra sensores, veículos, viagens e usuários.</p>
 
     <div class="tabela-wrap">
       <table class="tabela">
@@ -190,6 +257,10 @@ async function carregarUsuarios() {
 
   });
 
+  painel.querySelectorAll("[data-redefinir]").forEach(botao => {
+    botao.addEventListener("click", () => abrirRedefinir(botao.dataset.redefinir));
+  });
+
   painel.querySelectorAll("[data-remover-usuario]").forEach(botao => {
 
     botao.addEventListener("click", async () => {
@@ -214,4 +285,58 @@ async function carregarUsuarios() {
 }
 
 
-carregarConfiguracoes().then(carregarUsuarios);
+// Gestor define uma senha nova para quem esqueceu (a pessoa troca depois).
+function abrirRedefinir(id) {
+
+  let dialogo = document.getElementById("redefinir");
+
+  if (!dialogo) {
+    dialogo = document.createElement("dialog");
+    dialogo.id = "redefinir";
+    dialogo.className = "etiqueta";
+    document.body.appendChild(dialogo);
+  }
+
+  dialogo.innerHTML = `
+    <form class="dialogo-form" novalidate>
+      <h2>Redefinir senha</h2>
+      <p>${texto(id)} sai de todos os aparelhos e entra com a senha nova.</p>
+      <label class="campo"><span>Nova senha (mín. 8)</span><input name="senha" type="password" autocomplete="new-password" minlength="8" required></label>
+      <p class="erro-form" role="alert" hidden></p>
+      <div class="acoes-item">
+        <button type="submit" class="botao">Redefinir senha</button>
+        <button type="button" class="botao secundario" data-fechar>Cancelar</button>
+      </div>
+    </form>
+  `;
+
+  const form = dialogo.querySelector("form");
+  const erro = dialogo.querySelector(".erro-form");
+
+  dialogo.querySelector("[data-fechar]").addEventListener("click", () => dialogo.close());
+
+  form.addEventListener("submit", async evento => {
+
+    evento.preventDefault();
+    erro.hidden = true;
+
+    try {
+      await api(`/usuarios/${encodeURIComponent(id)}`, { metodo: "PUT", corpo: { senha: form.senha.value } });
+      dialogo.close();
+      alert(`Senha de ${id} redefinida.`);
+    } catch (falha) {
+      erro.textContent = falha.message;
+      erro.hidden = false;
+    }
+
+  });
+
+  dialogo.showModal();
+
+}
+
+
+carregarConfiguracoes().then(() => {
+  ligarTrocaSenha();
+  carregarUsuarios();
+});

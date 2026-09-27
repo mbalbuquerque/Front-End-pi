@@ -9,7 +9,19 @@ async function carregarAlertas() {
 
   try {
 
+    const escolha = await escolherVeiculo();
+    montarSeletorVeiculo(escolha);
+
+    if (!escolha.veiculo) {
+      marcarConexao(true);
+      conteudo.innerHTML = SEM_VEICULO;
+      return;
+    }
+
+    const { veiculo, faixa } = escolha;
+
     const leituras = await buscarLeituras({
+      deviceId: veiculo.deviceId,
       horas: horasAlertas,
       status: ["ATENCAO", "CRITICO"],
       limite: 500
@@ -21,9 +33,15 @@ async function carregarAlertas() {
     const criticas = ocorrencias.filter(o => o.status === "CRITICO").length;
     const periodo = horasAlertas === 24 ? "nas últimas 24 h" : "nos últimos 7 dias";
 
-    const pico = leituras.length
-      ? Math.max(...leituras.map(l => l.temperatura))
-      : null;
+    // Pico = a leitura mais distante da faixa normal (calor ou frio demais).
+    const distancia = l => faixa.min != null && l.temperatura < faixa.min
+      ? faixa.min - l.temperatura
+      : l.temperatura - faixa.max;
+
+    const leituraPico = leituras.reduce(
+      (maior, l) => (!maior || distancia(l) > distancia(maior) ? l : maior), null);
+
+    const pico = leituraPico ? leituraPico.temperatura : null;
 
     const ultima = ocorrencias[0];
 
@@ -41,12 +59,12 @@ async function carregarAlertas() {
         <article class="card">
           <span>Críticas</span>
           <strong class="${criticas ? "critico" : ""}">${criticas}</strong>
-          <small>acima de ${CONFIG.TEMP_ATENCAO_MAX} °C</small>
+          <small>${descreverCritico(faixa)}</small>
         </article>
 
         <article class="card">
           <span>Pico registrado</span>
-          <strong class="${pico > CONFIG.TEMP_ATENCAO_MAX ? "critico" : pico ? "atencao" : ""}">${formatarTemp(pico)}</strong>
+          <strong class="${leituraPico ? STATUS_INFO[leituraPico.status].classe : ""}">${formatarTemp(pico)}</strong>
           <small>maior temperatura fora da faixa</small>
         </article>
 
@@ -58,12 +76,12 @@ async function carregarAlertas() {
       </section>
 
       <article class="panel">
-        <h2>Ocorrências de temperatura</h2>
-        <p>Leituras seguidas fora da faixa normal viram uma ocorrência.</p>
+        <h2>Ocorrências de temperatura · ${texto(veiculo.id)}</h2>
+        <p>Leituras seguidas fora da faixa normal viram uma ocorrência. Faixa normal da carga: ${descreverNormal(faixa)}.</p>
         ${ocorrencias.length ? tabelaOcorrencias(ocorrencias) : `
           <div class="estado">
             <strong>Nenhum alerta ${periodo}.</strong>
-            A carga ficou dentro da faixa normal (até ${CONFIG.TEMP_NORMAL_MAX} °C).
+            A carga ficou dentro da faixa normal (${descreverNormal(faixa)}).
           </div>`}
       </article>
 

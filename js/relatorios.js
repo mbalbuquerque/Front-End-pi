@@ -5,6 +5,7 @@ const LIMITE_RELATORIO = 500;
 
 let horasRelatorio = 24;
 let leiturasRelatorio = [];
+let veiculoRelatorio = null;
 
 
 async function carregarRelatorio() {
@@ -13,7 +14,20 @@ async function carregarRelatorio() {
 
   try {
 
+    const escolha = await escolherVeiculo();
+    montarSeletorVeiculo(escolha);
+
+    if (!escolha.veiculo) {
+      marcarConexao(true);
+      conteudo.innerHTML = SEM_VEICULO;
+      return;
+    }
+
+    const { veiculo, faixa } = escolha;
+    veiculoRelatorio = veiculo;
+
     leiturasRelatorio = await buscarLeituras({
+      deviceId: veiculo.deviceId,
       horas: horasRelatorio,
       limite: LIMITE_RELATORIO
     });
@@ -70,13 +84,13 @@ async function carregarRelatorio() {
         <article class="card">
           <span>Críticas</span>
           <strong class="${r.critico ? "critico" : ""}">${r.critico}</strong>
-          <small>acima de ${CONFIG.TEMP_ATENCAO_MAX} °C</small>
+          <small>${descreverCritico(faixa)}</small>
         </article>
       </section>
 
       <article class="panel">
-        <h2>Temperatura no período</h2>
-        <p>A faixa azul é a faixa normal da carga (até ${CONFIG.TEMP_NORMAL_MAX} °C).</p>
+        <h2>Temperatura no período · ${texto(veiculo.id)}</h2>
+        <p>A faixa azul é a faixa normal da carga (${descreverNormal(faixa)}).</p>
         <div id="graficoRelatorio"></div>
       </article>
 
@@ -92,7 +106,8 @@ async function carregarRelatorio() {
 
     desenharGrafico(
       document.getElementById("graficoRelatorio"),
-      leiturasRelatorio
+      leiturasRelatorio,
+      { faixa }
     );
 
     document
@@ -178,7 +193,7 @@ function baixarCsv() {
 
   const link = document.createElement("a");
   link.href = URL.createObjectURL(arquivo);
-  link.download = `coldtrack-${CONFIG.DEVICE_ID}-${horasRelatorio}h.csv`;
+  link.download = `coldtrack-${veiculoRelatorio.id}-${horasRelatorio}h.csv`;
   link.click();
 
   URL.revokeObjectURL(link.href);
