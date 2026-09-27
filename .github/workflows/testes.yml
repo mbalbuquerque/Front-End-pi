@@ -1,0 +1,31 @@
+name: Testes
+
+# Roda a cada push e pull request: confere a sintaxe de todos os scripts.
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sintaxe:
+    name: Sintaxe JavaScript
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Conferir scripts
+        run: for f in js/*.js sw.js; do node --check "$f"; done
+
+      - name: Conferir páginas referenciadas pelo service worker
+        run: |
+          grep -o '"\./[^"]*"' sw.js | tr -d '"' | while read arquivo; do
+            [ "$arquivo" = "./" ] && continue
+            test -f "$arquivo" || { echo "falta $arquivo"; exit 1; }
+          done
