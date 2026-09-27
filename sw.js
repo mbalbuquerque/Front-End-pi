@@ -1,4 +1,4 @@
-const CACHE_NAME = "coldtrack-v5";
+const CACHE_NAME = "coldtrack-v6";
 
 const APP_SHELL = [
   "./",
@@ -68,9 +68,6 @@ self.addEventListener("fetch", event => {
 
   // Não armazenamos as APIs de telemetria no cache.
   if (
-    event.request.url.includes(
-      "api.thingspeak.com"
-    ) ||
     event.request.url.includes(
       ".azurewebsites.net"
     )

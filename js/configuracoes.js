@@ -91,15 +91,15 @@ async function carregarConfiguracoes() {
       <div class="campos section-gap">
         <div>
           <span>Fonte</span>
-          <strong>${CONFIG.DATA_SOURCE === "azure" ? "Azure (Function + Cosmos DB)" : "ThingSpeak"}</strong>
+          <strong>Azure (Function + Cosmos DB)</strong>
         </div>
         <div>
           <span>Atualização do painel</span>
           <strong>a cada ${CONFIG.UPDATE_INTERVAL / 1000} s</strong>
         </div>
         <div>
-          <span>Reserva</span>
-          <strong>ThingSpeak, canal ${texto(CONFIG.THINGSPEAK_CHANNEL_ID)}</strong>
+          <span>Região</span>
+          <strong>Brazil South (São Paulo)</strong>
         </div>
         <div>
           <span>Acesso</span>

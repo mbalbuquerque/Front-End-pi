@@ -1,27 +1,6 @@
-// Cada fonte devolve os registros no mesmo formato do ThingSpeak
+// Converte as leituras da API para o formato usado pelo dashboard
 // (created_at, field1 = temperatura, field2 = umidade, field3 = RSSI),
-// do mais antigo para o mais recente. Assim o restante do dashboard
-// não depende de onde os dados vêm.
-
-async function buscarThingSpeak() {
-
-  const url =
-    `https://api.thingspeak.com/channels/${CONFIG.THINGSPEAK_CHANNEL_ID}/feeds.json?results=${CONFIG.HISTORY_SIZE}`;
-
-  const response = await fetch(url);
-
-  if (!response.ok) {
-    throw new Error(
-      `HTTP ${response.status}`
-    );
-  }
-
-  const data = await response.json();
-
-  return data.feeds || [];
-
-}
-
+// do mais antigo para o mais recente.
 
 async function buscarAzure() {
 
@@ -53,27 +32,16 @@ async function buscarAzure() {
 }
 
 
-function nomeFonte() {
-
-  return CONFIG.DATA_SOURCE === "azure"
-    ? "Azure"
-    : "ThingSpeak";
-
-}
-
-
 async function carregarDados() {
 
   try {
 
     const feeds =
-      CONFIG.DATA_SOURCE === "azure"
-        ? await buscarAzure()
-        : await buscarThingSpeak();
+      await buscarAzure();
 
     if (feeds.length === 0) {
       throw new Error(
-        "Canal sem telemetria."
+        "Sensor sem telemetria."
       );
     }
 
@@ -84,17 +52,14 @@ async function carregarDados() {
 
     atualizarHistorico(feeds);
 
-    document.getElementById(
-      "fonteDados"
-    ).textContent =
-      `${nomeFonte()} conectado`;
+    marcarConexao(true);
 
   }
 
   catch (erro) {
 
     console.error(
-      `Erro ao consultar ${CONFIG.DATA_SOURCE}:`,
+      "Erro ao consultar o Azure:",
       erro
     );
 
@@ -103,10 +68,7 @@ async function carregarDados() {
     ).textContent =
       "Não foi possível carregar a telemetria.";
 
-    document.getElementById(
-      "fonteDados"
-    ).textContent =
-      `Sem conexão com ${nomeFonte()}`;
+    marcarConexao(false);
 
   }
 

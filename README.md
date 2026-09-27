@@ -4,7 +4,7 @@
 
 O **ColdTrack Control** é a interface web do projeto **ColdTrack Edge**, desenvolvido como parte do **Projeto Integrador – 4º Período**.
 
-A aplicação permite visualizar dados de **temperatura, umidade relativa e qualidade do sinal Wi-Fi** coletados por um nó sensor baseado em **ESP32-C3** e enviados para a plataforma **ThingSpeak**.
+A aplicação permite visualizar dados de **temperatura, umidade relativa e qualidade do sinal Wi-Fi** coletados por um nó sensor baseado em **ESP32-C3** e enviados para a nuvem **Microsoft Azure**.
 
 O projeto tem como cenário de aplicação o **monitoramento da cadeia fria durante o transporte refrigerado de mercadorias**, especialmente produtos sensíveis às condições ambientais.
 
@@ -23,11 +23,13 @@ Sensor DHT11 / DHT22
         ↓
  Processamento Edge
         ↓
-       Wi-Fi
+  Wi-Fi (HTTPS + JSON)
         ↓
-    ThingSpeak
+ Azure Functions (validação)
         ↓
-     API REST
+ Azure Cosmos DB
+        ↓
+ API REST de leitura
         ↓
  ColdTrack Control
         ↓
@@ -46,7 +48,7 @@ A versão atual do ColdTrack Control possui:
 - 💧 Monitoramento da umidade relativa;
 - 📶 Monitoramento do RSSI Wi-Fi;
 - 🚦 Classificação do estado da carga;
-- ☁️ Integração com ThingSpeak;
+- ☁️ Integração com o Azure;
 - 🔄 Atualização automática da telemetria;
 - ⚠️ Indicação de condições de atenção e críticas;
 - 📱 Layout responsivo;
@@ -69,23 +71,9 @@ Para fins de demonstração do protótipo, foram definidos os seguintes limites:
 
 ---
 
-## ☁️ Integração com ThingSpeak
-
-A telemetria é armazenada em um canal ThingSpeak.
-
-Os campos utilizados são:
-
-| Field | Informação |
-|---|---|
-| Field 1 | Temperatura (°C) |
-| Field 2 | Umidade Relativa (%) |
-| Field 3 | RSSI Wi-Fi (dBm) |
-
-O front-end consulta a API do ThingSpeak periodicamente e atualiza automaticamente o dashboard.
-
 ## ☁️ Integração com Azure
 
-Com `DATA_SOURCE: "azure"` (padrão), o dashboard lê as leituras gravadas no Azure Cosmos DB pela rota pública de consulta da Azure Function:
+O dashboard lê as leituras gravadas no Azure Cosmos DB pela rota pública de consulta da Azure Function:
 
 ```text
 GET https://func-coldtrack-7319.azurewebsites.net/api/leituras?deviceId=coldtrack-01&limite=20
@@ -136,7 +124,7 @@ Frota, viagens e perfis de carga do piloto ficam em `js/config.js` até existir 
 
 ### Cloud
 
-- ThingSpeak
+- Microsoft Azure (Functions, Cosmos DB, Storage)
 - API REST
 
 ### Front-End
@@ -180,9 +168,7 @@ Identidade visual, layout, cards, estados da carga e responsividade.
 
 Configurações públicas da aplicação, como:
 
-- fonte da telemetria (`DATA_SOURCE`: `"azure"` ou `"thingspeak"`);
 - endereço da API de leitura no Azure e ID do dispositivo;
-- ID do canal ThingSpeak;
 - intervalo de atualização;
 - limites demonstrativos de temperatura.
 
@@ -190,7 +176,7 @@ Configurações públicas da aplicação, como:
 
 Responsável por:
 
-- consultar o ThingSpeak;
+- consultar a API do Azure;
 - processar a telemetria;
 - atualizar os indicadores;
 - classificar a temperatura;
@@ -243,7 +229,7 @@ Credenciais privadas não devem ser armazenadas no front-end.
 
 O dashboard utiliza somente informações necessárias para leitura dos dados públicos.
 
-Chaves privadas de escrita do ThingSpeak, senhas Wi-Fi e outras credenciais do dispositivo Edge **não devem ser adicionadas a este repositório**.
+Chaves da API de gravação, senhas Wi-Fi e outras credenciais do dispositivo Edge **não devem ser adicionadas a este repositório**.
 
 No firmware do ESP32, essas informações devem permanecer em arquivo separado e ignorado pelo Git.
 
