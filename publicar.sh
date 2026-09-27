@@ -17,9 +17,13 @@ PASTA="$(mktemp -d)"
 git archive HEAD | tar -x -C "$PASTA"
 rm -rf "$PASTA/.vscode" "$PASTA/.github" "$PASTA/README.md" "$PASTA/publicar.sh"
 
+# No Git Bash do Windows, o Azure CLI precisa do caminho no formato do Windows.
+ORIGEM="$PASTA"
+command -v cygpath >/dev/null && ORIGEM="$(cygpath -w "$PASTA")"
+
 CHAVE="$(az storage account keys list -n "$CONTA" -g "$GRUPO" --query "[0].value" -o tsv)"
 az storage blob upload-batch --account-name "$CONTA" --account-key "$CHAVE" \
-  -s "$PASTA" -d '$web' --overwrite -o none
+  -s "$ORIGEM" -d '$web' --overwrite -o none
 
 rm -rf "$PASTA"
 echo "Publicado em $(az storage account show -n "$CONTA" -g "$GRUPO" --query primaryEndpoints.web -o tsv)"
