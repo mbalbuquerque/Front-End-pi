@@ -53,10 +53,20 @@ async function carregarDados() {
     const feeds =
       await buscarAzure();
 
+    // Sensor que ainda não enviou nada não é falha de conexão.
     if (feeds.length === 0) {
-      throw new Error(
-        "Sensor sem telemetria."
-      );
+
+      marcarConexao(true);
+
+      document.getElementById("historico").innerHTML = `
+        <div class="estado">
+          <strong>O sensor ${texto(escolha.veiculo.deviceId)} ainda não enviou leituras.</strong>
+          Ligue o sensor e confira o Wi-Fi: a primeira leitura aparece em até 20 s.
+        </div>
+      `;
+
+      return;
+
     }
 
     const ultimo =

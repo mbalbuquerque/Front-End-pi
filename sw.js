@@ -1,4 +1,4 @@
-const CACHE_NAME = "coldtrack-v8";
+const CACHE_NAME = "coldtrack-v9";
 
 const APP_SHELL = [
   "./",
