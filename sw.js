@@ -1,9 +1,11 @@
-const CACHE_NAME = "coldtrack-v6";
+const CACHE_NAME = "coldtrack-v7";
 
 const APP_SHELL = [
   "./",
   "./index.html",
   "./dashboard.html",
+  "./login.html",
+  "./js/login.js",
   "./alertas.html",
   "./relatorios.html",
   "./veiculos.html",

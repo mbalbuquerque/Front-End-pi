@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Entrar · ColdTrack Control</title>
+
+  <meta name="theme-color" content="#0b1f33">
+  <meta name="description" content="ColdTrack Control - acesso ao painel de monitoramento da cadeia fria">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/telas.css">
+
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="assets/icons/icon-192.png">
+</head>
+
+<body class="pagina-login">
+
+  <main class="login">
+
+    <div class="brand login-marca">
+      <div class="brand-icon">❄</div>
+      <div>
+        <strong>ColdTrack</strong>
+        <span>CONTROL</span>
+      </div>
+    </div>
+
+    <form class="login-cartao" id="formLogin" novalidate>
+
+      <h1>Entrar no painel</h1>
+      <p>Acompanhe a temperatura da carga em tempo real.</p>
+
+      <label class="campo">
+        <span>E-mail</span>
+        <input type="email" name="email" autocomplete="username" required>
+      </label>
+
+      <label class="campo">
+        <span>Senha</span>
+        <input type="password" name="senha" autocomplete="current-password" required>
+      </label>
+
+      <button type="submit" class="botao botao-cheio" id="botaoEntrar">Entrar</button>
+
+      <p class="erro-form" id="erroLogin" role="alert" hidden></p>
+
+      <p class="login-ajuda">Sem acesso? Peça ao gestor da sua equipe para criar seu usuário.</p>
+
+    </form>
+
+  </main>
+
+  <script src="js/config.js"></script>
+  <script src="js/comum.js"></script>
+  <script src="js/login.js"></script>
+
+</body>
+</html>

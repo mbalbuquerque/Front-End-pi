@@ -95,6 +95,18 @@ az storage blob upload-batch --account-name stcoldtrackweb7319 -s <pasta-do-site
 
 O dashboard fica em `dashboard.html` (acessado pelo botão da página inicial).
 
+### Acesso
+
+Todas as telas do painel exigem login (`login.html` ou o formulário da página inicial). O token vale 8 horas.
+
+| perfil | pode |
+|---|---|
+| Operador logístico | ver dashboard, alertas, relatórios, veículos, viagens e configurações |
+| Gestor | tudo do operador + cadastrar e remover veículos, viagens e usuários |
+
+A API confere o perfil em cada chamada; esconder botões na tela é só conveniência.
+Não há cadastro aberto: o gestor cria os usuários em **Configurações → Usuários**.
+
 ### Telas
 
 | tela | o que mostra |
@@ -102,12 +114,13 @@ O dashboard fica em `dashboard.html` (acessado pelo botão da página inicial).
 | `dashboard.html` | leitura atual e gráfico dos últimos 30 min com a faixa normal e os limites |
 | `alertas.html` | ocorrências fora da faixa (leituras seguidas viram uma ocorrência), com duração e pico |
 | `relatorios.html` | resumo de 24 h ou 7 dias, gráfico, tabela de leituras e exportação em CSV |
-| `veiculos.html` | situação atual de cada veículo, com aviso de sensor sem sinal |
-| `viagens.html` | condição da carga do início ao fim de cada trajeto |
-| `configuracoes.html` | faixas de temperatura, dispositivo e fonte de dados (somente leitura) |
+| `veiculos.html` | situação atual de cada veículo, com aviso de sensor sem sinal; cadastro pelo gestor |
+| `viagens.html` | condição da carga do início ao fim de cada trajeto; registro e encerramento pelo gestor |
+| `configuracoes.html` | faixas de temperatura, dispositivo, fonte de dados e usuários (gestor) |
+| `login.html` | entrada no painel |
 
 Arquivos compartilhados: `js/comum.js` (menu, consulta à API, formatação), `js/grafico.js` (gráfico de temperatura) e `css/telas.css`.
-Frota, viagens e perfis de carga do piloto ficam em `js/config.js` até existir o cadastro com login.
+Veículos, viagens e usuários ficam no Azure Cosmos DB e são cadastrados pelo gestor. Perfis de carga ficam em `js/config.js`.
 
 ---
 

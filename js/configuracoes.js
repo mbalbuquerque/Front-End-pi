@@ -55,8 +55,8 @@ async function carregarConfiguracoes() {
 
       <div class="nota">
         Os perfis de manga e uva usam faixas de referência de pós-colheita e ainda precisam ser
-        validados com o produtor parceiro. <strong>Trocar a faixa pela tela</strong> depende do
-        login com perfis e de enviar a nova faixa ao sensor.
+        validados com o produtor. <strong>Trocar a faixa pela tela</strong> depende de enviar
+        a nova faixa ao sensor, previsto para a versão com conexão celular.
       </div>
     </article>
 
@@ -84,6 +84,8 @@ async function carregarConfiguracoes() {
       </div>
     </article>
 
+    ${ehGestor() ? '<article class="panel" id="painelUsuarios"><h2>Usuários</h2><p>Carregando…</p></article>' : ""}
+
     <article class="panel">
       <h2>Fonte de dados</h2>
       <p>De onde o painel lê a telemetria.</p>
@@ -103,7 +105,7 @@ async function carregarConfiguracoes() {
         </div>
         <div>
           <span>Acesso</span>
-          <strong>Leitura aberta · login com perfis planejado</strong>
+          <strong>Login com perfis: operador e gestor</strong>
         </div>
       </div>
     </article>
@@ -113,4 +115,103 @@ async function carregarConfiguracoes() {
 }
 
 
-carregarConfiguracoes();
+async function carregarUsuarios() {
+
+  const painel = document.getElementById("painelUsuarios");
+
+  if (!painel) {
+    return;
+  }
+
+  let usuarios = [];
+
+  try {
+    ({ usuarios } = await api("/usuarios"));
+  } catch (falha) {
+    painel.innerHTML = `<h2>Usuários</h2><p class="erro-form">${texto(falha.message)}</p>`;
+    return;
+  }
+
+  const eu = usuarioAtual()?.id;
+
+  const linhas = usuarios
+    .sort((a, b) => a.nome.localeCompare(b.nome))
+    .map(u => `
+      <tr>
+        <td><strong>${texto(u.nome)}</strong></td>
+        <td>${texto(u.id)}</td>
+        <td>${u.perfil === "gestor" ? "Gestor" : "Operador logístico"}</td>
+        <td>${u.id === eu
+          ? "você"
+          : `<button type="button" class="botao perigo" data-remover-usuario="${texto(u.id)}">Remover</button>`}</td>
+      </tr>
+    `).join("");
+
+  painel.innerHTML = `
+    <h2>Usuários</h2>
+    <p>Quem acessa o painel. Operador acompanha a carga; gestor também cadastra veículos, viagens e usuários.</p>
+
+    <div class="tabela-wrap">
+      <table class="tabela">
+        <thead><tr><th>Nome</th><th>E-mail</th><th>Perfil</th><th></th></tr></thead>
+        <tbody>${linhas}</tbody>
+      </table>
+    </div>
+
+    <form id="formUsuario" class="form-grade" novalidate>
+      <label class="campo"><span>Nome</span><input name="nome" required></label>
+      <label class="campo"><span>E-mail</span><input name="email" type="email" required></label>
+      <label class="campo"><span>Perfil</span>
+        <select name="perfil">
+          <option value="operador">Operador logístico</option>
+          <option value="gestor">Gestor</option>
+        </select>
+      </label>
+      <label class="campo"><span>Senha inicial (mín. 8)</span><input name="senha" type="password" autocomplete="new-password" required></label>
+      <button type="submit" class="botao">Criar usuário</button>
+    </form>
+    <p class="erro-form" id="erroUsuario" role="alert" hidden></p>
+  `;
+
+  document.getElementById("formUsuario").addEventListener("submit", async evento => {
+
+    evento.preventDefault();
+
+    const erro = document.getElementById("erroUsuario");
+    erro.hidden = true;
+
+    try {
+      await api("/usuarios", { metodo: "POST", corpo: Object.fromEntries(new FormData(evento.target)) });
+      carregarUsuarios();
+    } catch (falha) {
+      erro.textContent = falha.message;
+      erro.hidden = false;
+    }
+
+  });
+
+  painel.querySelectorAll("[data-remover-usuario]").forEach(botao => {
+
+    botao.addEventListener("click", async () => {
+
+      const id = botao.dataset.removerUsuario;
+
+      if (!confirm(`Remover o acesso de ${id}?`)) {
+        return;
+      }
+
+      try {
+        await api(`/usuarios/${encodeURIComponent(id)}`, { metodo: "DELETE" });
+        carregarUsuarios();
+      } catch (falha) {
+        alert(falha.message);
+      }
+
+    });
+
+  });
+
+}
+
+
+carregarConfiguracoes().then(carregarUsuarios);

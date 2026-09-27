@@ -440,6 +440,191 @@ nav a:focus-visible {
 }
 
 
+/* FORMULÁRIOS -------------------------------------------- */
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.campo span {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.campo input,
+.campo select {
+  font: inherit;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text);
+
+  height: 44px;
+  padding: 0 12px;
+
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+.campo input:focus-visible,
+.campo select:focus-visible {
+  outline: 3px solid var(--blue);
+  outline-offset: 1px;
+}
+
+details.panel summary {
+  cursor: pointer;
+}
+
+details.panel summary h2 {
+  display: inline;
+}
+
+details.panel[open] summary {
+  margin-bottom: 4px;
+}
+
+.form-grade {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 14px 16px;
+  align-items: end;
+
+  margin-top: 16px;
+}
+
+.erro-form {
+  color: #a82424;
+  font-size: 13px;
+  font-weight: 600;
+  margin-top: 10px;
+}
+
+.botao.secundario {
+  background: white;
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+
+.botao.perigo {
+  background: transparent;
+  color: #a82424;
+  padding: 6px 10px;
+}
+
+.botao-cheio {
+  width: 100%;
+  height: 44px;
+  font-size: 15px;
+}
+
+.botao.secundario:focus-visible,
+.botao.perigo:focus-visible,
+.sair:focus-visible {
+  outline: 3px solid var(--blue);
+  outline-offset: 2px;
+}
+
+.acoes-item {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+
+/* USUÁRIO NO MENU ---------------------------------------- */
+
+.sidebar-footer {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
+}
+
+.usuario-menu strong {
+  display: block;
+  color: white;
+  font-size: 14px;
+}
+
+.usuario-menu span {
+  color: #b9c6d1;
+  font-size: 12px;
+}
+
+.sair {
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+
+  color: white;
+  background: #17334e;
+
+  border: 0;
+  border-radius: 8px;
+  padding: 8px 12px;
+
+  cursor: pointer;
+}
+
+
+/* LOGIN -------------------------------------------------- */
+
+.pagina-login {
+  display: grid;
+  place-items: center;
+  padding: 24px 16px;
+}
+
+.login {
+  width: 100%;
+  max-width: 400px;
+}
+
+.login-marca {
+  justify-content: center;
+  margin-bottom: 24px;
+}
+
+.login-marca .brand-icon {
+  color: white;
+}
+
+.login-marca strong {
+  color: var(--navy);
+}
+
+.login-marca span {
+  color: var(--muted);
+}
+
+.login-cartao {
+  display: grid;
+  gap: 16px;
+
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+
+  padding: 28px 24px;
+}
+
+.login-cartao h1 {
+  font-size: 22px;
+}
+
+.login-cartao > p:not(.erro-form) {
+  color: var(--muted);
+  margin-top: -10px;
+}
+
+.login-ajuda {
+  font-size: 13px;
+}
+
+
 /* RESPONSIVO --------------------------------------------- */
 
 @media (max-width: 1050px) {
@@ -490,7 +675,10 @@ nav a:focus-visible {
   }
 
   .sidebar-footer {
-    display: none;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 12px;
   }
 
   body {

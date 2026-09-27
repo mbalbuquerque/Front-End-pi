@@ -4,21 +4,13 @@
 
 async function buscarAzure() {
 
-  const url =
-    `${CONFIG.AZURE_API_URL}?deviceId=${encodeURIComponent(CONFIG.DEVICE_ID)}&limite=${CONFIG.HISTORY_SIZE}`;
-
-  const response = await fetch(url);
-
-  if (!response.ok) {
-    throw new Error(
-      `HTTP ${response.status}`
-    );
-  }
-
-  const data = await response.json();
+  const leituras =
+    await buscarLeituras({
+      limite: CONFIG.HISTORY_SIZE
+    });
 
   // A API devolve da mais recente para a mais antiga.
-  return (data.leituras || [])
+  return leituras
     .slice()
     .reverse()
     .map(leitura => ({

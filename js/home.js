@@ -161,16 +161,60 @@ window.addEventListener("scroll", () => {
 
 
 /* ========================================
-   LOGIN DEMONSTRATIVO
+   LOGIN
 ======================================== */
 
 const loginForm = document.getElementById("loginForm");
 
 
-loginForm.addEventListener("submit", event => {
+const loginAviso = loginForm.querySelector("small");
+
+
+loginForm.addEventListener("submit", async event => {
 
   event.preventDefault();
 
-  window.location.href = "dashboard.html";
+  const email = document.getElementById("email").value.trim();
+  const senha = document.getElementById("password").value;
+  const botao = loginForm.querySelector("button[type=submit]");
+
+  if (!email || !senha) {
+    loginAviso.textContent = "Informe e-mail e senha.";
+    return;
+  }
+
+  botao.disabled = true;
+
+  try {
+
+    const response = await fetch(`${CONFIG.API_URL}/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, senha })
+    });
+
+    const dados = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      loginAviso.textContent = (dados.erros || ["Não foi possível entrar."]).join(" ");
+      return;
+    }
+
+    salvarSessao(dados.token, dados.usuario);
+    window.location.href = "dashboard.html";
+
+  }
+
+  catch (falha) {
+
+    loginAviso.textContent = "Sem conexão com o servidor. Confira a internet e tente de novo.";
+
+  }
+
+  finally {
+
+    botao.disabled = false;
+
+  }
 
 });

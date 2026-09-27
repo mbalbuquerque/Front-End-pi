@@ -2,6 +2,118 @@
 
 
 // ---------------------------------------------------------
+// SESSÃO (login com perfis)
+// ---------------------------------------------------------
+
+const CHAVE_SESSAO = "coldtrack.sessao";
+
+
+function lerSessao() {
+
+  try {
+
+    const sessao = JSON.parse(localStorage.getItem(CHAVE_SESSAO) || "null");
+
+    // O token vence em 8 h; sessão vencida é descartada antes de usar.
+    if (!sessao || !sessao.token || sessao.expiraEm <= Date.now()) {
+      return null;
+    }
+
+    return sessao;
+
+  } catch (erro) {
+    return null;
+  }
+
+}
+
+
+function salvarSessao(token, usuario) {
+
+  // exp do token (segundos) vira milissegundos para comparar com Date.now().
+  const carga = JSON.parse(atob(token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/")));
+
+  try {
+    localStorage.setItem(CHAVE_SESSAO, JSON.stringify({
+      token,
+      usuario,
+      expiraEm: carga.exp * 1000
+    }));
+  } catch (erro) {
+    // Navegador sem armazenamento: o login vale só nesta página.
+  }
+
+}
+
+
+function sair() {
+
+  try {
+    localStorage.removeItem(CHAVE_SESSAO);
+  } catch (erro) {
+    // nada a limpar
+  }
+
+  location.href = "login.html";
+
+}
+
+
+function usuarioAtual() {
+
+  const sessao = lerSessao();
+  return sessao ? sessao.usuario : null;
+
+}
+
+
+function ehGestor() {
+
+  return usuarioAtual()?.perfil === "gestor";
+
+}
+
+
+// Toda chamada à API passa por aqui: leva o token e trata sessão vencida.
+async function api(caminho, { metodo = "GET", corpo } = {}) {
+
+  const sessao = lerSessao();
+
+  const response = await fetch(`${CONFIG.API_URL}${caminho}`, {
+    method: metodo,
+    headers: {
+      ...(corpo !== undefined ? { "Content-Type": "application/json" } : {}),
+      ...(sessao ? { Authorization: `Bearer ${sessao.token}` } : {})
+    },
+    body: corpo !== undefined ? JSON.stringify(corpo) : undefined
+  });
+
+  if (response.status === 401) {
+    sair();
+    throw new Error("Sessão encerrada.");
+  }
+
+  const dados = response.status === 204 ? {} : await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    const erro = new Error((dados.erros || [`HTTP ${response.status}`]).join(" · "));
+    erro.status = response.status;
+    throw erro;
+  }
+
+  return dados;
+
+}
+
+
+// Telas do painel (as que têm o menu lateral) exigem login.
+// Página inicial e tela de login são abertas.
+if (document.getElementById("sidebar") && !lerSessao()) {
+  location.replace("login.html");
+}
+
+
+// ---------------------------------------------------------
 // MENU LATERAL
 // ---------------------------------------------------------
 
@@ -46,10 +158,15 @@ function montarMenu() {
     <nav aria-label="Menu principal">${links}</nav>
 
     <div class="sidebar-footer">
-      <span class="online-dot"></span>
-      Sistema Online
+      <div class="usuario-menu">
+        <strong>${texto(usuarioAtual()?.nome || "")}</strong>
+        <span>${usuarioAtual()?.perfil === "gestor" ? "Gestor" : "Operador logístico"}</span>
+      </div>
+      <button type="button" class="sair" id="botaoSair">Sair</button>
     </div>
   `;
+
+  document.getElementById("botaoSair").addEventListener("click", sair);
 
 }
 
@@ -73,13 +190,7 @@ async function buscarLeituras({ deviceId = CONFIG.DEVICE_ID, limite = 50, horas,
     params.set("status", status.join(","));
   }
 
-  const response = await fetch(`${CONFIG.AZURE_API_URL}?${params}`);
-
-  if (!response.ok) {
-    throw new Error(`HTTP ${response.status}`);
-  }
-
-  const data = await response.json();
+  const data = await api(`/leituras?${params}`);
 
   // A API devolve da mais recente para a mais antiga.
   return data.leituras || [];
