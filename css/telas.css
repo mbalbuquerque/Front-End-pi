@@ -844,6 +844,80 @@ a.botao {
   border: 2px solid var(--blue-text);
 }
 
+/* Texto de apoio embaixo do selo, na mesma célula. */
+.linha-apoio {
+  display: block;
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* Selo no meio de uma frase (painel do cabo). */
+.panel p .status {
+  margin: 0 8px 0 0;
+  padding: 5px 10px;
+  font-size: 12px;
+}
+
+#painelCabo p + p {
+  margin-top: 10px;
+}
+
+#painelCabo .estado {
+  margin-top: 12px;
+}
+
+.opcao {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+
+  margin-top: 14px;
+
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.opcao input {
+  width: 18px;
+  height: 18px;
+  margin-top: 1px;
+  accent-color: var(--blue-text);
+}
+
+/* Ajuda "Como conectar um sensor": texto de leitura, não de apoio. */
+.ajuda h3 {
+  font-size: 15px;
+  font-weight: 700;
+  margin: 20px 0 8px;
+}
+
+.passos {
+  margin: 12px 0 0 20px;
+  font-size: 15px;
+  line-height: 1.4;
+}
+
+.passos li + li {
+  margin-top: 6px;
+}
+
+.problemas dt {
+  font-size: 15px;
+  font-weight: 700;
+  margin-top: 12px;
+  scroll-margin-top: 16px;
+}
+
+.problemas dd {
+  font-size: 15px;
+  line-height: 1.4;
+  margin: 4px 0 0;
+}
+
 .trecho-codigo {
   margin: 14px 0;
   padding: 14px 16px;
