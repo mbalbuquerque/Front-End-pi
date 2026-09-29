@@ -387,6 +387,11 @@ function mostrarFormularioRede(mensagemErro, rede) {
       <button type="submit" class="botao">${situacao === "trocar-rede" ? "Trocar rede" : "Conectar sensor"}</button>
     </form>
 
+    <label class="opcao">
+      <input type="checkbox" id="mostrarSenha">
+      Mostrar a senha (para conferir o que foi digitado)
+    </label>
+
     ${situacao === "trocar-rede" ? `
       <label class="opcao">
         <input type="checkbox" form="formCabo" name="novaChave">
@@ -409,6 +414,10 @@ function mostrarFormularioRede(mensagemErro, rede) {
   document.getElementById("cancelarCabo").addEventListener("click", async () => {
     await encerrarCabo();
     mostrarInicioCabo();
+  });
+
+  document.getElementById("mostrarSenha").addEventListener("change", evento => {
+    document.querySelector("#formCabo [name=senha]").type = evento.target.checked ? "text" : "password";
   });
 
   document.querySelector("#formCabo [name=ssid]").focus();
