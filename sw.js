@@ -1,8 +1,33 @@
-const CACHE_NAME = "coldtrack-v1";
+const CACHE_NAME = "coldtrack-v10";
 
 const APP_SHELL = [
   "./",
   "./index.html",
+  "./dashboard.html",
+  "./login.html",
+  "./js/login.js",
+  "./alertas.html",
+  "./relatorios.html",
+  "./veiculos.html",
+  "./viagens.html",
+  "./configuracoes.html",
+  "./sensores.html",
+  "./cadastro.html",
+  "./css/telas.css",
+  "./js/comum.js",
+  "./js/grafico.js",
+  "./js/alertas.js",
+  "./js/relatorios.js",
+  "./js/veiculos.js",
+  "./js/viagens.js",
+  "./js/configuracoes.js",
+  "./js/serial.js",
+  "./js/sensores.js",
+  "./js/cadastro.js",
+  "./js/risco.js",
+  "./js/vendor/qrcode.js",
+  "./css/home.css",
+  "./js/home.js",
   "./css/style.css",
   "./js/config.js",
   "./js/app.js",
@@ -50,24 +75,40 @@ self.addEventListener("activate", event => {
 // Interceptação das requisições
 self.addEventListener("fetch", event => {
 
-  // Não armazenamos a API do ThingSpeak no cache.
+  // Não armazenamos as APIs de telemetria no cache.
   if (
     event.request.url.includes(
-      "api.thingspeak.com"
+      ".azurewebsites.net"
     )
   ) {
     return;
   }
 
+  // Só GET entra no cache.
+  if (event.request.method !== "GET") {
+    return;
+  }
+
+  // Rede primeiro: cada publicação chega na hora.
+  // Sem internet, usa a última cópia guardada.
   event.respondWith(
 
-    caches.match(event.request)
+    fetch(event.request)
       .then(response => {
 
-        return response ||
-          fetch(event.request);
+        if (response.ok) {
+
+          const copia = response.clone();
+
+          caches.open(CACHE_NAME)
+            .then(cache => cache.put(event.request, copia));
+
+        }
+
+        return response;
 
       })
+      .catch(() => caches.match(event.request))
 
   );
 

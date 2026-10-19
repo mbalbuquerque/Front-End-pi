@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Cadastrar empresa · ColdTrack Control</title>
+
+  <meta name="theme-color" content="#0b1f33">
+  <meta name="description" content="ColdTrack Control - cadastro de transportadora no painel de monitoramento">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/telas.css">
+
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="assets/icons/icon-192.png">
+</head>
+
+<body class="pagina-login">
+
+  <main class="login">
+
+    <div class="brand login-marca">
+      <div class="brand-icon">❄</div>
+      <div>
+        <strong>ColdTrack</strong>
+        <span>CONTROL</span>
+      </div>
+    </div>
+
+    <form class="login-cartao" id="formCadastro" novalidate>
+
+      <h1>Cadastrar empresa</h1>
+      <p>Crie o acesso da sua transportadora. Você entra como gestor e depois registra sensores, veículos e a equipe.</p>
+
+      <label class="campo">
+        <span>Nome da empresa</span>
+        <input name="empresa" autocomplete="organization" required>
+      </label>
+
+      <label class="campo">
+        <span>Seu nome</span>
+        <input name="nome" autocomplete="name" required>
+      </label>
+
+      <label class="campo">
+        <span>E-mail</span>
+        <input type="email" name="email" autocomplete="username" required>
+      </label>
+
+      <label class="campo">
+        <span>Senha (mínimo 8 caracteres)</span>
+        <input type="password" name="senha" autocomplete="new-password" minlength="8" required>
+      </label>
+
+      <button type="submit" class="botao botao-cheio" id="botaoCadastrar">Cadastrar empresa</button>
+
+      <p class="erro-form" id="erroCadastro" role="alert" hidden></p>
+
+      <p class="login-ajuda">Já tem acesso? <a href="login.html">Entrar</a>.</p>
+
+    </form>
+
+  </main>
+
+  <script src="js/config.js"></script>
+  <script src="js/comum.js"></script>
+  <script src="js/cadastro.js"></script>
+
+</body>
+</html>
