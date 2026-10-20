@@ -53,14 +53,17 @@ async function carregarDados() {
 
 function atualizarDashboard(feed) {
 
-  const temperatura =
-    parseFloat(feed.field1);
+  const temperatura = Number.parseFloat(feed.field1);
+const umidade = Number.parseFloat(feed.field2);
+const rssi = Number.parseInt(feed.field3, 10);
 
-  const umidade =
-    parseFloat(feed.field2);
-
-  const rssi =
-    parseInt(feed.field3);
+if (
+  !Number.isFinite(temperatura) ||
+  !Number.isFinite(umidade) ||
+  !Number.isFinite(rssi)
+) {
+  throw new Error("Telemetria incompleta ou inválida.");
+}
 
 
   document.getElementById(
