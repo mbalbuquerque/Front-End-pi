@@ -1,0 +1,156 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Gestão Logística | ColdTrack Control</title>
+  <link rel="stylesheet" href="css/logistica.css">
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar">
+      <h2>❄ ColdTrack</h2>
+      <p>CONTROL</p>
+
+      <nav aria-label="Menu principal">
+        <a href="dashboard.html">Dashboard</a>
+        <a href="logistica.html" class="active">Gestão Logística</a>
+        <a href="usuarios.html">Usuários</a>
+        <a href="auditoria.html">Auditoria</a>
+        <a href="index.html">Página inicial</a>
+      </nav>
+
+      <small>Projeto Integrador · 2026</small>
+    </aside>
+
+    <main class="main">
+      <header class="header">
+        <div>
+          <span class="eyebrow">CONTROLE OPERACIONAL</span>
+          <h1>Gestão Logística</h1>
+          <p>Gerenciamento de cargas, rotas e sensores.</p>
+        </div>
+        <button id="btnNovaCarga" class="btn-primary">
+          + Nova carga
+        </button>
+      </header>
+
+      <div class="notice">
+        Ambiente demonstrativo. Os dados não são enviados à API
+        e não representam operações reais.
+      </div>
+
+      <section class="metrics" aria-label="Indicadores">
+        <article class="metric">
+          <span>Total de cargas</span>
+          <strong id="totalCargas">0</strong>
+        </article>
+        <article class="metric">
+          <span>Em transporte</span>
+          <strong id="cargasTransporte">0</strong>
+        </article>
+        <article class="metric">
+          <span>Em atenção</span>
+          <strong id="cargasAtencao">0</strong>
+        </article>
+        <article class="metric">
+          <span>Sensores vinculados</span>
+          <strong id="totalSensores">0</strong>
+        </article>
+      </section>
+
+      <section class="panel">
+        <div class="panel-heading">
+          <h2>Cargas cadastradas</h2>
+          <div class="filters">
+            <input id="pesquisaCarga" type="search"
+              placeholder="Pesquisar carga, produto ou rota"
+              aria-label="Pesquisar cargas">
+
+            <select id="filtroStatus" aria-label="Filtrar por status">
+              <option value="">Todos os status</option>
+              <option value="Em transporte">Em transporte</option>
+              <option value="Atenção">Atenção</option>
+              <option value="Entregue">Entregue</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Carga</th>
+                <th>Produto</th>
+                <th>Origem / Destino</th>
+                <th>Sensor</th>
+                <th>Temperatura</th>
+                <th>Status</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="tabelaCargas"></tbody>
+          </table>
+        </div>
+
+        <p id="semResultados" class="empty" hidden>
+          Nenhuma carga encontrada.
+        </p>
+      </section>
+
+      <dialog id="modalCarga">
+        <form id="formCarga">
+          <div class="modal-heading">
+            <h2>Nova carga</h2>
+            <button type="button" id="fecharModal"
+              class="btn-secondary">Fechar</button>
+          </div>
+
+          <label for="produto">Produto</label>
+          <input id="produto" name="produto" required maxlength="80">
+
+          <label for="origem">Origem</label>
+          <input id="origem" name="origem" required maxlength="100">
+
+          <label for="destino">Destino</label>
+          <input id="destino" name="destino" required maxlength="100">
+
+          <label for="sensor">Identificação do sensor</label>
+          <input id="sensor" name="sensor" required maxlength="50">
+
+          <div class="form-grid">
+            <div>
+              <label for="tempMin">Temperatura mínima (°C)</label>
+              <input id="tempMin" name="tempMin"
+                type="number" step="0.1" required>
+            </div>
+            <div>
+              <label for="tempMax">Temperatura máxima (°C)</label>
+              <input id="tempMax" name="tempMax"
+                type="number" step="0.1" required>
+            </div>
+          </div>
+
+          <p id="mensagemForm" role="status"></p>
+
+          <button type="submit" class="btn-primary">
+            Cadastrar carga demonstrativa
+          </button>
+        </form>
+      </dialog>
+
+      <dialog id="modalDetalhes">
+        <div class="modal-heading">
+          <h2>Detalhes da carga</h2>
+          <button type="button" id="fecharDetalhes"
+            class="btn-secondary">Fechar</button>
+        </div>
+        <div id="conteudoDetalhes"></div>
+      </dialog>
+    </main>
+  </div>
+
+  <script src="js/logistica.js" defer></script>
+</body>
+</html>
