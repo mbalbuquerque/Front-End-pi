@@ -182,12 +182,7 @@ function renderizarUsuarios() {
 document.getElementById("fecharDialog")
   .addEventListener("click", () => dialog.close());
 
-document.getElementById("auditoriaLink")
-  .addEventListener("click", event => {
-    event.preventDefault();
-    feedback.textContent =
-      "A tela de Auditoria será implementada na próxima etapa.";
-  });
+
 
 atualizarIndicadores();
 renderizarUsuarios();
