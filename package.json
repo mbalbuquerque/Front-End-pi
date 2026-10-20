@@ -1,0 +1,26 @@
+{
+  "name": "projeto-integrador-4-periodo-front",
+  "version": "1.0.0",
+  "description": "O **ColdTrack Control** é a interface web do projeto **ColdTrack Edge**, desenvolvido como parte do **Projeto Integrador – 4º Período**.",
+  "main": "sw.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "test:qa": "playwright test",
+    "test:qa:report": "playwright show-report"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mbalbuquerque/Front-End-pi.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/mbalbuquerque/Front-End-pi/issues"
+  },
+  "homepage": "https://github.com/mbalbuquerque/Front-End-pi#readme",
+  "devDependencies": {
+    "@playwright/test": "^1.64.1"
+  }
+}
