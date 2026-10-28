@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -87,13 +86,7 @@
           </div>
 
           <div class="form-options">
-            <label class="remember">
-              <input type="checkbox" id="remember">
-              Manter conectado
-            </label>
-
-            <a href="mailto:suporte@exemplo.com?subject=Acesso%20ColdTrack"
-               id="forgotPassword">
+            <a href="#" id="forgotPassword">
               Esqueceu a senha?
             </a>
           </div>
@@ -102,22 +95,23 @@
              role="status" aria-live="polite"></p>
 
           <div class="login-actions">
-  <button type="submit" class="login-button">
-    Entrar
-    <span aria-hidden="true">→</span>
-  </button>
+            <button type="submit" class="login-button" id="botaoEntrar">
+              Entrar
+              <span aria-hidden="true">→</span>
+            </button>
 
-  <a href="cadastro.html" class="register-button">
-    <span aria-hidden="true">+</span>
-    Cadastrar
-  </a>
-</div>
+            <a href="cadastro.html" class="register-button">
+              <span aria-hidden="true">+</span>
+              Cadastrar empresa
+            </a>
+          </div>
+        </form>
 
         <div class="security-note">
           <span aria-hidden="true">🔒</span>
           <p>
-            O acesso será validado pelo serviço de autenticação
-            quando a integração com a API estiver concluída.
+            A sessão vale por 8 horas. Sem acesso? Peça ao gestor
+            da sua equipe para criar seu usuário.
           </p>
         </div>
 
@@ -129,6 +123,8 @@
     </section>
   </main>
 
+  <script src="js/config.js"></script>
+  <script src="js/comum.js"></script>
   <script src="js/login.js"></script>
 </body>
 </html>

@@ -23,15 +23,15 @@ test('QA-003: alternar visibilidade da senha', async ({ page }) => {
   await expect(page.locator('#password')).toHaveAttribute('type', 'password');
 });
 
-test('QA-004: botão Cadastrar navega para cadastro', async ({ page }) => {
+test('QA-004: botão Cadastrar empresa navega para cadastro', async ({ page }) => {
   await page.goto('/login.html');
   await page.locator('a[href="cadastro.html"]').click();
   await expect(page).toHaveURL(/cadastro\.html/);
-  await expect(page.locator('#cadastroForm')).toBeVisible();
+  await expect(page.locator('#formCadastro')).toBeVisible();
 });
 
 test('QA-005: CPF inválido é rejeitado', async ({ page }) => {
-  await page.goto('/cadastro.html');
+  await page.goto('/cadastro-usuario.html');
   await page.locator('#nome').fill('Maria da Silva');
   await page.locator('#cpf').fill('11111111111');
   await page.locator('#email').fill('maria@empresa.com');
@@ -42,7 +42,7 @@ test('QA-005: CPF inválido é rejeitado', async ({ page }) => {
 });
 
 test('QA-006: cadastro preenchido não cria conta sem API', async ({ page }) => {
-  await page.goto('/cadastro.html');
+  await page.goto('/cadastro-usuario.html');
   await page.locator('#nome').fill('Maria da Silva');
   await page.locator('#cpf').fill('52998224725'); // CPF matematicamente válido, fictício para teste
   await page.locator('#email').fill('maria@empresa.com');
@@ -71,11 +71,11 @@ test('QA-009: link Auditoria abre a tela', async ({ page }) => {
   await expect(page.locator('body')).toContainText(/Auditoria/i);
 });
 
-test('QA-010: dashboard exibe componentes e tolera indisponibilidade ThingSpeak', async ({ page }) => {
-  await page.route('https://api.thingspeak.com/**', route => route.abort());
+test('QA-010: dashboard sem sessão volta para o login', async ({ page }) => {
+  await page.route('**/*.azurewebsites.net/**', route => route.abort());
   await page.goto('/dashboard.html');
-  await expect(page.locator('#temperatura')).toBeVisible();
-  await expect(page.locator('#historico')).toContainText(/telemetria|carregar/i);
+  await expect(page).toHaveURL(/login\.html/);
+  await expect(page.locator('#loginForm')).toBeVisible();
 });
 
 test('QA-011: nenhuma senha é salva no localStorage durante o login', async ({ page }) => {

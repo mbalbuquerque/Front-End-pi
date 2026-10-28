@@ -1,57 +1,97 @@
+// Tela de login: troca e-mail e senha por um token de 8 h.
 
-"use strict";
+// Já logado: vai direto ao painel.
+if (lerSessao()) {
+  location.replace("dashboard.html");
+}
 
-const loginForm = document.getElementById("loginForm");
+
+const form = document.getElementById("loginForm");
 const emailInput = document.getElementById("email");
 const passwordInput = document.getElementById("password");
 const togglePassword = document.getElementById("togglePassword");
-const loginMessage = document.getElementById("loginMessage");
 const forgotPassword = document.getElementById("forgotPassword");
+const mensagem = document.getElementById("loginMessage");
+const botao = document.getElementById("botaoEntrar");
+const TEXTO_BOTAO = botao.innerHTML;
+
 
 togglePassword.addEventListener("click", () => {
-  const visible = passwordInput.type === "password";
 
-  passwordInput.type = visible ? "text" : "password";
-  togglePassword.textContent = visible ? "Ocultar" : "Mostrar";
-  togglePassword.setAttribute("aria-pressed", String(visible));
-  togglePassword.setAttribute(
-    "aria-label",
-    visible ? "Ocultar senha" : "Mostrar senha"
-  );
+  const visivel = passwordInput.type === "password";
+
+  passwordInput.type = visivel ? "text" : "password";
+  togglePassword.textContent = visivel ? "Ocultar" : "Mostrar";
+  togglePassword.setAttribute("aria-pressed", String(visivel));
+  togglePassword.setAttribute("aria-label", visivel ? "Ocultar senha" : "Mostrar senha");
+
 });
 
-forgotPassword.addEventListener("click", (event) => {
-  event.preventDefault();
 
-  loginMessage.textContent =
-    "A recuperação de senha estará disponível após a integração com a API.";
+forgotPassword.addEventListener("click", evento => {
+
+  evento.preventDefault();
+  mensagem.textContent = "Peça ao gestor da sua equipe para definir uma senha nova.";
+
 });
 
-loginForm.addEventListener("submit", (event) => {
-  event.preventDefault();
 
-  loginMessage.textContent = "";
+form.addEventListener("submit", async evento => {
+
+  evento.preventDefault();
+
+  mensagem.textContent = "";
 
   const email = emailInput.value.trim();
-  const password = passwordInput.value;
+  const senha = passwordInput.value;
 
-  if (!emailInput.checkValidity() || !email) {
-    loginMessage.textContent = "Informe um e-mail válido.";
+  if (!email || !emailInput.checkValidity()) {
+    mensagem.textContent = "Informe um e-mail válido.";
     emailInput.focus();
     return;
   }
 
-  if (!password) {
-    loginMessage.textContent = "Informe sua senha.";
+  if (!senha) {
+    mensagem.textContent = "Informe sua senha.";
     passwordInput.focus();
     return;
   }
 
-  loginMessage.textContent =
-    "Interface concluída. A autenticação aguarda integração com a API ColdTrack.";
+  botao.disabled = true;
+  botao.textContent = "Entrando…";
 
-  // Futuramente:
-  // enviar credenciais por HTTPS ao backend
-  // tratar a resposta do servidor
-  // redirecionar somente após autenticação real
+  try {
+
+    // Chamada direta (sem api()): 401 aqui é senha errada, não sessão vencida.
+    const response = await fetch(`${CONFIG.API_URL}/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, senha })
+    });
+
+    const dados = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      mensagem.textContent = (dados.erros || ["Não foi possível entrar."]).join(" ");
+      return;
+    }
+
+    salvarSessao(dados.token, dados.usuario);
+    location.replace("dashboard.html");
+
+  }
+
+  catch (falha) {
+
+    mensagem.textContent = "Sem conexão com o servidor. Confira a internet e tente de novo.";
+
+  }
+
+  finally {
+
+    botao.disabled = false;
+    botao.innerHTML = TEXTO_BOTAO;
+
+  }
+
 });

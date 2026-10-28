@@ -1,98 +1,75 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#061b2b">
-  <title>Cadastro de Usuários | ColdTrack</title>
-  <link rel="stylesheet" href="css/cadastro.css">
-</head>
-<body>
-  <header class="topbar">
-    <a href="index.html" class="brand">❄ ColdTrack<span>.</span></a>
-    <span class="admin-label">Painel Administrativo</span>
-  </header>
 
-  <main class="container">
-    <div class="page-heading">
-      <a href="index.html" class="back-link">← Voltar</a>
-      <h1>Cadastro de Usuários</h1>
-      <p>Cadastre colaboradores e configure o perfil de acesso.</p>
+  <title>Cadastrar empresa · ColdTrack Control</title>
+
+  <meta name="theme-color" content="#0b1f33">
+  <meta name="description" content="ColdTrack Control - cadastro de transportadora no painel de monitoramento">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/telas.css">
+
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="assets/icons/icon-192.png">
+</head>
+
+<body class="pagina-login">
+
+  <main class="login">
+
+    <div class="brand login-marca">
+      <div class="brand-icon">❄</div>
+      <div>
+        <strong>ColdTrack</strong>
+        <span>CONTROL</span>
+      </div>
     </div>
 
-    <section class="card">
-      <div class="card-heading">
-        <h2>Novo usuário</h2>
-        <p>Preencha os dados do colaborador.</p>
-      </div>
+    <form class="login-cartao" id="formCadastro" novalidate>
 
-      <form id="cadastroForm" novalidate>
-        <div class="form-grid">
-          <div class="field full">
-            <label for="nome">Nome completo *</label>
-            <input type="text" id="nome" name="nome"
-                   autocomplete="name"
-                   placeholder="Nome e sobrenome"
-                   maxlength="150" required>
-          </div>
+      <h1>Cadastrar empresa</h1>
+      <p>Crie o acesso da sua transportadora. Você entra como gestor e depois registra sensores, veículos e a equipe.</p>
 
-          <div class="field">
-            <label for="cpf">CPF *</label>
-            <input type="text" id="cpf" name="cpf"
-                   placeholder="000.000.000-00"
-                   inputmode="numeric"
-                   maxlength="14" required>
-          </div>
+      <label class="campo">
+        <span>Nome da empresa</span>
+        <input name="empresa" autocomplete="organization" required>
+      </label>
 
-          <div class="field">
-            <label for="email">E-mail corporativo *</label>
-            <input type="email" id="email" name="email"
-                   autocomplete="email"
-                   placeholder="nome@empresa.com"
-                   maxlength="254" required>
-          </div>
+      <label class="campo">
+        <span>Seu nome</span>
+        <input name="nome" autocomplete="name" required>
+      </label>
 
-          <div class="field">
-            <label for="funcao">Função *</label>
-            <input type="text" id="funcao" name="funcao"
-                   placeholder="Ex.: Supervisor de Logística"
-                   maxlength="100" required>
-          </div>
+      <label class="campo">
+        <span>E-mail</span>
+        <input type="email" name="email" autocomplete="username" required>
+      </label>
 
-          <div class="field">
-            <label for="perfil">Perfil de acesso *</label>
-            <select id="perfil" name="perfil" required>
-              <option value="">Selecione um perfil</option>
-              <option value="administrador">Administrador</option>
-              <option value="gestor">Gestor Logístico</option>
-              <option value="operador">Operador</option>
-              <option value="cliente">Cliente / Consulta</option>
-            </select>
-          </div>
-        </div>
+      <label class="campo">
+        <span>Senha (mínimo 8 caracteres)</span>
+        <input type="password" name="senha" autocomplete="new-password" minlength="8" required>
+      </label>
 
-        <div class="security-info">
-          <strong>🔒 Cadastro controlado</strong>
-          <p>
-            A criação de usuários deverá ser autorizada pelo
-            backend. Nenhuma senha será solicitada ao administrador.
-          </p>
-        </div>
+      <button type="submit" class="botao botao-cheio" id="botaoCadastrar">Cadastrar empresa</button>
 
-        <p id="mensagem" class="message"
-           role="status" aria-live="polite"></p>
+      <p class="erro-form" id="erroCadastro" role="alert" hidden></p>
 
-        <div class="form-actions">
-          <button type="reset" class="btn-secondary">Limpar</button>
-          <button type="submit" class="btn-primary">
-            Cadastrar usuário
-          </button>
-        </div>
-      </form>
-    </section>
+      <p class="login-ajuda">Já tem acesso? <a href="login.html">Entrar</a>.</p>
+
+    </form>
+
   </main>
 
+  <script src="js/config.js"></script>
+  <script src="js/comum.js"></script>
   <script src="js/cadastro.js"></script>
+
 </body>
 </html>

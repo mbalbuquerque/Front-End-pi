@@ -1,0 +1,49 @@
+name: Publicar painel
+
+# A cada push na branch everson: confere os scripts e publica o site no Azure.
+# Login no Azure por OIDC (sem senha guardada): a identidade só é aceita
+# para esta branch deste repositório e só enxerga o grupo rg-coldtrack.
+on:
+  push:
+    branches: [everson]
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+concurrency:
+  group: publicar-site
+  cancel-in-progress: false
+
+jobs:
+  publicar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Conferir scripts (a publicação só acontece se passarem)
+        run: for f in js/*.js sw.js; do node --check "$f"; done
+
+      - name: Montar pasta do site
+        run: |
+          mkdir site
+          git archive HEAD | tar -x -C site
+          rm -rf site/.vscode site/.github site/README.md site/publicar.sh
+
+      - uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Publicar no site estático
+        run: |
+          CHAVE="$(az storage account keys list -n stcoldtrackweb7319 -g rg-coldtrack --query '[0].value' -o tsv)"
+          az storage blob upload-batch --account-name stcoldtrackweb7319 --account-key "$CHAVE" \
+            -s site -d '$web' --overwrite -o none
+          echo "Publicado em https://stcoldtrackweb7319.z15.web.core.windows.net"

@@ -1,92 +1,64 @@
+// Cadastro de empresa nova: cria a empresa e o primeiro gestor, e já entra.
 
-"use strict";
-
-const form = document.getElementById("cadastroForm");
-const cpfInput = document.getElementById("cpf");
-const mensagem = document.getElementById("mensagem");
-
-function apenasNumeros(valor) {
-  return valor.replace(/\D/g, "");
+if (lerSessao()) {
+  location.replace("dashboard.html");
 }
 
-function formatarCPF(valor) {
-  const cpf = apenasNumeros(valor).slice(0, 11);
 
-  return cpf
-    .replace(/^(\d{3})(\d)/, "$1.$2")
-    .replace(/^(\d{3})\.(\d{3})(\d)/, "$1.$2.$3")
-    .replace(/\.(\d{3})(\d)/, ".$1-$2");
-}
+const form = document.getElementById("formCadastro");
+const botao = document.getElementById("botaoCadastrar");
+const erro = document.getElementById("erroCadastro");
 
-function validarCPF(valor) {
-  const cpf = apenasNumeros(valor);
 
-  if (!/^\d{11}$/.test(cpf)) return false;
-  if (/^(\d)\1{10}$/.test(cpf)) return false;
+form.addEventListener("submit", async evento => {
 
-  for (let tamanho = 9; tamanho < 11; tamanho++) {
-    let soma = 0;
+  evento.preventDefault();
 
-    for (let i = 0; i < tamanho; i++) {
-      soma += Number(cpf[i]) * (tamanho + 1 - i);
+  const dados = Object.fromEntries(new FormData(form));
+
+  if (Object.values(dados).some(v => !String(v).trim())) {
+    erro.textContent = "Preencha todos os campos.";
+    erro.hidden = false;
+    return;
+  }
+
+  erro.hidden = true;
+  botao.disabled = true;
+  botao.textContent = "Cadastrando…";
+
+  try {
+
+    const response = await fetch(`${CONFIG.API_URL}/empresas`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(dados)
+    });
+
+    const resposta = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      erro.textContent = (resposta.erros || ["Não foi possível cadastrar."]).join(" · ");
+      erro.hidden = false;
+      return;
     }
 
-    const resto = (soma * 10) % 11;
-    const digito = resto === 10 ? 0 : resto;
+    salvarSessao(resposta.token, resposta.usuario);
+    location.replace("sensores.html");
 
-    if (digito !== Number(cpf[tamanho])) {
-      return false;
-    }
   }
 
-  return true;
-}
+  catch (falha) {
 
-cpfInput.addEventListener("input", () => {
-  cpfInput.value = formatarCPF(cpfInput.value);
-});
+    erro.textContent = "Sem conexão com o servidor. Confira a internet e tente de novo.";
+    erro.hidden = false;
 
-form.addEventListener("reset", () => {
-  mensagem.textContent = "";
-});
-
-form.addEventListener("submit", (event) => {
-  event.preventDefault();
-  mensagem.textContent = "";
-
-  const nome = document.getElementById("nome").value.trim();
-  const cpf = cpfInput.value;
-  const emailInput = document.getElementById("email");
-  const funcao = document.getElementById("funcao").value.trim();
-  const perfil = document.getElementById("perfil").value;
-
-  if (nome.split(/\s+/).length < 2) {
-    mensagem.textContent = "Informe o nome completo.";
-    return;
   }
 
-  if (!validarCPF(cpf)) {
-    mensagem.textContent = "Informe um CPF válido.";
-    cpfInput.focus();
-    return;
+  finally {
+
+    botao.disabled = false;
+    botao.textContent = "Cadastrar empresa";
+
   }
 
-  if (!emailInput.checkValidity()) {
-    mensagem.textContent = "Informe um e-mail válido.";
-    emailInput.focus();
-    return;
-  }
-
-  if (!funcao || !perfil) {
-    mensagem.textContent = "Preencha a função e o perfil de acesso.";
-    return;
-  }
-
-  // Não persistir CPF nem criar contas no navegador.
-  // A API deverá validar autenticação, autorização,
-  // CPF, unicidade, empresa e perfil antes de salvar.
-
-  mensagem.style.color = "#087d90";
-  mensagem.textContent =
-    "Formulário validado. O cadastro estará disponível após a integração com a API.";
 });

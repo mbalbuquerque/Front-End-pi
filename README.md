@@ -4,7 +4,7 @@
 
 O **ColdTrack Control** é a interface web do projeto **ColdTrack Edge**, desenvolvido como parte do **Projeto Integrador – 4º Período**.
 
-A aplicação permite visualizar dados de **temperatura, umidade relativa e qualidade do sinal Wi-Fi** coletados por um nó sensor baseado em **ESP32-C3** e enviados para a plataforma **ThingSpeak**.
+A aplicação permite visualizar dados de **temperatura, umidade relativa e qualidade do sinal Wi-Fi** coletados por um nó sensor baseado em **ESP32-C3** e enviados para a nuvem **Microsoft Azure**.
 
 O projeto tem como cenário de aplicação o **monitoramento da cadeia fria durante o transporte refrigerado de mercadorias**, especialmente produtos sensíveis às condições ambientais.
 
@@ -23,11 +23,13 @@ Sensor DHT11 / DHT22
         ↓
  Processamento Edge
         ↓
-       Wi-Fi
+  Wi-Fi (HTTPS + JSON)
         ↓
-    ThingSpeak
+ Azure Functions (validação)
         ↓
-     API REST
+ Azure Cosmos DB
+        ↓
+ API REST de leitura
         ↓
  ColdTrack Control
         ↓
@@ -46,7 +48,7 @@ A versão atual do ColdTrack Control possui:
 - 💧 Monitoramento da umidade relativa;
 - 📶 Monitoramento do RSSI Wi-Fi;
 - 🚦 Classificação do estado da carga;
-- ☁️ Integração com ThingSpeak;
+- ☁️ Integração com o Azure;
 - 🔄 Atualização automática da telemetria;
 - ⚠️ Indicação de condições de atenção e críticas;
 - 📱 Layout responsivo;
@@ -69,19 +71,58 @@ Para fins de demonstração do protótipo, foram definidos os seguintes limites:
 
 ---
 
-## ☁️ Integração com ThingSpeak
+## ☁️ Integração com Azure
 
-A telemetria é armazenada em um canal ThingSpeak.
+O dashboard lê as leituras gravadas no Azure Cosmos DB pela rota pública de consulta da Azure Function:
 
-Os campos utilizados são:
+```text
+GET https://func-coldtrack-7319.azurewebsites.net/api/leituras?deviceId=coldtrack-01&limite=20
+```
 
-| Field | Informação |
+A rota é somente leitura e liberada via CORS para o Live Server (`http://127.0.0.1:5500` e `http://localhost:5500`) e para o endereço publicado. Ao publicar o dashboard em outro endereço, esse endereço precisa ser adicionado ao CORS do Function App.
+
+### Publicação
+
+O site está publicado no Azure Storage (site estático, região Brazil South):
+
+**https://stcoldtrackweb7319.z15.web.core.windows.net**
+
+O Azure Static Web Apps não está disponível nas regiões liberadas para a assinatura Azure for Students da instituição, por isso foi usado o site estático do Storage. Para publicar uma nova versão:
+
+```bash
+az storage blob upload-batch --account-name stcoldtrackweb7319 -s <pasta-do-site> -d '$web' --overwrite
+```
+
+O dashboard fica em `dashboard.html` (acessado pelo botão da página inicial).
+
+### Acesso
+
+Todas as telas do painel exigem login (`login.html` ou o formulário da página inicial). O token vale 8 horas.
+
+| perfil | pode |
 |---|---|
-| Field 1 | Temperatura (°C) |
-| Field 2 | Umidade Relativa (%) |
-| Field 3 | RSSI Wi-Fi (dBm) |
+| Operador logístico | ver dashboard, alertas, relatórios, sensores, veículos, viagens e configurações; trocar a própria senha |
+| Gestor | tudo do operador + registrar sensores, cadastrar e remover veículos, viagens e usuários, redefinir senha |
 
-O front-end consulta a API do ThingSpeak periodicamente e atualiza automaticamente o dashboard.
+A API confere o perfil em cada chamada; esconder botões na tela é só conveniência.
+Empresa nova se cadastra em `cadastro.html` e entra como gestor; ele cria os demais usuários em **Configurações → Usuários**. Cada empresa só enxerga os próprios dados.
+
+### Telas
+
+| tela | o que mostra |
+|---|---|
+| `dashboard.html` | leitura atual do veículo escolhido, gráfico dos últimos 30 min com a faixa da carga e calor previsto na rota nas próximas 24 h |
+| `alertas.html` | ocorrências fora da faixa (leituras seguidas viram uma ocorrência), com duração e pico |
+| `relatorios.html` | resumo de 24 h ou 7 dias, gráfico, tabela de leituras e exportação em CSV |
+| `sensores.html` | sensores da empresa; registro com chave própria, chave nova e remoção pelo gestor |
+| `veiculos.html` | situação atual de cada veículo, com aviso de sensor sem sinal e etiqueta QR; cadastro pelo gestor |
+| `viagens.html` | condição da carga do início ao fim de cada trajeto; registro e encerramento pelo gestor |
+| `configuracoes.html` | troca de senha, faixas de cada perfil de carga, sensores, fonte de dados e usuários (gestor) |
+| `login.html` | entrada no painel |
+| `cadastro.html` | cadastro de empresa nova |
+
+Arquivos compartilhados: `js/comum.js` (menu, consulta à API, veículo escolhido, faixas, formatação), `js/grafico.js` (gráfico de temperatura), `js/risco.js` (calor na rota), `js/vendor/qrcode.js` (gerador de QR, licença MIT) e `css/telas.css`.
+Sensores, veículos, viagens, usuários e os perfis de carga ficam no Azure; o painel lê tudo da API.
 
 ---
 
@@ -98,7 +139,7 @@ O front-end consulta a API do ThingSpeak periodicamente e atualiza automaticamen
 
 ### Cloud
 
-- ThingSpeak
+- Microsoft Azure (Functions, Cosmos DB, Storage)
 - API REST
 
 ### Front-End
@@ -142,18 +183,18 @@ Identidade visual, layout, cards, estados da carga e responsividade.
 
 Configurações públicas da aplicação, como:
 
-- ID do canal ThingSpeak;
+- endereço da API no Azure;
 - intervalo de atualização;
-- limites demonstrativos de temperatura.
+- tamanho do histórico do dashboard.
 
 ### `js/app.js`
 
 Responsável por:
 
-- consultar o ThingSpeak;
+- consultar a API do Azure;
 - processar a telemetria;
 - atualizar os indicadores;
-- classificar a temperatura;
+- mostrar o status que a API calculou pela faixa da carga;
 - controlar alertas;
 - apresentar informações da última leitura.
 
@@ -203,7 +244,7 @@ Credenciais privadas não devem ser armazenadas no front-end.
 
 O dashboard utiliza somente informações necessárias para leitura dos dados públicos.
 
-Chaves privadas de escrita do ThingSpeak, senhas Wi-Fi e outras credenciais do dispositivo Edge **não devem ser adicionadas a este repositório**.
+Chaves da API de gravação, senhas Wi-Fi e outras credenciais do dispositivo Edge **não devem ser adicionadas a este repositório**.
 
 No firmware do ESP32, essas informações devem permanecer em arquivo separado e ignorado pelo Git.
 
@@ -254,11 +295,11 @@ Uma possível aplicação é o acompanhamento das condições ambientais durante
 
 **Projeto Integrador – 4º Período**
 
-- Antonio Henzo
+- Enzo Antônio
 - Everson
 - Emerson Luiz
 - Gabriel Eduardo
-- José Alanberg
+- José Allamberg
 - Marcelo Barbosa
 
 ---

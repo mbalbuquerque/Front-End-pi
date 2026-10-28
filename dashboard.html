@@ -1,137 +1,266 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#061b2b">
 
-  <title>Dashboard | ColdTrack Control</title>
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>ColdTrack Control</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700&display=swap" rel="stylesheet">
 
   <link rel="stylesheet" href="css/style.css">
-  <link rel="stylesheet" href="css/dashboard.css">
+  <link rel="stylesheet" href="css/telas.css">
+  <meta name="theme-color" content="#0b1f33">
+
+<meta
+  name="description"
+  content="ColdTrack Control - Monitoramento IoT de transporte refrigerado"
+>
+
+<link rel="manifest" href="manifest.json">
+
+<link
+  rel="apple-touch-icon"
+  href="assets/icons/icon-192.png"
+>
 </head>
+
 <body>
 
-<div class="ct-layout">
+  <aside class="sidebar" id="sidebar"></aside>
 
-  <aside class="ct-sidebar">
-    <a href="index.html" class="ct-brand">
-      ❄ ColdTrack<span>.</span>
-    </a>
 
-    <p class="ct-menu-label">MONITORAMENTO</p>
+  <main class="main">
 
-    <nav>
-      <a href="dashboard.html" class="ct-active">◫ Dashboard</a>
-      <a href="usuarios.html">♙ Usuários</a>
-      <a href="cadastro.html">＋ Cadastrar usuário</a>
-      <a href="auditoria.html">▤ Auditoria</a>
-      <a href="index.html">⌂ Página inicial</a>
-    </nav>
+    <header class="topbar">
 
-    <div class="ct-sidebar-footer">
-      ColdTrack Control
-      <small>Monitoramento IoT</small>
-    </div>
-  </aside>
-
-  <main class="ct-main">
-
-    <header class="ct-header">
       <div>
-        <span class="ct-eyebrow">PAINEL OPERACIONAL</span>
-        <h1>Dashboard</h1>
-        <p>Monitoramento de temperatura, umidade e conectividade.</p>
+        <h1>Visão Geral</h1>
+        <p>Monitoramento da cadeia fria</p>
       </div>
 
-      <div class="ct-live">
-        <span class="ct-live-dot"></span>
-        Atualização a cada 20 segundos
+      <div class="connection">
+        <span class="online-dot"></span>
+        <span id="fonteDados">Conectando...</span>
       </div>
+
     </header>
 
-    <section class="ct-metrics">
 
-      <article class="ct-card">
-        <span>Temperatura</span>
-        <strong id="temperatura">-- °C</strong>
-        <small id="tempStatus">Aguardando dados</small>
+    <section class="cards">
+
+      <article class="card">
+        <span>Temperatura atual</span>
+
+        <strong id="temperatura">
+          -- °C
+        </strong>
+
+        <small id="tempStatus">
+          Aguardando dados
+        </small>
       </article>
 
-      <article class="ct-card">
+
+      <article class="card">
         <span>Umidade relativa</span>
-        <strong id="umidade">-- %</strong>
-        <small>Sensor de umidade</small>
+
+        <strong id="umidade">
+          -- %
+        </strong>
+
+        <small>
+          Compartimento de carga
+        </small>
       </article>
 
-      <article class="ct-card">
-        <span>Intensidade do sinal</span>
-        <strong id="rssi">-- dBm</strong>
-        <small id="rssiStatus">Aguardando dados</small>
+
+      <article class="card">
+        <span>Sinal Wi-Fi</span>
+
+        <strong id="rssi">
+          -- dBm
+        </strong>
+
+        <small id="rssiStatus">
+          Aguardando dados
+        </small>
       </article>
 
-      <article class="ct-card">
-        <span>Situação da carga</span>
-        <strong id="statusCarga" class="status">AGUARDANDO</strong>
-        <small>Classificação da temperatura</small>
-      </article>
 
-    </section>
+      <article class="card status-card">
 
-    <section class="ct-grid">
+        <span>Status da carga</span>
 
-      <article class="ct-panel">
-        <h2>Telemetria atual</h2>
-
-        <div class="ct-detail">
-          <span>Temperatura</span>
-          <strong id="tempDetalhe">-- °C</strong>
+        <div
+          id="statusCarga"
+          class="status aguardando"
+        >
+          AGUARDANDO
         </div>
 
-        <div class="ct-detail">
-          <span>Umidade</span>
-          <strong id="umidadeDetalhe">-- %</strong>
-        </div>
+        <small>
+          Processamento Edge
+        </small>
 
-        <div class="ct-detail">
-          <span>RSSI</span>
-          <strong id="rssiDetalhe">-- dBm</strong>
-        </div>
-
-        <div class="ct-detail">
-          <span>Última atualização</span>
-          <strong id="ultimaAtualizacao">--</strong>
-        </div>
-      </article>
-
-      <article class="ct-panel">
-        <h2>Histórico de temperatura</h2>
-
-        <div id="historico" class="ct-history">
-          Aguardando registros do ThingSpeak...
-        </div>
       </article>
 
     </section>
 
-    <section id="alerta" class="ct-alert hidden" role="alert">
-      <strong>Atenção à temperatura</strong>
-      <p>
-        A temperatura ultrapassou o limite normal configurado.
-        Verifique as condições da carga.
-      </p>
+
+    <section class="content-grid">
+
+      <article class="panel principal">
+
+        <div class="panel-header">
+
+          <div>
+            <h2>Monitoramento em tempo real</h2>
+            <p id="subtituloVeiculo">ColdTrack Edge</p>
+          </div>
+
+          <span class="badge">
+            Transporte Refrigerado
+          </span>
+
+        </div>
+
+
+        <div class="vehicle">
+
+          <div class="truck">
+            🚚
+          </div>
+
+          <div>
+            <span>VEÍCULO</span>
+            <strong id="veiculoCodigo">--</strong>
+          </div>
+
+          <div>
+            <span>CARGA</span>
+            <strong id="veiculoCarga">--</strong>
+          </div>
+
+          <div>
+            <span>SENSOR</span>
+            <strong id="veiculoSensor">--</strong>
+          </div>
+
+        </div>
+
+
+        <div class="chart-placeholder">
+
+          <div class="chart-title">
+            Histórico de temperatura
+          </div>
+
+          <div id="historico">
+            Carregando leituras…
+          </div>
+
+        </div>
+
+      </article>
+
+
+      <article class="panel">
+
+        <h2>Última telemetria</h2>
+
+        <div class="telemetry">
+
+          <div>
+            <span>Temperatura</span>
+            <strong id="tempDetalhe">--</strong>
+          </div>
+
+          <div>
+            <span>Umidade</span>
+            <strong id="umidadeDetalhe">--</strong>
+          </div>
+
+          <div>
+            <span>RSSI</span>
+            <strong id="rssiDetalhe">--</strong>
+          </div>
+
+          <div>
+            <span>Atualização</span>
+            <strong id="ultimaAtualizacao">--</strong>
+          </div>
+
+        </div>
+
+
+        <div
+          id="alerta"
+          class="alert hidden"
+        >
+          <strong>⚠ Alerta de temperatura</strong>
+
+          <p>
+            A temperatura da carga está fora
+            da condição normal.
+          </p>
+        </div>
+
+      </article>
+
     </section>
 
-    <footer class="ct-footer">
-      ColdTrack Control · Projeto Integrador · 2026
+
+    <article class="panel risco" id="risco">
+      <h2>Calor na rota hoje</h2>
+      <p>Carregando a previsão…</p>
+    </article>
+
+
+    <footer>
+      ColdTrack Edge • Projeto Integrador 2026
     </footer>
 
   </main>
-</div>
 
-<script src="js/config.js"></script>
-<script src="js/app.js"></script>
+
+  <script src="js/config.js"></script>
+  <script src="js/comum.js"></script>
+  <script src="js/grafico.js"></script>
+  <script src="js/risco.js"></script>
+  <script src="js/app.js"></script>
+
+<script>
+  if ("serviceWorker" in navigator) {
+
+    window.addEventListener("load", () => {
+
+      navigator.serviceWorker
+        .register("./sw.js")
+
+        .then(() => {
+          console.log(
+            "ColdTrack PWA ativo."
+          );
+        })
+
+        .catch(error => {
+          console.error(
+            "Erro ao registrar Service Worker:",
+            error
+          );
+        });
+
+    });
+
+  }
+</script>
 
 </body>
 </html>
