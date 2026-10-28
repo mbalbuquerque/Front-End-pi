@@ -4,6 +4,9 @@
 // Dados exclusivamente demonstrativos.
 // Não representam telemetria real do ThingSpeak.
 
+let idEmEdicao = null;
+let operacaoPendente = null;
+
 const cargas = [
   {
     id: "CT-001",
@@ -96,7 +99,8 @@ function renderizarCargas() {
 
     status.className = "status " + (
       carga.status === "Atenção" ? "atencao" :
-      carga.status === "Entregue" ? "entregue" : "transporte"
+      carga.status === "Entregue" ? "entregue" :
+      carga.status === "Cancelada" ? "cancelada" : "transporte"
     );
 
     status.textContent = carga.status;
@@ -141,6 +145,22 @@ function abrirDetalhes(carga) {
     conteudo.appendChild(paragrafo);
   });
 
+  const acoes = $("acoesDetalhes");
+  acoes.replaceChildren();
+  if (carga.status === "Em transporte" || carga.status === "Atenção") {
+    adicionarBotaoAcao(acoes, "Editar", "btn-secondary", () => {
+      $("modalDetalhes").close();
+      abrirEdicao(carga);
+    });
+    adicionarBotaoAcao(acoes, "Concluir entrega", "btn-primary", () => {
+      $("modalDetalhes").close();
+      pedirConfirmacao(carga, "Entregue");
+    });
+    adicionarBotaoAcao(acoes, "Cancelar carga", "btn-danger", () => {
+      $("modalDetalhes").close();
+      pedirConfirmacao(carga, "Cancelada");
+    });
+  }
   $("modalDetalhes").showModal();
 }
 
@@ -162,6 +182,21 @@ function cadastrarCarga(evento) {
       tempMin >= tempMax) {
     $("mensagemForm").textContent =
       "Confira os campos e informe uma faixa de temperatura válida.";
+    return;
+  }
+
+  if (idEmEdicao !== null) {
+    const carga = cargas.find(c => c.id === idEmEdicao);
+    if (!carga || !["Em transporte", "Atenção"].includes(carga.status)) {
+      $("mensagemForm").textContent = "Esta carga não pode mais ser editada.";
+      return;
+    }
+    Object.assign(carga, { produto, origem, destino, sensor, tempMin, tempMax });
+    idEmEdicao = null;
+    formulario.reset();
+    $("modalCarga").close();
+    $("feedbackOperacao").textContent = "Carga atualizada (somente nesta sessão).";
+    renderizarCargas();
     return;
   }
 
@@ -189,13 +224,61 @@ function cadastrarCarga(evento) {
   renderizarCargas();
 }
 
+function adicionarBotaoAcao(conteiner, texto, classe, acao) {
+  const botao = document.createElement("button");
+  botao.type = "button";
+  botao.className = classe;
+  botao.textContent = texto;
+  botao.addEventListener("click", acao);
+  conteiner.appendChild(botao);
+}
+
+function abrirEdicao(carga) {
+  idEmEdicao = carga.id;
+  $("tituloModalCarga").textContent = `Editar carga ${carga.id}`;
+  $("salvarCarga").textContent = "Salvar alterações";
+  $("mensagemForm").textContent = "";
+  for (const campo of ["produto", "origem", "destino", "sensor", "tempMin", "tempMax"]) {
+    $(campo).value = carga[campo];
+  }
+  $("modalCarga").showModal();
+}
+
+function pedirConfirmacao(carga, novoStatus) {
+  if (!["Em transporte", "Atenção"].includes(carga.status)) return;
+  operacaoPendente = { id: carga.id, novoStatus };
+  $("tituloConfirmacao").textContent = novoStatus === "Entregue" ? "Concluir entrega" : "Cancelar carga";
+  $("textoConfirmacao").textContent = `Confirma alterar a carga ${carga.id} para ${novoStatus}? Nesta demonstração, a ação não poderá ser desfeita sem recarregar a página.`;
+  $("confirmarOperacao").textContent = novoStatus === "Entregue" ? "Confirmar entrega" : "Confirmar cancelamento";
+  $("modalConfirmacao").showModal();
+}
+
+$("cancelarConfirmacao").addEventListener("click", () => $("modalConfirmacao").close());
+$("modalConfirmacao").addEventListener("close", () => { operacaoPendente = null; });
+$("confirmarOperacao").addEventListener("click", () => {
+  if (!operacaoPendente) return;
+  const carga = cargas.find(c => c.id === operacaoPendente.id);
+  if (carga && ["Em transporte", "Atenção"].includes(carga.status)) {
+    carga.status = operacaoPendente.novoStatus;
+    $("feedbackOperacao").textContent = `Carga ${carga.id}: ${carga.status} (somente nesta sessão).`;
+  }
+  operacaoPendente = null;
+  $("modalConfirmacao").close();
+  renderizarCargas();
+});
+
 $("btnNovaCarga").addEventListener("click", () => {
+  idEmEdicao = null;
+  $("formCarga").reset();
+  $("tituloModalCarga").textContent = "Nova carga";
+  $("salvarCarga").textContent = "Cadastrar carga demonstrativa";
   $("mensagemForm").textContent = "";
   $("modalCarga").showModal();
 });
 
 $("fecharModal").addEventListener("click", () => {
   $("modalCarga").close();
+  idEmEdicao = null;
 });
 
 $("fecharDetalhes").addEventListener("click", () => {

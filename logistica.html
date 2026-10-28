@@ -73,6 +73,7 @@
               <option value="Em transporte">Em transporte</option>
               <option value="Atenção">Atenção</option>
               <option value="Entregue">Entregue</option>
+              <option value="Cancelada">Cancelada</option>
             </select>
           </div>
         </div>
@@ -102,7 +103,7 @@
       <dialog id="modalCarga">
         <form id="formCarga">
           <div class="modal-heading">
-            <h2>Nova carga</h2>
+            <h2 id="tituloModalCarga">Nova carga</h2>
             <button type="button" id="fecharModal"
               class="btn-secondary">Fechar</button>
           </div>
@@ -134,7 +135,7 @@
 
           <p id="mensagemForm" role="status"></p>
 
-          <button type="submit" class="btn-primary">
+          <button type="submit" id="salvarCarga" class="btn-primary">
             Cadastrar carga demonstrativa
           </button>
         </form>
@@ -147,7 +148,18 @@
             class="btn-secondary">Fechar</button>
         </div>
         <div id="conteudoDetalhes"></div>
+        <div id="acoesDetalhes" class="detail-actions"></div>
       </dialog>
+
+      <dialog id="modalConfirmacao" aria-labelledby="tituloConfirmacao">
+        <h2 id="tituloConfirmacao">Confirmar operação</h2>
+        <p id="textoConfirmacao"></p>
+        <div class="detail-actions">
+          <button type="button" id="cancelarConfirmacao" class="btn-secondary">Voltar</button>
+          <button type="button" id="confirmarOperacao" class="btn-primary">Confirmar</button>
+        </div>
+      </dialog>
+      <p id="feedbackOperacao" class="feedback" role="status" aria-live="polite"></p>
     </main>
   </div>
 
