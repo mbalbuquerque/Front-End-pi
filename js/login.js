@@ -6,32 +6,57 @@ if (lerSessao()) {
 }
 
 
-const form = document.getElementById("formLogin");
+const form = document.getElementById("loginForm");
+const emailInput = document.getElementById("email");
+const passwordInput = document.getElementById("password");
+const togglePassword = document.getElementById("togglePassword");
+const forgotPassword = document.getElementById("forgotPassword");
+const mensagem = document.getElementById("loginMessage");
 const botao = document.getElementById("botaoEntrar");
-const erro = document.getElementById("erroLogin");
+const TEXTO_BOTAO = botao.innerHTML;
 
 
-function mostrarErro(mensagem) {
+togglePassword.addEventListener("click", () => {
 
-  erro.textContent = mensagem;
-  erro.hidden = false;
+  const visivel = passwordInput.type === "password";
 
-}
+  passwordInput.type = visivel ? "text" : "password";
+  togglePassword.textContent = visivel ? "Ocultar" : "Mostrar";
+  togglePassword.setAttribute("aria-pressed", String(visivel));
+  togglePassword.setAttribute("aria-label", visivel ? "Ocultar senha" : "Mostrar senha");
+
+});
+
+
+forgotPassword.addEventListener("click", evento => {
+
+  evento.preventDefault();
+  mensagem.textContent = "Peça ao gestor da sua equipe para definir uma senha nova.";
+
+});
 
 
 form.addEventListener("submit", async evento => {
 
   evento.preventDefault();
 
-  const email = form.email.value.trim();
-  const senha = form.senha.value;
+  mensagem.textContent = "";
 
-  if (!email || !senha) {
-    mostrarErro("Informe e-mail e senha.");
+  const email = emailInput.value.trim();
+  const senha = passwordInput.value;
+
+  if (!email || !emailInput.checkValidity()) {
+    mensagem.textContent = "Informe um e-mail válido.";
+    emailInput.focus();
     return;
   }
 
-  erro.hidden = true;
+  if (!senha) {
+    mensagem.textContent = "Informe sua senha.";
+    passwordInput.focus();
+    return;
+  }
+
   botao.disabled = true;
   botao.textContent = "Entrando…";
 
@@ -47,7 +72,7 @@ form.addEventListener("submit", async evento => {
     const dados = await response.json().catch(() => ({}));
 
     if (!response.ok) {
-      mostrarErro((dados.erros || ["Não foi possível entrar."]).join(" "));
+      mensagem.textContent = (dados.erros || ["Não foi possível entrar."]).join(" ");
       return;
     }
 
@@ -58,14 +83,14 @@ form.addEventListener("submit", async evento => {
 
   catch (falha) {
 
-    mostrarErro("Sem conexão com o servidor. Confira a internet e tente de novo.");
+    mensagem.textContent = "Sem conexão com o servidor. Confira a internet e tente de novo.";
 
   }
 
   finally {
 
     botao.disabled = false;
-    botao.textContent = "Entrar";
+    botao.innerHTML = TEXTO_BOTAO;
 
   }
 

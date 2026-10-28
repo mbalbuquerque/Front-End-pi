@@ -1,0 +1,12 @@
+{
+  "name": "coldtrack-front-qa",
+  "private": true,
+  "scripts": {
+    "test:qa": "playwright test",
+    "test:qa:ui": "playwright test --ui",
+    "test:qa:report": "playwright show-report"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.56.0"
+  }
+}

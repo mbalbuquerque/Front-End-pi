@@ -3,64 +3,128 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <title>Entrar · ColdTrack Control</title>
-
-  <meta name="theme-color" content="#0b1f33">
-  <meta name="description" content="ColdTrack Control - acesso ao painel de monitoramento da cadeia fria">
-
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700&display=swap" rel="stylesheet">
-
-  <link rel="stylesheet" href="css/style.css">
-  <link rel="stylesheet" href="css/telas.css">
-
+  <meta name="theme-color" content="#061b2b">
+  <title>Entrar | ColdTrack Control</title>
   <link rel="manifest" href="manifest.json">
-  <link rel="apple-touch-icon" href="assets/icons/icon-192.png">
+  <link rel="stylesheet" href="css/login.css">
 </head>
+<body>
+  <main class="login-layout">
+    <section class="brand-panel">
+      <a class="brand" href="index.html">
+        <span class="brand-icon">❄</span>
+        <span>ColdTrack<span class="brand-accent">.</span></span>
+      </a>
 
-<body class="pagina-login">
+      <div class="brand-content">
+        <span class="eyebrow">COLDTRACK CONTROL</span>
+        <h1>Inteligência e segurança para a cadeia fria.</h1>
+        <p>
+          Monitore cargas, acompanhe indicadores e gerencie
+          suas operações em uma única plataforma.
+        </p>
 
-  <main class="login">
-
-    <div class="brand login-marca">
-      <div class="brand-icon">❄</div>
-      <div>
-        <strong>ColdTrack</strong>
-        <span>CONTROL</span>
+        <div class="feature-list">
+          <div><span>✓</span> Monitoramento IoT</div>
+          <div><span>✓</span> Infraestrutura em nuvem</div>
+          <div><span>✓</span> Controle de acesso por perfil</div>
+          <div><span>✓</span> Auditoria e rastreabilidade</div>
+        </div>
       </div>
-    </div>
 
-    <form class="login-cartao" id="formLogin" novalidate>
+      <div class="brand-footer">
+        IoT · Cloud Computing · Cyber Security
+      </div>
+    </section>
 
-      <h1>Entrar no painel</h1>
-      <p>Acompanhe a temperatura da carga em tempo real.</p>
+    <section class="form-panel">
+      <div class="form-container">
+        <div class="mobile-brand">❄ ColdTrack</div>
 
-      <label class="campo">
-        <span>E-mail</span>
-        <input type="email" name="email" autocomplete="username" required>
-      </label>
+        <span class="eyebrow">ACESSO À PLATAFORMA</span>
+        <h2>Bem-vindo de volta</h2>
+        <p class="subtitle">
+          Entre com suas credenciais para acessar o ColdTrack Control.
+        </p>
 
-      <label class="campo">
-        <span>Senha</span>
-        <input type="password" name="senha" autocomplete="current-password" required>
-      </label>
+        <form id="loginForm" novalidate>
+          <div class="field">
+            <label for="email">E-mail</label>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              placeholder="seuemail@empresa.com"
+              autocomplete="username"
+              maxlength="254"
+              required
+            >
+          </div>
 
-      <button type="submit" class="botao botao-cheio" id="botaoEntrar">Entrar</button>
+          <div class="field">
+            <div class="label-row">
+              <label for="password">Senha</label>
+            </div>
 
-      <p class="erro-form" id="erroLogin" role="alert" hidden></p>
+            <div class="password-wrapper">
+              <input
+                type="password"
+                id="password"
+                name="password"
+                placeholder="Digite sua senha"
+                autocomplete="current-password"
+                required
+              >
+              <button
+                type="button"
+                id="togglePassword"
+                class="toggle-password"
+                aria-label="Mostrar senha"
+                aria-pressed="false"
+              >Mostrar</button>
+            </div>
+          </div>
 
-      <p class="login-ajuda">Sem acesso? Peça ao gestor da sua equipe para criar seu usuário.
-        Empresa nova? <a href="cadastro.html">Cadastre sua empresa</a>.</p>
+          <div class="form-options">
+            <a href="#" id="forgotPassword">
+              Esqueceu a senha?
+            </a>
+          </div>
 
-    </form>
+          <p id="loginMessage" class="form-message"
+             role="status" aria-live="polite"></p>
 
+          <div class="login-actions">
+            <button type="submit" class="login-button" id="botaoEntrar">
+              Entrar
+              <span aria-hidden="true">→</span>
+            </button>
+
+            <a href="cadastro.html" class="register-button">
+              <span aria-hidden="true">+</span>
+              Cadastrar empresa
+            </a>
+          </div>
+        </form>
+
+        <div class="security-note">
+          <span aria-hidden="true">🔒</span>
+          <p>
+            A sessão vale por 8 horas. Sem acesso? Peça ao gestor
+            da sua equipe para criar seu usuário.
+          </p>
+        </div>
+
+        <div class="form-footer">
+          <a href="index.html">← Voltar ao início</a>
+          <span>ColdTrack Control · 2026</span>
+        </div>
+      </div>
+    </section>
   </main>
 
   <script src="js/config.js"></script>
   <script src="js/comum.js"></script>
   <script src="js/login.js"></script>
-
 </body>
 </html>
