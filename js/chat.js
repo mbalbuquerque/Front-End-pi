@@ -8,6 +8,97 @@
   const AVALIACOES_KEY = "coldtrack_chat_avaliacoes_v1";
 
   const conhecimento = [
+
+    
+{
+  termos: [
+    "manual", "guia", "tutorial",
+    "instrucoes", "como usar", "ajuda do sistema"
+  ],
+  resposta:
+    "O Manual do ColdTrack Control explica o acesso, " +
+    "Dashboard, Monitoramento, Gestão Logística, Usuários, " +
+    "Auditoria, Assistente Virtual e avaliação. " +
+    "Use o botão Manual do sistema para consultar " +
+    "os principais procedimentos."
+},
+{
+  termos: ["infografico", "material visual", "ilustracao"],
+  resposta:
+    "O infográfico apresenta visualmente as funcionalidades " +
+    "do ColdTrack e o fluxo Sensor → ESP32 → ThingSpeak → " +
+    "Plataforma Web. Clique em Ver infográfico para abrir a imagem."
+},
+{
+  termos: [
+    "cadastrar carga", "nova carga",
+    "criar carga", "incluir carga"
+  ],
+  resposta:
+    "Para cadastrar uma carga:\n" +
+    "1. Abra Gestão Logística.\n" +
+    "2. Selecione a opção de nova carga.\n" +
+    "3. Preencha os campos do formulário.\n" +
+    "4. Revise e confirme.\n\n" +
+    "Atenção: o cadastro ainda é demonstrativo e " +
+    "não possui persistência definitiva no servidor."
+},
+{
+  termos: ["editar carga", "alterar carga"],
+  resposta:
+    "Abra Gestão Logística, localize a carga, " +
+    "selecione Editar, altere as informações e confirme. " +
+    "As alterações ainda são demonstrativas."
+},
+{
+  termos: ["cancelar carga", "concluir carga"],
+  resposta:
+    "Em Gestão Logística, localize o registro e escolha " +
+    "a ação correspondente. Confira os dados antes de confirmar. " +
+    "Essas operações ainda não possuem persistência no servidor."
+},
+{
+  termos: ["atualizar leitura", "dados antigos", "sem dados"],
+  resposta:
+    "No Monitoramento, confira o horário da última leitura " +
+    "e utilize a atualização manual. Se os dados continuarem " +
+    "antigos ou indisponíveis, verifique a conectividade " +
+    "do dispositivo e a disponibilidade do ThingSpeak."
+},
+{
+  termos: ["interpretar temperatura", "temperatura critica"],
+  resposta:
+    "Os limites demonstrativos são:\n" +
+    "• Até 15 °C: Normal.\n" +
+    "• Acima de 15 °C até 20 °C: Atenção.\n" +
+    "• Acima de 20 °C: Crítico.\n\n" +
+    "Esses valores não substituem os limites específicos " +
+    "de conservação de cada mercadoria."
+},
+{
+  termos: ["avaliar atendimento", "dar nota", "estrelas"],
+  resposta:
+    "Após receber uma resposta, informe se sua dúvida " +
+    "foi resolvida. Depois selecione de 1 a 5 estrelas, " +
+    "escreva um comentário opcional e envie sua avaliação. " +
+    "Atualmente, ela é salva apenas neste navegador."
+},
+{
+  termos: ["exportar auditoria", "baixar csv"],
+  resposta:
+    "Abra Auditoria, aplique os filtros desejados " +
+    "e utilize a opção de exportação CSV. " +
+    "Os registros atuais são demonstrativos."
+},
+{
+  termos: ["aplicativo", "instalar", "pwa", "offline"],
+  resposta:
+    "O ColdTrack possui estrutura PWA, mas a instalação " +
+    "e o funcionamento offline dependem da configuração " +
+    "e do suporte do navegador. Leituras atualizadas " +
+    "do ThingSpeak exigem conexão com o serviço."
+},
+
     {
       termos: ["coldtrack", "projeto", "plataforma", "objetivo"],
       resposta: "O ColdTrack Control é um projeto de monitoramento da cadeia fria que utiliza sensores IoT, ESP32, ThingSpeak e uma interface web."
@@ -87,7 +178,7 @@
         const chave = normalizar(termo);
 
         if (` ${texto} `.includes(` ${chave} `)) {
-          pontos += chave.includes(" ") ? 3 : 1;
+          pontos += chave.includes(" ") ? 10 : 1;
         }
       }
 
@@ -194,6 +285,15 @@
       </div>
 
       <div class="ct-chat-quick" id="ctChatQuick">
+      
+<button type="button" data-action="manual">
+  📘 Manual do sistema
+</button>
+
+<button type="button" data-action="infografico">
+  🖼️ Ver infográfico
+</button>
+
         <button type="button" data-question="O que é ColdTrack?">
           O projeto
         </button>
@@ -434,6 +534,86 @@
         "Não foi possível salvar a avaliação neste navegador.";
     }
   }
+  
+function mostrarManual() {
+  adicionarMensagem(
+    "📘 MANUAL DO USUÁRIO — COLDTRACK CONTROL\n\n" +
+    "1. Acesso: abra a Home e utilize o menu da plataforma.\n\n" +
+    "2. Dashboard: consulte temperatura, umidade, RSSI " +
+    "e horário da última leitura.\n\n" +
+    "3. Monitoramento: veja o histórico, confira a " +
+    "atualização dos dados e consulte as leituras.\n\n" +
+    "4. Gestão Logística: consulte, cadastre, edite, " +
+    "conclua ou cancele cargas demonstrativas.\n\n" +
+    "5. Usuários: consulte registros e perfis demonstrativos.\n\n" +
+    "6. Auditoria: pesquise eventos e exporte registros CSV.\n\n" +
+    "7. Atendimento: faça perguntas, confirme se a dúvida " +
+    "foi resolvida e avalie de 1 a 5 estrelas.\n\n" +
+    "8. Suporte: utilize Falar com o desenvolvedor.\n\n" +
+    "Digite o nome de um módulo ou procedimento " +
+    "para receber instruções mais detalhadas."
+  );
+}
+
+function mostrarInfografico() {
+  const caminho = "assets/images/coldtrack-infografico.png";
+
+  // Evita duplicar a prévia.
+  const anterior = document.getElementById(
+    "ctChatInfografico"
+  );
+
+  if (anterior) {
+    anterior.scrollIntoView({
+      behavior: "smooth",
+      block: "nearest"
+    });
+    return;
+  }
+
+  const bloco = document.createElement("div");
+
+  bloco.id = "ctChatInfografico";
+  bloco.className = "ct-chat-infografico";
+
+  const titulo = document.createElement("strong");
+  titulo.textContent = "Infográfico ColdTrack Control";
+
+  const imagem = document.createElement("img");
+  imagem.src = caminho;
+  imagem.alt =
+    "Infográfico do ColdTrack Control com módulos " +
+    "da plataforma e fluxo de monitoramento IoT.";
+  imagem.loading = "lazy";
+
+  const aviso = document.createElement("p");
+  aviso.textContent =
+    "Material ilustrativo. As telas e os indicadores " +
+    "da imagem não representam medições atuais.";
+
+  const abrir = document.createElement("a");
+  abrir.href = caminho;
+  abrir.target = "_blank";
+  abrir.rel = "noopener noreferrer";
+  abrir.textContent = "🔎 Ampliar infográfico";
+
+  imagem.addEventListener("error", () => {
+    imagem.hidden = true;
+    aviso.textContent =
+      "O infográfico não foi encontrado. Confira se " +
+      "o arquivo existe em assets/coldtrack-infografico.png.";
+    abrir.hidden = true;
+  });
+
+  bloco.appendChild(titulo);
+  bloco.appendChild(imagem);
+  bloco.appendChild(aviso);
+  bloco.appendChild(abrir);
+
+  messages.appendChild(bloco);
+  messages.scrollTop = messages.scrollHeight;
+}
+
 
   toggle.addEventListener("click", () => {
     panel.hidden ? abrir() : fechar();
@@ -446,14 +626,29 @@
     enviar(input.value);
   });
 
-  quick.addEventListener("click", evento => {
-    const botao = evento.target.closest(
-      "button[data-question]"
-    );
+  
+quick.addEventListener("click", evento => {
+  const botao = evento.target.closest("button");
 
-    if (botao) enviar(botao.dataset.question);
-  });
+  if (!botao) return;
 
+  if (botao.dataset.action === "manual") {
+    mostrarManual();
+    return;
+  }
+
+  if (botao.dataset.action === "infografico") {
+    mostrarInfografico();
+    return;
+  }
+
+  if (botao.dataset.question) {
+    enviar(botao.dataset.question);
+  }
+
+});
+
+  // Confirmação de resolução da dúvida
   $("ctChatYes").addEventListener("click", () => {
     mostrarAvaliacao(true);
   });
@@ -462,26 +657,30 @@
     mostrarAvaliacao(false);
   });
 
+  // Seleção da nota de atendimento
   stars.addEventListener("click", evento => {
-    const botao = evento.target.closest(
-      "button[data-star]"
-    );
+    const botao = evento.target.closest("button[data-star]");
 
     if (botao) {
       selecionarNota(Number(botao.dataset.star));
     }
   });
 
+  // Registro da avaliação
   $("ctChatSaveRating").addEventListener(
     "click",
     salvarAvaliacao
   );
 
+  // Fechar o chat com a tecla Escape
   document.addEventListener("keydown", evento => {
     if (evento.key === "Escape" && !panel.hidden) {
       fechar();
     }
   });
 
+  // Configuração inicial do WhatsApp
   atualizarWhatsApp();
+
 })();
+
