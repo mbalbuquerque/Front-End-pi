@@ -1,26 +1,44 @@
 {
-  "name": "projeto-integrador-4-periodo-front",
-  "version": "1.0.0",
-  "description": "O **ColdTrack Control** é a interface web do projeto **ColdTrack Edge**, desenvolvido como parte do **Projeto Integrador – 4º Período**.",
-  "main": "sw.js",
+  "name": "coldtrack-control",
+  "private": true,
+  "version": "2.0.0",
+  "description": "ColdTrack Control: painel web (React + Vite) do projeto ColdTrack Edge, monitoramento IoT da cadeia fria.",
+  "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "test:qa": "playwright test",
-    "test:qa:report": "playwright show-report"
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "playwright test",
+    "test:e2e:report": "playwright show-report",
+    "lint": "eslint . --max-warnings 0"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/mbalbuquerque/Front-End-pi.git"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "commonjs",
   "bugs": {
     "url": "https://github.com/mbalbuquerque/Front-End-pi/issues"
   },
   "homepage": "https://github.com/mbalbuquerque/Front-End-pi#readme",
+  "license": "ISC",
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^6.28.0"
+  },
   "devDependencies": {
-    "@playwright/test": "^1.64.1"
+    "@eslint/js": "^9.39.5",
+    "@playwright/test": "^1.64.1",
+    "@vitejs/plugin-react": "^4.3.4",
+    "eslint": "^9.39.5",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-react-refresh": "^0.4.26",
+    "globals": "^15.15.0",
+    "jsdom": "^25.0.1",
+    "postcss-prefix-selector": "^2.2.1",
+    "vite": "^5.4.11",
+    "vitest": "^2.1.9"
   }
 }

@@ -1,6 +1,9 @@
-﻿const { defineConfig, devices } = require("@playwright/test");
+﻿import { defineConfig, devices } from "@playwright/test";
 
-module.exports = defineConfig({
+// Testes e2e em coldtrack-qa/tests (CommonJS: coldtrack-qa/package.json).
+// O servidor é o build publicado (vite preview), igual ao que vai para o Azure.
+// Rode `npm run build` antes de `npm run test:e2e`.
+export default defineConfig({
   testDir: "./coldtrack-qa/tests",
 
   timeout: 30000,
@@ -15,10 +18,7 @@ module.exports = defineConfig({
 
   reporter: [
     ["list"],
-    ["html", {
-      outputFolder: "playwright-report",
-      open: "never"
-    }]
+    ["html", { outputFolder: "playwright-report", open: "never" }]
   ],
 
   use: {
@@ -26,7 +26,9 @@ module.exports = defineConfig({
     headless: true,
     trace: "retain-on-failure",
     screenshot: "only-on-failure",
-    video: "retain-on-failure"
+    video: "retain-on-failure",
+    actionTimeout: 10000,
+    navigationTimeout: 15000
   },
 
   projects: [
@@ -41,7 +43,7 @@ module.exports = defineConfig({
   ],
 
   webServer: {
-    command: "python -m http.server 5500 --bind 127.0.0.1",
+    command: "npm run preview -- --host 127.0.0.1 --port 5500 --strictPort",
     url: "http://127.0.0.1:5500",
     reuseExistingServer: !process.env.CI,
     timeout: 30000
