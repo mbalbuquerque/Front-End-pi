@@ -2,7 +2,9 @@
 
 Contrato técnico do painel: estrutura, CSS, módulos compartilhados e regras de código.
 Leia antes de criar ou alterar uma tela. O passo a passo de trabalho (branches, commits,
-verificações) está em [`CONTRIBUTING.md`](../CONTRIBUTING.md).
+verificações) está em [`CONTRIBUTING.md`](../CONTRIBUTING.md). Visão geral do projeto e links: [`README.md`](../README.md).
+A API, o firmware e a infraestrutura estão no repositório
+[projeto-integrador-4-periodo](https://github.com/mbalbuquerque/projeto-integrador-4-periodo).
 Telas de referência: **`src/pages/Login/Login.jsx`** (pública) e **`src/pages/Alertas/Alertas.jsx`** (logada, com polling).
 
 Stack: React 18 + Vite 5 + React Router 6, JavaScript (sem TypeScript). Node 20+.
@@ -30,14 +32,14 @@ src/
   main.jsx                 BrowserRouter > AuthProvider > App; registra o sw.js no build
   App.jsx                  todas as rotas (cada tela com React.lazy)
   rotas.js                 ROTAS_LEGADAS (nome.html -> rota) e PAGINAS_PAINEL (menu)
-  lib/                     lógica sem React (porte de comum.js / config.js)
+  lib/                     lógica sem React (API, sessão, leituras, faixas, formatação)
   hooks/                   useSessao, usePolling, useVeiculoEscolhido, useTitulo,
                            useMovimentoReduzido
   components/              PainelLayout, RequireAuth, Estado, StatusSelo, FiltroPeriodo,
                            SeletorVeiculo, GraficoTemperatura, ChatWidget/, AssistentePainel/
   pages/<Nome>/<Nome>.jsx  uma pasta por tela (regras puras em .js e testes ao lado)
   styles/base.css          reset mínimo global
-  styles/<familia>/*.css   CSS antigo, escopado por .escopo-<familia>
+  styles/<familia>/*.css   CSS de cada família de telas, escopado por .escopo-<familia>
   assets/images/           imagens WebP (slide-1..3, coldtrack-infografico)
 ```
 

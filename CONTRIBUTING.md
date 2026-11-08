@@ -8,17 +8,22 @@ Guia de trabalho do Front-End do ColdTrack Control. O contrato técnico (estrutu
 | Branch | Papel |
 |---|---|
 | `everson` | branch de trabalho; cada push publica o site no Azure (`publicar-site.yml`) |
-| `main` | versão consolidada; recebe a `everson` por pull request no fim de cada etapa |
+| `main` | versão consolidada; recebe a `everson` por pull request quando uma etapa fica pronta |
 
 Fluxo:
 
 1. Atualize a `everson` antes de começar: `git switch everson && git pull`.
 2. Mudança grande ou em paralelo com outra pessoa: crie uma branch a partir da `everson`
    (`git switch -c <nome>/<assunto>`) e abra um pull request para a `everson`.
-3. No fim da etapa, abra o pull request `everson` -> `main`. O workflow `testes.yml` roda em
-   todo pull request e precisa estar verde para o merge.
+3. Quando a etapa estiver pronta, abra o pull request `everson` -> `main`. O workflow `testes.yml`
+   roda em todo pull request e precisa estar verde para o merge. Depois do merge, traga a `main`
+   de volta para a `everson` (`git switch everson && git merge main`).
+4. **Nunca apague a `everson`** (nem use "apagar branch após o merge"): o deploy do site e o login
+   do GitHub Actions no Azure (OIDC) só aceitam essa branch.
 
 Lembre que push na `everson` publica o site: só envie o que passou nas verificações abaixo.
+A API e o firmware estão no repositório
+[projeto-integrador-4-periodo](https://github.com/mbalbuquerque/projeto-integrador-4-periodo), com fluxo igual.
 
 ## Commits
 

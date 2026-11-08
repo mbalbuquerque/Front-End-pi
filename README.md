@@ -1,13 +1,21 @@
 # ColdTrack Control
 
 Painel web do **ColdTrack Edge**, projeto integrador de monitoramento IoT da cadeia fria.
-Sensores ESP32 instalados no baú dos veículos enviam temperatura, umidade e sinal Wi-Fi para
-uma API no Azure; o painel mostra a situação de cada carga, os alertas fora da faixa do perfil
-da mercadoria, relatórios, viagens e o risco de calor previsto na rota.
+Sensores ESP32-C3 instalados no baú dos veículos enviam temperatura, umidade e sinal Wi-Fi para
+uma API no Azure; o painel (React + Vite) mostra a situação de cada carga, os alertas fora da
+faixa do perfil da mercadoria, relatórios, viagens e o risco de calor previsto na rota.
 
-- Site publicado: <https://stcoldtrackweb7319.z15.web.core.windows.net>
-- Repositório do Front-End: <https://github.com/mbalbuquerque/Front-End-pi>
-- Repositório da API (Back-End, Azure Functions) e do firmware: <https://github.com/mbalbuquerque/projeto-integrador-4-periodo>
+Este é o repositório do **painel (front-end)**. A API, o firmware, a infraestrutura e a análise
+climática ficam no repositório do back-end:
+[mbalbuquerque/projeto-integrador-4-periodo](https://github.com/mbalbuquerque/projeto-integrador-4-periodo).
+
+| | endereço |
+|---|---|
+| Painel publicado | <https://stcoldtrackweb7319.z15.web.core.windows.net> |
+| API (base) | `https://func-coldtrack-7319.azurewebsites.net/api`; exemplo público: <https://func-coldtrack-7319.azurewebsites.net/api/perfis> |
+| Repositório do painel (este) | <https://github.com/mbalbuquerque/Front-End-pi> |
+| Repositório do back-end e do firmware | <https://github.com/mbalbuquerque/projeto-integrador-4-periodo> |
+| Simulação do firmware no Wokwi | <https://wokwi.com/projects/475352296477619201> |
 
 ## 1. Sobre o projeto
 
@@ -27,28 +35,39 @@ Objetivos:
 - oferecer atendimento automatizado aos visitantes, com encaminhamento ao desenvolvedor;
 - manter a interface responsiva e testada automaticamente.
 
-### Fluxo dos dados
+### Arquitetura
 
 ```text
-Sensor DHT + ESP32-C3 (no baú)
-        |  Wi-Fi, HTTPS, chave por dispositivo
+ESP32-C3 + DHT11/DHT22 (no baú)
+        |  Wi-Fi, HTTPS + JSON, chave por dispositivo
         v
-API ColdTrack (Azure Functions)  -- perfis de carga, veículos, sensores, viagens, usuários
-        |  JSON, token de sessão (8 h)
+API ColdTrack (Azure Functions, Python)  <--> Azure OpenAI (gpt-4.1-mini, RAG)
+        |  grava e consulta                      chat público e assistente do painel
         v
-ColdTrack Control (este repositório, React, site estático no Azure Storage)
+Azure Cosmos DB (empresas, usuários, veículos, sensores, viagens, leituras)
+        ^
+        |  JSON, token JWT de sessão (8 h)
+        |
+ColdTrack Control (este repositório): React + Vite, site estático no Azure Storage
 ```
 
+Perfis de usuário: **gestor** (consulta e cadastra) e **operador** (consulta). A API é a única
+fonte dos dados do painel; a especificação das rotas está em
+[`docs/api.md`](https://github.com/mbalbuquerque/projeto-integrador-4-periodo/blob/main/docs/api.md)
+do back-end.
+
 A tela **Monitoramento** é uma demonstração separada que lê o canal público do ThingSpeak
-(`3496439`: field1 temperatura, field2 umidade, field3 RSSI). O **Dashboard** usa a
-previsão da Open-Meteo para estimar o calor na rota Petrolina a Suape.
+(`3496439`: field1 temperatura, field2 umidade, field3 RSSI); o ThingSpeak não faz parte do
+caminho dos dados do painel. O **Dashboard** usa a previsão da Open-Meteo para estimar o calor
+na rota Petrolina a Suape.
 
 ### Faixas de temperatura
 
 As faixas não são fixas no Front-End: cada veículo tem um **perfil de carga** cadastrado na API
-(`GET /perfis`, com `min`, `max` e `margem`). A leitura é Normal dentro da faixa, Atenção até
-`margem` graus fora dela e Crítico além disso. Enquanto os perfis não carregam, vale o perfil
-demonstrativo (até 15 °C Normal, até 20 °C Atenção).
+(`GET /perfis`, com `min`, `max` e `margem`; manga, uva e demonstrativo). A leitura é Normal
+dentro da faixa, Atenção até `margem` graus fora dela e Crítico além disso. Os valores vêm da
+API; só enquanto os perfis não carregam (ou para veículo sem perfil) o painel usa o perfil
+demonstrativo de reserva (Normal até 15 °C, Atenção até 20 °C).
 
 ## 2. Stack
 
@@ -60,7 +79,7 @@ demonstrativo (até 15 °C Normal, até 20 °C Atenção).
 | Qualidade | ESLint 9 (`--max-warnings 0`) |
 | PWA | `public/manifest.json`, `public/sw.js` (rede primeiro, registrado só no build) |
 | Hospedagem | Azure Storage, site estático (container `$web`), publicação por GitHub Actions com OIDC |
-| Hardware | ESP32-C3, sensor DHT |
+| Hardware | ESP32-C3, sensor DHT11 ou DHT22 (firmware no repositório do back-end) |
 | Serviços externos | API ColdTrack (Azure Functions; chat e assistente do painel com Azure OpenAI), ThingSpeak, Open-Meteo |
 
 ## 3. Estrutura
@@ -145,6 +164,10 @@ O workflow `.github/workflows/testes.yml` roda lint, unitários, build e e2e a c
 request; quando algum e2e falha, o relatório fica anexado à execução.
 
 ## 6. Deploy
+
+Fluxo de branches: o trabalho acontece na **`everson`**; quando uma etapa fica pronta, abre-se
+um pull request `everson` -> `main`. **A `everson` não pode ser apagada** (nem após o merge):
+o deploy e o login por OIDC no Azure dependem dela.
 
 Cada push na branch **`everson`** dispara `.github/workflows/publicar-site.yml`:
 
@@ -278,10 +301,19 @@ Limitações:
   dados de exemplo e sem persistência.
 - As avaliações do chat ficam no navegador de quem avaliou.
 
-## 10. Contribuição
+## 10. Documentação
 
-Fluxo de branches, convenção de commits e como adicionar uma tela: [`CONTRIBUTING.md`](CONTRIBUTING.md).
-Contrato técnico: [`docs/ARQUITETURA.md`](docs/ARQUITETURA.md).
+| documento | conteúdo |
+|---|---|
+| [`CONTRIBUTING.md`](CONTRIBUTING.md) | branches, commits, verificações e como adicionar uma tela |
+| [`docs/ARQUITETURA.md`](docs/ARQUITETURA.md) | contrato técnico: estrutura, CSS, `src/lib`, hooks, componentes, regras |
+| [`docs/guia-de-uso.md`](docs/guia-de-uso.md) | guia do usuário final, tela por tela |
+| [`docs/relatorio-de-testes.md`](docs/relatorio-de-testes.md) | resultados dos testes (unitários, e2e simulado e real) |
+| [`coldtrack-qa/README.md`](coldtrack-qa/README.md) | suíte e2e: casos, apoio e como rodar |
+| [`coldtrack-qa/real/README.md`](coldtrack-qa/real/README.md) | suíte e2e real contra produção (regras de segurança) |
+| [Back-end: README](https://github.com/mbalbuquerque/projeto-integrador-4-periodo#readme) | API, firmware, infraestrutura |
+| [Back-end: `docs/api.md`](https://github.com/mbalbuquerque/projeto-integrador-4-periodo/blob/main/docs/api.md) | referência das rotas |
+| [Back-end: `docs/seguranca.md`](https://github.com/mbalbuquerque/projeto-integrador-4-periodo/blob/main/docs/seguranca.md) | análise de segurança |
 
 ## 11. Equipe do Projeto Integrador
 
@@ -293,6 +325,7 @@ Contrato técnico: [`docs/ARQUITETURA.md`](docs/ARQUITETURA.md).
 - Marcelo Barbosa
 
 O desenvolvimento envolve hardware, IoT, Front-End, Back-End, integração, documentação e testes.
+Mesma equipe do [repositório do back-end](https://github.com/mbalbuquerque/projeto-integrador-4-periodo#equipe).
 
 ## 12. Referências técnicas
 

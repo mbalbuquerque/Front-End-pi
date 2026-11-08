@@ -59,7 +59,8 @@ Rotas registradas pelo próprio teste (`page.route`) têm prioridade sobre as do
 ## Casos
 
 Cada caso roda em **Desktop Chrome** e **Mobile Chrome (Pixel 7)**, exceto o responsivo
-(viewport fixo de 390 px, só no projeto desktop): 101 casos, 184 execuções e 18 puladas.
+(viewport fixo de 390 px, só no projeto desktop). Os totais de cada execução ficam em
+[`docs/relatorio-de-testes.md`](../docs/relatorio-de-testes.md).
 
 | Arquivo | Casos | O que cobre |
 |---|---|---|

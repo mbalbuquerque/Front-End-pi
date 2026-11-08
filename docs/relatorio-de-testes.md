@@ -15,9 +15,9 @@
 | Suíte | Comando | Resultado |
 |---|---|---|
 | Lint | `npm run lint` | sem avisos |
-| Unitários | `npm test` | 153 passaram em 23 arquivos, 0 falharam (137 antes do assistente do painel) |
+| Unitários | `npm test` | 158 passaram, 0 falharam (reexecutado em 08/11/2026 depois da revisão da documentação) |
 | Build | `npm run build` | ok |
-| E2E simulado (API simulada, build local) | `npm run test:e2e` | 184 passaram, 0 falharam, 18 pulados (os casos de 390 px e de impressão rodam só no projeto desktop, de propósito; 163/15 antes do assistente do painel) |
+| E2E simulado (API simulada, build local) | `npm run test:e2e` | 206 passaram, 0 falharam, 18 pulados (os casos de 390 px e de impressão rodam só no projeto desktop, de propósito). Na execução completa, QA-ASSIST-10 (390 px) falhou uma vez, com a máquina sob carga, e passou ao ser repetido sozinho |
 | E2E real (site publicado + API de produção) | `npm run test:e2e:real` | 57 passaram, 0 falharam, 0 pulados (site publicado no commit `4d51edd`, chat com Azure OpenAI incluído) |
 | E2E real do chat (build local + API de produção) | `REAL-PUB-04`, `05` e `09`, veja abaixo | 3 passaram, 0 falharam (2 perguntas de verdade à rota `/chat`) |
 
@@ -144,7 +144,7 @@ valores fixos.
 Todas as telas logadas têm o botão flutuante **Assistente**, que chama `POST /assistente` com o
 token da sessão. Ele responde dúvidas de uso (base: `docs/guia-de-uso.md`) e perguntas sobre os
 dados da empresa logada. Lint, unitários, build e e2e simulado rodaram na branch `everson` em
-08/11/2026, com a rota simulada: o backend da rota está sendo publicado em paralelo.
+08/11/2026, com a rota simulada. A rota já existe na API de produção (responde 401 sem token).
 
 | Camada | Casos | O que verifica |
 |---|---|---|
@@ -153,8 +153,8 @@ dados da empresa logada. Lint, unitários, build e e2e simulado rodaram na branc
 | E2E simulado `assistente.spec.js`, QA-ASSIST-01 a 11 | 12 casos, 21 execuções e 3 pulados (09 a 11 só no desktop) | botão nas 7 telas logadas para gestor e operador e em nenhuma das 8 públicas; saudação pelo primeiro nome; sugestão com `Bearer`, resposta em texto puro com quebra de linha e "Fontes:"; "Assistente digitando…" com campo e envio desligados; histórico na segunda pergunta (Enter); conversa mantida ao trocar de tela e apagada ao sair; 429 com o aviso da API; 503 com "O assistente está indisponível agora. Tente de novo em instantes."; Escape e × fecham com o foco de volta no botão; 390 px com o painel aberto na largura toda e sem rolagem horizontal nas 7 telas; botão não cobre o rodapé; impressão esconde o assistente |
 | E2E real `08-assistente.spec.js`, REAL-ASSIST-01 | 1 | gestor pergunta "Quantos veículos eu tenho cadastrados?" pela tela e recebe resposta não vazia; uma chamada real por execução; pula com o motivo se o site publicado ainda não tem o botão ou se a rota responde 404/503 |
 
-REAL-ASSIST-01 ainda não rodou contra produção: falta publicar o front com o assistente e a
-rota `/assistente` no backend. Sem as credenciais da suíte real na máquina, ele é pulado.
+REAL-ASSIST-01 ainda não foi executado contra produção. Sem as credenciais da suíte real na
+máquina, ele é pulado; rode `npm run test:e2e:real` com as credenciais para registrar o resultado.
 
 ## Segurança do front (CSP, logout no servidor, mensagem de login)
 
