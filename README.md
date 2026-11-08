@@ -122,6 +122,8 @@ cp .env.example .env.local
 | `npm run lint` | ESLint, falha com qualquer aviso |
 | `npm run test:e2e` | testes Playwright contra o build (rode `npm run build` antes) |
 | `npm run test:e2e:report` | abre o último relatório do Playwright |
+| `npm run test:e2e:real` | suíte real (site publicado + API de produção), opt-in, fora do CI; veja `coldtrack-qa/real/README.md` |
+| `npm run test:e2e:real:limpar` | apaga pela API registros `QA-*` que a suíte real tenha deixado |
 
 ## 5. Testes
 

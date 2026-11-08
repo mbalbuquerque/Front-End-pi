@@ -3,6 +3,9 @@
 Testes de ponta a ponta do painel React. Rodam no navegador contra o **build de produção**
 (`vite preview` servindo `dist/`), o mesmo conteúdo publicado no Azure.
 
+Há também uma suíte **real** (site publicado + API de produção), opt-in e fora do CI:
+`npm run test:e2e:real`. Regras de segurança e como rodar em [`real/README.md`](real/README.md).
+
 Nenhum teste acessa serviço externo. O arquivo `tests/apoio.js` intercepta:
 
 | Serviço | Comportamento padrão no teste |
