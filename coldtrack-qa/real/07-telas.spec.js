@@ -84,6 +84,10 @@ test("REAL-TEL-CSV: relatório baixa CSV com o cabeçalho e as leituras da tela"
     await expect(botao).toBeVisible();
   }
 
+  // Espera a tela trocar de período antes de baixar: o botão já aparece com os
+  // dados de 24 h enquanto os de 7 dias ainda estão chegando.
+  await expect(page.getByText(/últimos 7 dias/).first()).toBeVisible();
+
   const linhasTela = await page.locator("table.tabela tbody tr").count();
   expect(linhasTela).toBeGreaterThan(0);
 
