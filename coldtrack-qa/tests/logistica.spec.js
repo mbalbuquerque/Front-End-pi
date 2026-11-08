@@ -1,10 +1,10 @@
 
-const { test, expect } = require("@playwright/test");
+import { entrarComo, expect, simularApi, test } from "./apoio.js";
 
 test.describe("ColdTrack - Gestão Logística", () => {
 
   test.beforeEach(async ({ page }) => {
-    await page.goto("/logistica.html");
+    await page.goto("/logistica");
   });
 
   test("QA-023: página de logística carrega", async ({ page }) => {
@@ -108,15 +108,20 @@ test.describe("ColdTrack - Gestão Logística", () => {
   });
 
   test("QA-030: clique real no menu Dashboard", async ({ page }) => {
+    // Dashboard é tela logada: entra com sessão de teste e API simulada.
+    await entrarComo(page, "operador");
+    await simularApi(page);
+    await page.goto("/logistica");
+
     const linkDashboard = page.locator(
-      'nav a[href="dashboard.html"]'
+      'nav[aria-label="Menu principal"] a[href="/dashboard"]'
     );
 
     await expect(linkDashboard).toBeVisible();
     await linkDashboard.click();
 
-    await expect(page).toHaveURL(/\/dashboard\.html$/);
-    await expect(page.locator("body")).toBeVisible();
+    await expect(page).toHaveURL(/\/dashboard$/);
+    await expect(page.getByRole("heading", { level: 1, name: "Visão Geral" })).toBeVisible();
   });
 
 });

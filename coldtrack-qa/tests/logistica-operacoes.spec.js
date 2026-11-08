@@ -1,9 +1,9 @@
 
-const { test, expect } = require('@playwright/test');
+import { expect, test } from "./apoio.js";
 
 test.describe('QA - Operações da Gestão Logística', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/logistica.html');
+    await page.goto('/logistica');
     await expect(page.locator('#tabelaCargas')).toContainText('CT-001');
   });
 

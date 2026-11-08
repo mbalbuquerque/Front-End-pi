@@ -1,8 +1,10 @@
-﻿import { defineConfig, devices } from "@playwright/test";
+import { defineConfig, devices } from "@playwright/test";
 
-// Testes e2e em coldtrack-qa/tests (CommonJS: coldtrack-qa/package.json).
+// Testes e2e em coldtrack-qa/tests (ESM; apoio comum em tests/apoio.js).
 // O servidor é o build publicado (vite preview), igual ao que vai para o Azure.
 // Rode `npm run build` antes de `npm run test:e2e`.
+// Nenhum teste fala com a API real: apoio.js intercepta a API, a Open-Meteo,
+// o ThingSpeak e as fontes.
 export default defineConfig({
   testDir: "./coldtrack-qa/tests",
 
@@ -15,6 +17,7 @@ export default defineConfig({
   fullyParallel: false,
   workers: 1,
   retries: 0,
+  forbidOnly: !!process.env.CI,
 
   reporter: [
     ["list"],
@@ -28,7 +31,9 @@ export default defineConfig({
     screenshot: "only-on-failure",
     video: "retain-on-failure",
     actionTimeout: 10000,
-    navigationTimeout: 15000
+    navigationTimeout: 15000,
+    // O service worker do build atenderia os pedidos antes do page.route().
+    serviceWorkers: "block"
   },
 
   projects: [

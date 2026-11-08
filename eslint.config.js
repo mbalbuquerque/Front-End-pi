@@ -52,10 +52,10 @@ export default [
     rules: js.configs.recommended.rules
   },
 
-  // Testes e2e (Playwright, CommonJS).
+  // Testes e2e (Playwright, ESM).
   {
     files: ["coldtrack-qa/**/*.js"],
-    languageOptions: { ecmaVersion: 2022, sourceType: "commonjs", globals: { ...globals.node, ...globals.browser } },
+    languageOptions: { ecmaVersion: 2022, sourceType: "module", globals: { ...globals.node, ...globals.browser } },
     rules: js.configs.recommended.rules
   }
 ];

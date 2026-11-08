@@ -1,14 +1,20 @@
 
-const { test, expect } = require("@playwright/test");
+import { entrarComo, expect, simularApi, test } from "./apoio.js";
+
+// As telas são carregadas sob demanda (React.lazy): só conta os links depois
+// que a tela montou.
+async function esperarTela(page) {
+  await page.locator("a[href]:visible").first().waitFor();
+}
 
 const paginas = [
-  "/index.html",
-  "/login.html",
-  "/cadastro.html",
-  "/usuarios.html",
-  "/auditoria.html",
-  "/dashboard.html",
-  "/logistica.html"
+  "/",
+  "/login",
+  "/cadastro",
+  "/usuarios",
+  "/auditoria",
+  "/dashboard",
+  "/logistica"
 ];
 
 test.describe("QA - Navegação ColdTrack", () => {
@@ -32,6 +38,7 @@ test.describe("QA - Navegação ColdTrack", () => {
   test("QA-019: links internos levam ao destino correto", async ({ page }) => {
     for (const caminho of paginas) {
       await page.goto(caminho);
+      await esperarTela(page);
 
       const links = await page.locator("a[href]").evaluateAll(elementos =>
         elementos.map(elemento => ({
@@ -72,6 +79,7 @@ test.describe("QA - Navegação ColdTrack", () => {
 
     for (const caminho of paginas) {
       await page.goto(caminho);
+      await esperarTela(page);
 
       const links = await page.locator("a[href]").evaluateAll(elementos =>
         elementos.map(elemento => elemento.href)
@@ -103,12 +111,15 @@ test("QA-021: navegação visível e acessível", async ({ page }) => {
   const problemas = [];
 
   const paginasAutenticacao = [
-    "/login.html",
-    "/cadastro.html"
+    "/login",
+    "/cadastro"
   ];
 
   for (const caminho of paginas) {
     await page.goto(caminho);
+
+    // A tela é carregada sob demanda (React.lazy): espera o primeiro link aparecer.
+    await page.locator("a[href]:visible").first().waitFor();
 
     const links = page.locator("a[href]:visible");
     const totalLinks = await links.count();
@@ -117,7 +128,8 @@ test("QA-021: navegação visível e acessível", async ({ page }) => {
       `[QA-021] ${caminho}: ${totalLinks} links visíveis`
     );
 
-    if (paginasAutenticacao.includes(caminho)) {
+    // Tela logada sem sessão (/dashboard) termina no login: vale a URL final.
+    if (paginasAutenticacao.includes(new URL(page.url()).pathname)) {
       // Login e cadastro não precisam de menu lateral.
       // Mas devem permitir navegação por pelo menos um link.
       if (totalLinks === 0) {
@@ -147,7 +159,8 @@ test("QA-021: navegação visível e acessível", async ({ page }) => {
 
 
   test("QA-022: links da página inicial funcionam", async ({ page }) => {
-    await page.goto("/index.html");
+    await page.goto("/");
+    await esperarTela(page);
 
     const links = await page.locator("a[href]").all();
 
@@ -171,6 +184,27 @@ test("QA-021: navegação visível e acessível", async ({ page }) => {
         `Link quebrado na página inicial: ${href}`
       ).toBeLessThan(400);
     }
+  });
+
+  test("QA-039: URLs antigas .html redirecionam para as rotas novas", async ({ page }) => {
+    // Link salvo da tela antiga (sem sessão).
+    await page.goto("/login.html");
+    await expect(page).toHaveURL(/\/login$/);
+    await expect(page.locator("#loginForm")).toBeVisible();
+
+    // Etiqueta QR impressa: /dashboard.html?veiculo=X (o arquivo existe no build).
+    await entrarComo(page, "gestor");
+    await simularApi(page);
+
+    const resposta = await page.goto("/dashboard.html?veiculo=VAN-01");
+    expect(resposta.status()).toBe(200);
+    await expect(page).toHaveURL(/\/dashboard\?veiculo=VAN-01$/);
+    await expect(page.getByRole("heading", { level: 1, name: "Visão Geral" })).toBeVisible();
+  });
+
+  test("QA-040: rota inexistente volta para a página inicial", async ({ page }) => {
+    await page.goto("/pagina-que-nao-existe");
+    await expect(page).toHaveURL(/\/$/);
   });
 
 });

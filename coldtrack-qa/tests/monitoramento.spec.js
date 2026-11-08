@@ -1,7 +1,7 @@
 
-const { test, expect } = require("@playwright/test");
+import { expect, test } from "./apoio.js";
 
-const URL = "/monitoramento.html";
+const URL = "/monitoramento";
 
 const fake = feeds => ({ feeds });
 

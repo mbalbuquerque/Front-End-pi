@@ -1,9 +1,9 @@
 
-const { test, expect } = require("@playwright/test");
+import { expect, test } from "./apoio.js";
 
 test.describe("QA - Assistente Virtual ColdTrack", () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto("/index.html");
+    await page.goto("/");
 
     // Cada teste começa com avaliações locais limpas.
     await page.evaluate(() => {
