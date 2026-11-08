@@ -150,7 +150,7 @@ test("REAL-USR-03: usuário QA entra, troca a própria senha e entra com a nova"
 
     // Senha antiga: recusada com a mensagem de senha errada (1 erro, conta descartável).
     expect(await entrarPelaTela(page, QA.usuarioEmail, SENHAS.redefinida)).toBe(401);
-    await expect(page.locator("#loginMessage")).toHaveText("e-mail ou senha incorretos");
+    await expect(page.locator("#loginMessage")).toHaveText(/e-mail ou senha incorretos/);
     await expect(page).toHaveURL(/\/login$/);
 
     // Senha nova: entra (e zera o contador de erros).

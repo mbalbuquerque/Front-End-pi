@@ -18,6 +18,10 @@ export function montarHistorico(turnos) {
 }
 
 
+// 429 de limite diário: "o chat atingiu o limite de perguntas de hoje...".
+const LIMITE_DIARIO = /^\s*o chat atingiu o limite de perguntas de hoje/i;
+
+
 // { origem, encontrada, texto, fontes }
 // origem: "ia" (resposta da rota), "faq" (plano B local) ou "limite" (429).
 // encontrada: false só quando nem o FAQ tem resposta (mostra o aviso do WhatsApp).
@@ -31,8 +35,9 @@ export async function responderPergunta(pergunta, historico, { perguntar = pergu
 
   } catch (erro) {
 
-    // Muitas perguntas seguidas: mostra o aviso da própria API.
-    if (erro?.status === 429) {
+    // Muitas perguntas seguidas (limite por minuto): mostra o aviso da própria API.
+    // O limite diário do chat cai no FAQ, como a rota fora do ar.
+    if (erro?.status === 429 && !LIMITE_DIARIO.test(erro.message || "")) {
       return {
         origem: "limite",
         encontrada: true,
