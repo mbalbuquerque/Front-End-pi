@@ -83,3 +83,44 @@ export async function getPublico(caminho) {
   return response.json();
 
 }
+
+
+// Logout no servidor: POST /sair invalida os tokens do usuário. Melhor esforço:
+// tempo limite de 5 s e qualquer erro (rede, 404 enquanto a rota não existe,
+// 401) é ignorado, porque a sessão local é limpa de qualquer jeito.
+// Não passa por api(): um 401 aqui não pode disparar o "sessão vencida".
+export async function sairNoServidor(token, limiteMs = 5000) {
+
+  if (!token) {
+    return false;
+  }
+
+  const controle = new AbortController();
+  const relogio = setTimeout(() => controle.abort(), limiteMs);
+
+  try {
+
+    const response = await fetch(`${API_URL}/sair`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+      keepalive: true,
+      signal: controle.signal
+    });
+
+    return response.ok;
+
+  }
+
+  catch {
+
+    return false;
+
+  }
+
+  finally {
+
+    clearTimeout(relogio);
+
+  }
+
+}

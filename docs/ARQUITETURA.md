@@ -177,8 +177,9 @@ primeiro), `horarioDe(leitura) -> Date`, `resumir(leituras) -> { total, media, m
 ## 5. Hooks
 
 - **`useSessao()`** → `{ usuario, entrar(token, usuario), sair() }`. `entrar` grava a sessão e
-  atualiza a tela (login, cadastro de empresa, troca de senha em Configurações). `sair` limpa e vai
-  para `/login`.
+  atualiza a tela (login, cadastro de empresa, troca de senha em Configurações). `sair` chama `sairNoServidor()`
+  (`lib/api.js`, `POST /sair` com o Bearer, limite de 5 s, erro ignorado), limpa a sessão e vai para
+  `/login`.
 - **`usePolling(fn, ms, deps)`** → `recarregar()`. Roda `fn(sinal)` agora e a cada `ms`; quando
   `deps` muda, cancela e recomeça na hora. Depois de cada `await`: `if (sinal.aborted) return;`.
   Chame `recarregar()` depois de salvar um formulário (o antigo `carregarX()` direto).

@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { api, definirAoExpirar, getPublico, postPublico } from "./api.js";
+import { api, definirAoExpirar, getPublico, postPublico, sairNoServidor } from "./api.js";
 import { API_URL } from "./config.js";
 import { CHAVE_SESSAO } from "./sessao.js";
 
@@ -148,6 +148,58 @@ describe("postPublico() e getPublico()", () => {
 
     await expect(getPublico("/perfis")).resolves.toEqual({ perfis: [] });
     expect(fetch).toHaveBeenCalledWith(`${API_URL}/perfis`);
+  });
+
+});
+
+
+describe("sairNoServidor()", () => {
+
+  it("faz POST /sair com o Bearer e devolve true no 204", async () => {
+    const fetch = vi.fn().mockResolvedValue(resposta(204));
+    vi.stubGlobal("fetch", fetch);
+
+    await expect(sairNoServidor("tok123")).resolves.toBe(true);
+
+    expect(fetch).toHaveBeenCalledTimes(1);
+    expect(fetch.mock.calls[0][0]).toBe(`${API_URL}/sair`);
+    expect(fetch.mock.calls[0][1].method).toBe("POST");
+    expect(fetch.mock.calls[0][1].headers).toEqual({ Authorization: "Bearer tok123" });
+  });
+
+  it("ignora 404 (rota ainda não publicada), 401 e falha de rede", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(resposta(404, {})));
+    await expect(sairNoServidor("tok123")).resolves.toBe(false);
+
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(resposta(401, {})));
+    await expect(sairNoServidor("tok123")).resolves.toBe(false);
+
+    vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new TypeError("Failed to fetch")));
+    await expect(sairNoServidor("tok123")).resolves.toBe(false);
+  });
+
+  it("não chama a API sem token", async () => {
+    const fetch = vi.fn();
+    vi.stubGlobal("fetch", fetch);
+
+    await expect(sairNoServidor(null)).resolves.toBe(false);
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it("desiste depois do tempo limite (aborta o pedido)", async () => {
+    vi.useFakeTimers();
+    try {
+      vi.stubGlobal("fetch", vi.fn((_url, opcoes) => new Promise((_ok, falhar) => {
+        opcoes.signal.addEventListener("abort", () => falhar(new DOMException("abortado", "AbortError")));
+      })));
+
+      const espera = sairNoServidor("tok123", 5000);
+      await vi.advanceTimersByTimeAsync(5000);
+
+      await expect(espera).resolves.toBe(false);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
 });

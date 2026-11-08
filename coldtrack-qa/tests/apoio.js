@@ -26,6 +26,8 @@ export const HOST_API = /func-coldtrack-7319\.azurewebsites\.net/;
 
 export const ROTA_CHAT = /func-coldtrack-7319\.azurewebsites\.net\/api\/chat(\?|$)/;
 
+export const ROTA_SAIR = /func-coldtrack-7319\.azurewebsites\.net\/api\/sair(\?|$)/;
+
 export const ROTA_ASSISTENTE = /func-coldtrack-7319\.azurewebsites\.net\/api\/assistente(\?|$)/;
 
 const HORA = 3600 * 1000;
@@ -141,7 +143,7 @@ export async function simularApi(page) {
     }
 
     if (metodo === "POST" && caminho === "/login") {
-      return responder({ erros: ["E-mail ou senha incorretos."] }, 401);
+      return responder({ erros: ["e-mail ou senha incorretos. Se errou várias vezes, aguarde alguns minutos."] }, 401);
     }
 
     if (metodo !== "GET") {
@@ -240,6 +242,39 @@ export async function simularAssistente(page, responder) {
     }
 
     await route.fulfill({ status, json, headers: cors() }).catch(() => {});
+
+  });
+
+  return pedidos;
+
+}
+
+
+// ---------------------------------------------------------
+// LOGOUT NO SERVIDOR (POST /sair, com token)
+// ---------------------------------------------------------
+
+// `status` é a resposta simulada (204 como a API nova; 404 como a API antiga).
+// Devolve a lista (viva) dos pedidos: { autorizacao }.
+export async function simularSair(page, status = 204) {
+
+  const pedidos = [];
+
+  await page.route(ROTA_SAIR, async route => {
+
+    const pedido = route.request();
+
+    if (pedido.method() === "OPTIONS") {
+      return route.fulfill({ status: 204, headers: cors() });
+    }
+
+    pedidos.push({ autorizacao: pedido.headers().authorization || "" });
+
+    await route.fulfill({
+      status,
+      headers: cors(),
+      ...(status === 204 ? {} : { json: { erros: ["erro simulado"] } })
+    }).catch(() => {});
 
   });
 
