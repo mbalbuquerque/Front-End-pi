@@ -697,3 +697,16 @@ footer {
     padding: 75px 0;
   }
 }
+/* Quem pede menos movimento no sistema: slides trocam sem fade/zoom e o ponto "ao vivo" fica parado. */
+@media (prefers-reduced-motion: reduce) {
+
+  .slide,
+  .slide.active {
+    transform: none;
+    transition: none;
+  }
+
+  .live span {
+    animation: none;
+  }
+}
