@@ -27,6 +27,12 @@ describe("responder", () => {
     expect(responder("como cadastrar carga").texto).toContain("Para cadastrar uma carga");
   });
 
+  it("botão rápido de sensores acha a resposta dos sensores", () => {
+    const resultado = responder("Quais sensores são utilizados?");
+    expect(resultado.encontrada).toBe(true);
+    expect(resultado.texto).toContain("ESP32");
+  });
+
   it("pergunta desconhecida devolve a mensagem padrão", () => {
     const resultado = responder("Qual é a cor do caminhão lunar?");
     expect(resultado.encontrada).toBe(false);

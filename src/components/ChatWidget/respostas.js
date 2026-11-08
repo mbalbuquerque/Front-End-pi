@@ -133,7 +133,7 @@ export const CONHECIMENTO = [
     resposta: "Na configuração demonstrativa, até 15 °C é Normal; acima de 15 °C até 20 °C é Atenção; acima de 20 °C é Crítico. Os limites devem ser ajustados conforme a mercadoria."
   },
   {
-    termos: ["sensor", "esp32", "dht", "dispositivo"],
+    termos: ["sensor", "sensores", "esp32", "dht", "dispositivo"],
     resposta: "O protótipo utiliza ESP32 e sensor da família DHT para coletar temperatura e umidade, transmitindo informações pela rede Wi-Fi."
   },
   {
