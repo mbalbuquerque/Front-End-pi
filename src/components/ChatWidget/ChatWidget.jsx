@@ -1,10 +1,13 @@
-// Assistente virtual da página inicial: respostas prontas, confirmação de
-// dúvida resolvida, avaliação de 1 a 5 estrelas (salva no navegador) e link
-// para o WhatsApp do desenvolvedor. Porte do site antigo: js/chat.js.
+// Assistente virtual da página inicial: campo livre respondido pelo chat com
+// Azure OpenAI (rota /chat, com o FAQ local como plano B), perguntas rápidas
+// respondidas na hora pelo FAQ, confirmação de dúvida resolvida, avaliação de
+// 1 a 5 estrelas (salva no navegador) e link para o WhatsApp do desenvolvedor.
+// Porte do site antigo: js/chat.js.
 
 import { useEffect, useRef, useState } from "react";
 import infografico from "../../assets/images/coldtrack-infografico.webp";
 import { gravarJSON, ler, lerJSON } from "../../lib/armazenamento.js";
+import { entraNoHistorico, montarHistorico, responderPergunta } from "./conversa.js";
 import {
   AVALIACOES_KEY,
   AVISO_WHATSAPP,
@@ -24,7 +27,7 @@ const PERGUNTAS_RAPIDAS = [
 
 const ESTRELAS = [1, 2, 3, 4, 5];
 
-// Tempo do "Digitando..." antes da resposta.
+// Tempo do "Digitando..." antes da resposta das perguntas rápidas (FAQ local).
 const ATRASO_RESPOSTA = 500;
 
 
@@ -60,6 +63,12 @@ export default function ChatWidget() {
   const respondendoRef = useRef(false);
   const proximoId = useRef(0);
   const timerRef = useRef(null);
+
+  // Pedido em andamento ao /chat (cancelado se o widget sair da tela).
+  const pedidoRef = useRef(null);
+
+  // Perguntas e respostas da conversa, para o histórico mandado ao /chat.
+  const turnosRef = useRef([]);
 
   // Foco pedido por uma ação ("input" ou "toggle"), aplicado depois do render,
   // quando o painel já apareceu / o campo já foi reabilitado.
@@ -101,7 +110,10 @@ export default function ChatWidget() {
 
 
   // Sai da tela no meio de uma resposta: não deixa o timer solto.
-  useEffect(() => () => clearTimeout(timerRef.current), []);
+  useEffect(() => () => {
+    clearTimeout(timerRef.current);
+    pedidoRef.current?.abort();
+  }, []);
 
 
   function adicionar(...novas) {
@@ -155,7 +167,9 @@ export default function ChatWidget() {
   }, [aberto]);
 
 
-  function enviar(textoPergunta) {
+  // Pergunta rápida (viaIa = false): FAQ local, na hora.
+  // Campo livre (viaIa = true): /chat, com o FAQ como plano B.
+  function enviar(textoPergunta, { viaIa = false } = {}) {
 
     const texto = String(textoPergunta).trim();
 
@@ -176,16 +190,22 @@ export default function ChatWidget() {
       { id: idDigitando, tipo: "bot typing", texto: "Digitando..." }
     ]);
 
-    const resultado = responder(texto);
-
-    timerRef.current = setTimeout(() => {
+    function concluir(resultado) {
 
       setMensagens(lista => lista.filter(m => m.id !== idDigitando));
 
       adicionar(
-        { tipo: "bot", texto: resultado.texto },
+        { tipo: "bot", texto: resultado.texto, fontes: resultado.fontes || [] },
         ...(resultado.encontrada ? [] : [{ tipo: "bot", texto: AVISO_WHATSAPP }])
       );
+
+      if (entraNoHistorico(resultado)) {
+        turnosRef.current = [
+          ...turnosRef.current,
+          { papel: "usuario", texto },
+          { papel: "assistente", texto: resultado.texto }
+        ];
+      }
 
       setMostrarResolucao(true);
       respondendoRef.current = false;
@@ -194,7 +214,24 @@ export default function ChatWidget() {
       // Volta o foco ao campo (o efeito ignora se o painel foi fechado).
       focoRef.current = "input";
 
-    }, ATRASO_RESPOSTA);
+    }
+
+    if (!viaIa) {
+      const local = responder(texto);
+      timerRef.current = setTimeout(() => concluir({ origem: "faq", ...local }), ATRASO_RESPOSTA);
+      return;
+    }
+
+    const pedido = new AbortController();
+    pedidoRef.current = pedido;
+
+    responderPergunta(texto, montarHistorico(turnosRef.current), { signal: pedido.signal })
+      .then(resultado => {
+        // Widget saiu da tela no meio do pedido: nada a mostrar.
+        if (pedido.signal.aborted) return;
+        pedidoRef.current = null;
+        concluir(resultado);
+      });
 
   }
 
@@ -271,7 +308,7 @@ export default function ChatWidget() {
   function aoEnviarFormulario(evento) {
 
     evento.preventDefault();
-    enviar(pergunta);
+    enviar(pergunta, { viaIa: true });
 
   }
 
@@ -361,6 +398,9 @@ export default function ChatWidget() {
               ) : (
                 <div key={mensagem.id} className={`ct-chat-message ${mensagem.tipo}`}>
                   {mensagem.texto}
+                  {mensagem.fontes?.length ? (
+                    <small className="ct-chat-fontes">Fontes: {mensagem.fontes.join(", ")}</small>
+                  ) : null}
                 </div>
               )
             ))}
@@ -455,7 +495,12 @@ export default function ChatWidget() {
               onChange={evento => setPergunta(evento.target.value)}
             />
 
-            <button className="ct-chat-send" type="submit" aria-label="Enviar mensagem">➤</button>
+            <button
+              className="ct-chat-send"
+              type="submit"
+              aria-label="Enviar mensagem"
+              disabled={respondendo}
+            >➤</button>
           </form>
 
           <div className="ct-chat-human">

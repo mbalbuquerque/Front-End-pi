@@ -172,6 +172,15 @@
   font-style: italic;
 }
 
+.ct-chat-fontes {
+  display: block;
+  margin-top: 8px;
+  color: var(--chat-muted);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
 .ct-chat-quick {
   display: flex;
   gap: 7px;
@@ -241,6 +250,11 @@
 
 .ct-chat-send:hover {
   background: #087d90;
+}
+
+.ct-chat-send:disabled {
+  background: var(--chat-muted);
+  cursor: not-allowed;
 }
 
 .ct-chat-footer {
