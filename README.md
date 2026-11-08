@@ -430,24 +430,33 @@ Na raiz do projeto:
 
 ```bash
 npm install
+npx playwright install chromium
 ```
 
-Para executar os testes do chat:
+Testes unitários (Vitest) e lint:
+
+```bash
+npm test
+npm run lint
+```
+
+Testes de interface (Playwright, sobre o build servido por `vite preview` na porta 5500):
+
+```bash
+npm run build
+npm run test:e2e
+```
+
+Para executar só os testes do chat:
 
 ```bash
 npx playwright test chat-atendimento.spec.js --reporter=list
 ```
 
-Para executar a suíte configurada no projeto:
-
-```bash
-npm run test:qa
-```
-
 Para consultar o relatório HTML:
 
 ```bash
-npx playwright show-report
+npm run test:e2e:report
 ```
 
 Os testes automatizados não comprovam o recebimento efetivo das mensagens pelo desenvolvedor nem a persistência das avaliações em um servidor.
@@ -456,43 +465,26 @@ Os testes automatizados não comprovam o recebimento efetivo das mensagens pelo 
 
 ## 📁 10. Organização do projeto
 
-Estrutura simplificada dos principais arquivos:
+O Front-End é uma aplicação React 18 + Vite 5 + React Router 6 (JavaScript). A estrutura, as regras e o passo a passo para migrar cada tela estão em [`docs/ARQUITETURA.md`](docs/ARQUITETURA.md).
 
 ```text
 Front-End-pi/
-│
-├── index.html
-├── login.html
-├── cadastro.html
-├── dashboard.html
-├── logistica.html
-├── monitoramento.html
-├── usuarios.html
-├── auditoria.html
-│
-├── css/
-│   ├── chat.css
-│   └── ...
-│
-├── js/
-│   ├── config.js
-│   ├── chat.js
-│   └── ...
-│
-├── assets/
-│
-├── manifest.json
-├── sw.js
-│
-├── coldtrack-qa/
-│   └── tests/
-│       ├── chat-atendimento.spec.js
-│       └── ...
-│
-└── README.md
+├── index.html            casca da aplicação
+├── vite.config.js
+├── public/               sw.js, manifest.json, ícones
+├── src/
+│   ├── App.jsx           rotas
+│   ├── pages/            uma pasta por tela
+│   ├── components/
+│   ├── hooks/
+│   ├── lib/              API, sessão, leituras, formatação
+│   └── styles/           CSS por família, escopado
+├── legado/               versão HTML/JS anterior (referência durante a migração)
+├── coldtrack-qa/tests/   testes Playwright
+└── docs/
 ```
 
-A estrutura apresentada é simplificada e destaca os arquivos relevantes para a documentação.
+As URLs antigas (`/dashboard.html?veiculo=...`, usadas nas etiquetas QR) continuam funcionando e redirecionam para as rotas novas (`/dashboard?veiculo=...`).
 
 ---
 
@@ -500,42 +492,33 @@ A estrutura apresentada é simplificada e destaca os arquivos relevantes para a 
 
 ### Pré-requisitos
 
-- Navegador atualizado.
+- Node.js 20 ou superior e npm.
 - Git.
-- Python ou outro servidor HTTP local.
-- Node.js e npm para execução dos testes automatizados.
 
-### Clonar o repositório
+### Clonar e instalar
 
 ```bash
 git clone https://github.com/mbalbuquerque/Front-End-pi.git
-```
-
-Acessar a pasta:
-
-```bash
 cd Front-End-pi
+npm install
 ```
 
-### Iniciar o servidor local
+### Servidor de desenvolvimento
 
 ```bash
-python -m http.server 5500
+npm run dev
 ```
 
-Acessar:
+Acessar `http://localhost:5173/`.
 
-```text
-http://localhost:5500/
-```
-
-### Testar o JavaScript do chat
+### Build de produção
 
 ```bash
-node --check js/chat.js
+npm run build
+npm run preview
 ```
 
-O Front-End pode ser executado por um servidor HTTP estático.
+O conteúdo de `dist/` é o que vai para o site estático no Azure (`publicar.sh` ou o workflow `publicar-site.yml`). A URL da API pode ser trocada com `VITE_API_URL` em um arquivo `.env.local`.
 
 As funcionalidades que dependem de serviços externos exigem conectividade e disponibilidade desses serviços.
 
@@ -556,8 +539,8 @@ Recursos de responsividade:
 
 O projeto também contém arquivos relacionados à estrutura PWA:
 
-- `manifest.json`
-- `sw.js`
+- `public/manifest.json`
+- `public/sw.js` (registrado só no build de produção)
 
 A instalação, o funcionamento offline e o cache dependem da configuração efetiva desses arquivos e devem ser validados separadamente.
 
