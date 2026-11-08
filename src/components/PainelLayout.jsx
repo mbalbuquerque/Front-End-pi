@@ -6,6 +6,9 @@
 //     <div id="conteudo" className="page-grid">...</div>
 //   </PainelLayout>
 //
+// O assistente do painel (botão flutuante "Assistente") vem montado aqui,
+// então aparece em toda tela logada sem a tela fazer nada.
+//
 // dialogos: elementos que precisam ser filhos diretos da raiz do escopo, fora
 // do <main>. Ex.: a <dialog className="etiqueta"> de Veículos, porque a regra
 // de impressão é ".escopo-painel:has(.etiqueta[open]) > *:not(.etiqueta)".
@@ -14,6 +17,7 @@ import { NavLink } from "react-router-dom";
 import { useSessao } from "../hooks/useSessao.jsx";
 import { useTitulo } from "../hooks/useTitulo.js";
 import { PAGINAS_PAINEL } from "../rotas.js";
+import AssistentePainel from "./AssistentePainel/AssistentePainel.jsx";
 import "../styles/painel/index.css";
 
 
@@ -100,6 +104,9 @@ export default function PainelLayout({
       </main>
 
       {dialogos}
+
+      {/* Botão flutuante do assistente: em toda tela logada, fora da impressão. */}
+      <AssistentePainel />
 
     </div>
   );
