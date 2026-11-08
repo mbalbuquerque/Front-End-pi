@@ -12,7 +12,7 @@ import slide1 from "../../assets/images/slide-1.webp";
 import slide2 from "../../assets/images/slide-2.webp";
 import slide3 from "../../assets/images/slide-3.webp";
 import { proximoSlide, slideAnterior } from "./carrossel.js";
-import { movimentoReduzido, useMovimentoReduzido } from "./useMovimentoReduzido.js";
+import { movimentoReduzido, useMovimentoReduzido } from "../../hooks/useMovimentoReduzido.js";
 import "../../styles/home/home.css";
 
 // Logística, agronegócio e monitoramento da carga (o 3º tem degradê mais claro).
