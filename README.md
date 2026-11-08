@@ -1,325 +1,669 @@
+
 # ❄️ ColdTrack Control
 
-### Dashboard PWA para Monitoramento IoT de Transporte Refrigerado
+### Plataforma Web de Monitoramento Inteligente da Cadeia de Frio
 
-O **ColdTrack Control** é a interface web do projeto **ColdTrack Edge**, desenvolvido como parte do **Projeto Integrador – 4º Período**.
+![Status](https://img.shields.io/badge/Projeto-Em%20Desenvolvimento-blue)
+![Frontend](https://img.shields.io/badge/Frontend-HTML%20%7C%20CSS%20%7C%20JavaScript-cyan)
+![IoT](https://img.shields.io/badge/IoT-ESP32-green)
+![QA](https://img.shields.io/badge/QA-32%20Testes%20do%20Chat%20Aprovados-brightgreen)
+![PWA](https://img.shields.io/badge/PWA-Em%20Evolu%C3%A7%C3%A3o-orange)
 
-A aplicação permite visualizar dados de **temperatura, umidade relativa e qualidade do sinal Wi-Fi** coletados por um nó sensor baseado em **ESP32-C3** e enviados para a nuvem **Microsoft Azure**.
+## 📌 1. Sobre o projeto
 
-O projeto tem como cenário de aplicação o **monitoramento da cadeia fria durante o transporte refrigerado de mercadorias**, especialmente produtos sensíveis às condições ambientais.
+O **ColdTrack Control** é uma plataforma web desenvolvida no contexto de um Projeto Integrador, com o objetivo de acompanhar condições ambientais relacionadas ao transporte e armazenamento de mercadorias refrigeradas.
 
----
+A solução integra conceitos de Internet das Coisas (IoT), desenvolvimento web, comunicação HTTP, monitoramento ambiental e gestão logística.
 
-## 🚚 Visão Geral
+O protótipo utiliza um microcontrolador ESP32 conectado a um sensor ambiental para coletar informações de temperatura e umidade.
 
-O ColdTrack foi concebido para monitorar as condições ambientais dentro de veículos e compartimentos refrigerados.
+Essas informações são transmitidas para a plataforma ThingSpeak e posteriormente consultadas pela interface web.
 
-A arquitetura atual funciona da seguinte forma:
+O sistema também disponibiliza módulos administrativos demonstrativos e um assistente virtual para atendimento aos visitantes.
 
-```text
-Sensor DHT11 / DHT22
-        ↓
-     ESP32-C3
-        ↓
- Processamento Edge
-        ↓
-  Wi-Fi (HTTPS + JSON)
-        ↓
- Azure Functions (validação)
-        ↓
- Azure Cosmos DB
-        ↓
- API REST de leitura
-        ↓
- ColdTrack Control
-        ↓
-       PWA
-```
+### 🌐 Acesse a plataforma
 
-O **DHT22** é utilizado atualmente na simulação Wokwi, enquanto o **DHT11** é destinado ao protótipo físico.
+https://coldtrackcontrol.netlify.app/
+
+### 📂 Repositórios
+
+**Front-End:**
+
+https://github.com/mbalbuquerque/Front-End-pi
+
+**Back-End:**
+
+https://github.com/mbalbuquerque/projeto-integrador-4-periodo
 
 ---
 
-## 📊 Funcionalidades
+## 🎯 2. Objetivos
 
-A versão atual do ColdTrack Control possui:
+### Objetivo geral
 
-- 🌡️ Visualização da temperatura;
-- 💧 Monitoramento da umidade relativa;
-- 📶 Monitoramento do RSSI Wi-Fi;
-- 🚦 Classificação do estado da carga;
-- ☁️ Integração com o Azure;
-- 🔄 Atualização automática da telemetria;
-- ⚠️ Indicação de condições de atenção e críticas;
-- 📱 Layout responsivo;
-- 📲 Estrutura de Progressive Web App (PWA);
-- 💾 Service Worker para armazenamento dos arquivos principais da aplicação.
+Desenvolver uma solução tecnológica para visualização e acompanhamento de condições ambientais em operações de transporte refrigerado.
+
+### Objetivos específicos
+
+- Monitorar temperatura e umidade relativa do ar.
+- Apresentar indicadores de conectividade Wi-Fi.
+- Consultar informações disponibilizadas pelo ThingSpeak.
+- Disponibilizar um Dashboard de monitoramento.
+- Representar operações de gestão logística.
+- Disponibilizar interfaces de gestão de usuários e auditoria.
+- Desenvolver uma interface responsiva.
+- Oferecer suporte automatizado aos visitantes.
+- Permitir encaminhamento de dúvidas ao desenvolvedor.
+- Coletar avaliações de satisfação sobre o atendimento.
+- Implementar testes automatizados de interface.
+- Preparar a aplicação para integração com o Back-End.
 
 ---
 
-## 🚦 Classificação Edge
+## 🛠️ 3. Tecnologias utilizadas
 
-Para fins de demonstração do protótipo, foram definidos os seguintes limites:
-
-| Temperatura | Status |
+| Tecnologia | Aplicação |
 |---|---|
-| Até 15 °C | 🟢 NORMAL |
-| Acima de 15 °C até 20 °C | 🟡 ATENÇÃO |
-| Acima de 20 °C | 🔴 CRÍTICO |
+| HTML5 | Estrutura das páginas |
+| CSS3 | Estilização e responsividade |
+| JavaScript | Interações e lógica do Front-End |
+| ESP32-C3 | Microcontrolador do protótipo IoT |
+| Sensor DHT | Coleta de temperatura e umidade |
+| ThingSpeak | Recebimento e disponibilização da telemetria |
+| HTTP/REST | Comunicação com serviços externos |
+| JSON | Formato de intercâmbio de dados |
+| Playwright | Testes automatizados |
+| Git | Controle de versões |
+| GitHub | Repositório remoto |
+| Netlify | Hospedagem do Front-End |
+| PWA | Estrutura para experiência web instalável |
 
-> **Importante:** esses valores são demonstrativos. Em uma aplicação real, os limites deverão ser configurados conforme o tipo de mercadoria, requisitos técnicos e condições operacionais da cadeia fria.
+A autenticação, a persistência administrativa e outras operações de servidor fazem parte da evolução prevista com o Back-End.
 
 ---
 
-## ☁️ Integração com Azure
+## 🏗️ 4. Arquitetura da solução
 
-O dashboard lê as leituras gravadas no Azure Cosmos DB pela rota pública de consulta da Azure Function:
+O projeto possui uma arquitetura composta por coleta de dados IoT, disponibilização de telemetria e apresentação das informações em uma interface web.
+
+### Fluxo de monitoramento
 
 ```text
-GET https://func-coldtrack-7319.azurewebsites.net/api/leituras?deviceId=coldtrack-01&limite=20
+┌───────────────────────┐
+│ SENSOR AMBIENTAL DHT  │
+└───────────┬───────────┘
+            │
+            ▼
+┌───────────────────────┐
+│ ESP32-C3              │
+│ Leitura dos sensores  │
+└───────────┬───────────┘
+            │ Wi-Fi
+            ▼
+┌───────────────────────┐
+│ THINGSPEAK            │
+│ Canal de telemetria   │
+└───────────┬───────────┘
+            │ API HTTP / JSON
+            ▼
+┌───────────────────────┐
+│ COLDTRACK CONTROL     │
+│ Front-End Web         │
+├───────────────────────┤
+│ Dashboard             │
+│ Monitoramento         │
+│ Gestão Logística      │
+│ Usuários              │
+│ Auditoria             │
+│ Assistente Virtual    │
+└───────────────────────┘
 ```
 
-A rota é somente leitura e liberada via CORS para o Live Server (`http://127.0.0.1:5500` e `http://localhost:5500`) e para o endereço publicado. Ao publicar o dashboard em outro endereço, esse endereço precisa ser adicionado ao CORS do Function App.
+### Integração administrativa prevista
 
-### Publicação
+A evolução da arquitetura contempla serviços de Back-End para autenticação, autorização, persistência de dados, auditoria e gestão das operações logísticas.
 
-O site está publicado no Azure Storage (site estático, região Brazil South):
+A integração com Azure Functions faz parte da arquitetura planejada para esses serviços.
 
-**https://stcoldtrackweb7319.z15.web.core.windows.net**
+---
 
-O Azure Static Web Apps não está disponível nas regiões liberadas para a assinatura Azure for Students da instituição, por isso foi usado o site estático do Storage. Para publicar uma nova versão:
+## 📊 5. Funcionalidades do Front-End
+
+### 5.1 Página inicial
+
+A Home apresenta a identidade visual do ColdTrack Control e as principais características do projeto.
+
+A página possui navegação para as áreas da plataforma e apresenta informações institucionais.
+
+Também disponibiliza o Assistente Virtual ColdTrack, acessível por um botão flutuante.
+
+### 5.2 Dashboard
+
+O Dashboard reúne informações ambientais obtidas do ThingSpeak.
+
+Indicadores apresentados:
+
+- Temperatura em graus Celsius.
+- Umidade relativa do ar.
+- Intensidade do sinal Wi-Fi.
+- Classificação da situação térmica.
+- Horário da última atualização.
+- Histórico recente das leituras.
+
+### 5.3 Monitoramento
+
+O módulo de Monitoramento permite consultar as leituras ambientais disponibilizadas pela API do ThingSpeak.
+
+Funcionalidades:
+
+- Consulta de telemetria.
+- Apresentação da última leitura.
+- Histórico recente.
+- Visualização gráfica da temperatura.
+- Atualização manual.
+- Identificação de dados desatualizados.
+- Tratamento de erros de comunicação.
+
+**Canal ThingSpeak:** `3496439`
+
+| Campo | Informação |
+|---|---|
+| Field 1 | Temperatura (°C) |
+| Field 2 | Umidade relativa (%) |
+| Field 3 | RSSI (dBm) |
+
+### 5.4 Classificação térmica
+
+A interface utiliza os seguintes limites demonstrativos:
+
+| Temperatura | Situação |
+|---|---|
+| Até 15 °C | Normal |
+| Acima de 15 °C até 20 °C | Atenção |
+| Acima de 20 °C | Crítico |
+
+**Importante:** esses valores são parâmetros de demonstração e precisam ser ajustados às exigências de cada mercadoria.
+
+### 5.5 Gestão Logística
+
+Módulo administrativo para representação de operações com cargas refrigeradas.
+
+Funcionalidades demonstrativas:
+
+- Cadastro de cargas.
+- Consulta e filtragem.
+- Visualização de detalhes.
+- Edição.
+- Conclusão de operações.
+- Cancelamento de registros.
+- Indicadores operacionais.
+
+**Situação atual:** os dados utilizados são demonstrativos e não possuem persistência definitiva no servidor.
+
+### 5.6 Gestão de Usuários
+
+Interface destinada à administração de usuários e perfis de acesso.
+
+Inclui:
+
+- Listagem de usuários.
+- Pesquisa.
+- Filtros.
+- Indicadores.
+- Representação de perfis administrativos.
+
+**Situação atual:** o controle real de permissões depende da integração com o Back-End.
+
+### 5.7 Auditoria
+
+Interface para consulta demonstrativa de eventos da plataforma.
+
+Recursos:
+
+- Pesquisa de registros.
+- Filtragem por evento.
+- Filtragem por resultado.
+- Consulta por período.
+- Visualização de detalhes.
+- Exportação CSV.
+
+**Situação atual:** os registros são demonstrativos. Logs reais precisarão ser produzidos e armazenados no servidor.
+
+---
+
+## 🤖 6. Assistente Virtual ColdTrack
+
+O Front-End possui um assistente virtual interativo disponível na página inicial.
+
+Seu objetivo é esclarecer dúvidas frequentes dos visitantes, reduzir solicitações repetitivas e facilitar o contato com o desenvolvedor.
+
+### 6.1 Características
+
+- Botão flutuante na Home.
+- Interface responsiva.
+- Mensagem inicial de boas-vindas.
+- Perguntas rápidas.
+- Campo para perguntas personalizadas.
+- Base de conhecimento local.
+- Respostas automáticas.
+- Tratamento de perguntas desconhecidas.
+- Indicador visual de digitação.
+- Opção de atendimento humano.
+- Avaliação de satisfação.
+
+### 6.2 Assuntos disponíveis
+
+O assistente responde perguntas sobre:
+
+- Objetivo do ColdTrack Control.
+- Sensores utilizados.
+- ESP32.
+- Temperatura e limites demonstrativos.
+- Umidade relativa do ar.
+- ThingSpeak.
+- RSSI e conectividade.
+- Dashboard.
+- Monitoramento.
+- Gestão Logística.
+- Gestão de Usuários.
+- Auditoria.
+- Acesso à plataforma.
+- Contato com o desenvolvedor.
+
+### 6.3 Tecnologia do assistente
+
+O chatbot foi desenvolvido utilizando HTML, CSS e JavaScript.
+
+As respostas são selecionadas a partir de palavras-chave cadastradas em uma base de conhecimento local.
+
+**O assistente não utiliza IA generativa nem depende de API paga.**
+
+O conteúdo pode ser ampliado mediante atualização da base de conhecimento.
+
+---
+
+## 💬 7. Atendimento humano
+
+Quando a resposta automática não resolve a dúvida, o visitante pode solicitar atendimento diretamente ao desenvolvedor.
+
+O chat disponibiliza um botão permanente:
+
+**Falar com o desenvolvedor**
+
+O encaminhamento é realizado por meio do WhatsApp.
+
+### Fluxo
+
+```text
+VISITANTE
+    │
+    ▼
+ASSISTENTE VIRTUAL
+    │
+    ▼
+RESPOSTA AUTOMÁTICA
+    │
+    ▼
+A DÚVIDA FOI RESOLVIDA?
+    │
+    ├── SIM
+    │    └── Avaliação do atendimento
+    │
+    └── NÃO
+         ├── Avaliação do atendimento
+         └── Contato pelo WhatsApp
+```
+
+O link do WhatsApp contém uma mensagem previamente preenchida, incluindo a última pergunta realizada no chat.
+
+O visitante pode revisar a mensagem antes de enviá-la.
+
+O atendimento humano depende da disponibilidade do responsável.
+
+---
+
+## ⭐ 8. Avaliação de atendimento
+
+Após receber uma resposta, o visitante pode informar se sua dúvida foi resolvida.
+
+Em seguida, é apresentada uma avaliação de satisfação.
+
+### Funcionalidades
+
+- Confirmação de resolução da dúvida.
+- Nota de 1 a 5 estrelas.
+- Comentário opcional.
+- Validação de preenchimento da nota.
+- Feedback após o registro.
+- Prevenção de envio duplicado na mesma avaliação.
+- Armazenamento local no navegador.
+
+### Estrutura do registro
+
+```json
+{
+  "nota": 5,
+  "resolvida": true,
+  "comentario": "Atendimento excelente!",
+  "data": "2026-11-04T17:00:00.000Z"
+}
+```
+
+O registro acima é apenas um exemplo da estrutura dos dados.
+
+### Persistência atual
+
+As avaliações são armazenadas por meio do `localStorage`, utilizando a chave:
+
+```javascript
+coldtrack_chat_avaliacoes_v1
+```
+
+**Limitação:** as avaliações permanecem no navegador em que foram registradas. Ainda não são enviadas para um banco de dados centralizado.
+
+### Evolução prevista
+
+A integração com o Back-End permitirá:
+
+- Armazenamento centralizado das avaliações.
+- Consulta administrativa.
+- Cálculo da nota média.
+- Percentual de dúvidas resolvidas.
+- Análise dos comentários.
+- Indicadores de satisfação.
+- Histórico de atendimento.
+- Relatórios gerenciais.
+
+---
+
+## 🧪 9. Qualidade e testes automatizados
+
+O Front-End utiliza Playwright para automação dos testes de interface.
+
+Os cenários contemplam navegação, funcionalidades dos módulos, tratamento de erros e comportamento responsivo.
+
+### 9.1 Testes do Assistente Virtual
+
+Foram desenvolvidos 16 cenários automatizados para validar o chat.
+
+| ID | Cenário |
+|---|---|
+| QA-CHAT-01 | Exibição do botão do chat |
+| QA-CHAT-02 | Abertura e fechamento |
+| QA-CHAT-03 | Mensagem de boas-vindas |
+| QA-CHAT-04 | Pergunta cadastrada |
+| QA-CHAT-05 | Pergunta desconhecida |
+| QA-CHAT-06 | Confirmação de resolução |
+| QA-CHAT-07 | Dúvida resolvida |
+| QA-CHAT-08 | Dúvida não resolvida |
+| QA-CHAT-09 | Link do WhatsApp |
+| QA-CHAT-10 | Inclusão da pergunta no link |
+| QA-CHAT-11 | Validação obrigatória da nota |
+| QA-CHAT-12 | Persistência local da avaliação |
+| QA-CHAT-13 | Prevenção de avaliação duplicada |
+| QA-CHAT-14 | Fechamento pela tecla Escape |
+| QA-CHAT-15 | Tratamento seguro de HTML nas mensagens |
+| QA-CHAT-16 | Adaptação às dimensões da tela |
+
+### 9.2 Resultado da execução
+
+**Resultado informado da última execução dos testes do chat:**
+
+```text
+32 passed
+```
+
+| Indicador | Resultado |
+|---|---|
+| Cenários | 16 |
+| Ambientes | Desktop Chrome e Mobile Chrome |
+| Execuções | 32 |
+| Aprovadas | 32 |
+| Falhas | 0 |
+| Taxa de aprovação | 100% |
+
+Esse resultado se refere aos testes automatizados do assistente virtual, não à cobertura integral do sistema.
+
+### 9.3 Executar os testes
+
+Na raiz do projeto:
 
 ```bash
-az storage blob upload-batch --account-name stcoldtrackweb7319 -s <pasta-do-site> -d '$web' --overwrite
+npm install
 ```
 
-O dashboard fica em `dashboard.html` (acessado pelo botão da página inicial).
+Para executar os testes do chat:
 
-### Acesso
+```bash
+npx playwright test chat-atendimento.spec.js --reporter=list
+```
 
-Todas as telas do painel exigem login (`login.html` ou o formulário da página inicial). O token vale 8 horas.
+Para executar a suíte configurada no projeto:
 
-| perfil | pode |
-|---|---|
-| Operador logístico | ver dashboard, alertas, relatórios, sensores, veículos, viagens e configurações; trocar a própria senha |
-| Gestor | tudo do operador + registrar sensores, cadastrar e remover veículos, viagens e usuários, redefinir senha |
+```bash
+npm run test:qa
+```
 
-A API confere o perfil em cada chamada; esconder botões na tela é só conveniência.
-Empresa nova se cadastra em `cadastro.html` e entra como gestor; ele cria os demais usuários em **Configurações → Usuários**. Cada empresa só enxerga os próprios dados.
+Para consultar o relatório HTML:
 
-### Telas
+```bash
+npx playwright show-report
+```
 
-| tela | o que mostra |
-|---|---|
-| `dashboard.html` | leitura atual do veículo escolhido, gráfico dos últimos 30 min com a faixa da carga e calor previsto na rota nas próximas 24 h |
-| `alertas.html` | ocorrências fora da faixa (leituras seguidas viram uma ocorrência), com duração e pico |
-| `relatorios.html` | resumo de 24 h ou 7 dias, gráfico, tabela de leituras e exportação em CSV |
-| `sensores.html` | sensores da empresa; registro com chave própria, chave nova e remoção pelo gestor |
-| `veiculos.html` | situação atual de cada veículo, com aviso de sensor sem sinal e etiqueta QR; cadastro pelo gestor |
-| `viagens.html` | condição da carga do início ao fim de cada trajeto; registro e encerramento pelo gestor |
-| `configuracoes.html` | troca de senha, faixas de cada perfil de carga, sensores, fonte de dados e usuários (gestor) |
-| `login.html` | entrada no painel |
-| `cadastro.html` | cadastro de empresa nova |
-
-Arquivos compartilhados: `js/comum.js` (menu, consulta à API, veículo escolhido, faixas, formatação), `js/grafico.js` (gráfico de temperatura), `js/risco.js` (calor na rota), `js/vendor/qrcode.js` (gerador de QR, licença MIT) e `css/telas.css`.
-Sensores, veículos, viagens, usuários e os perfis de carga ficam no Azure; o painel lê tudo da API.
+Os testes automatizados não comprovam o recebimento efetivo das mensagens pelo desenvolvedor nem a persistência das avaliações em um servidor.
 
 ---
 
-## 🛠️ Tecnologias
+## 📁 10. Organização do projeto
 
-### Hardware / Edge
-
-- ESP32-C3
-- DHT11
-- DHT22 na simulação
-- Wi-Fi
-- Arduino Framework
-- Wokwi
-
-### Cloud
-
-- Microsoft Azure (Functions, Cosmos DB, Storage)
-- API REST
-
-### Front-End
-
-- HTML5
-- CSS3
-- JavaScript
-- Fetch API
-- Web App Manifest
-- Service Worker
-- PWA
-
----
-
-## 📁 Estrutura do Projeto
+Estrutura simplificada dos principais arquivos:
 
 ```text
 Front-End-pi/
 │
 ├── index.html
+├── login.html
+├── cadastro.html
+├── dashboard.html
+├── logistica.html
+├── monitoramento.html
+├── usuarios.html
+├── auditoria.html
+│
+├── css/
+│   ├── chat.css
+│   └── ...
+│
+├── js/
+│   ├── config.js
+│   ├── chat.js
+│   └── ...
+│
+├── assets/
+│
 ├── manifest.json
 ├── sw.js
 │
-├── css/
-│   └── style.css
+├── coldtrack-qa/
+│   └── tests/
+│       ├── chat-atendimento.spec.js
+│       └── ...
 │
-└── js/
-    ├── config.js
-    └── app.js
+└── README.md
 ```
 
-### `index.html`
-
-Interface principal do dashboard.
-
-### `css/style.css`
-
-Identidade visual, layout, cards, estados da carga e responsividade.
-
-### `js/config.js`
-
-Configurações públicas da aplicação, como:
-
-- endereço da API no Azure;
-- intervalo de atualização;
-- tamanho do histórico do dashboard.
-
-### `js/app.js`
-
-Responsável por:
-
-- consultar a API do Azure;
-- processar a telemetria;
-- atualizar os indicadores;
-- mostrar o status que a API calculou pela faixa da carga;
-- controlar alertas;
-- apresentar informações da última leitura.
-
-### `manifest.json`
-
-Configurações da Progressive Web App.
-
-### `sw.js`
-
-Service Worker responsável pelo cache dos arquivos essenciais da interface.
+A estrutura apresentada é simplificada e destaca os arquivos relevantes para a documentação.
 
 ---
 
-## ▶️ Executando Localmente
+## 💻 11. Execução local
 
-Clone o repositório:
+### Pré-requisitos
+
+- Navegador atualizado.
+- Git.
+- Python ou outro servidor HTTP local.
+- Node.js e npm para execução dos testes automatizados.
+
+### Clonar o repositório
 
 ```bash
 git clone https://github.com/mbalbuquerque/Front-End-pi.git
 ```
 
-Entre na pasta:
+Acessar a pasta:
 
 ```bash
 cd Front-End-pi
 ```
 
-Para desenvolvimento, recomenda-se executar o projeto através de um servidor HTTP local, como a extensão **Live Server** do Visual Studio Code.
+### Iniciar o servidor local
 
-Abra:
-
-```text
-index.html
+```bash
+python -m http.server 5500
 ```
 
-utilizando:
+Acessar:
 
 ```text
-Open with Live Server
+http://localhost:5500/
 ```
 
----
+### Testar o JavaScript do chat
 
-## 🔐 Segurança
-
-Credenciais privadas não devem ser armazenadas no front-end.
-
-O dashboard utiliza somente informações necessárias para leitura dos dados públicos.
-
-Chaves da API de gravação, senhas Wi-Fi e outras credenciais do dispositivo Edge **não devem ser adicionadas a este repositório**.
-
-No firmware do ESP32, essas informações devem permanecer em arquivo separado e ignorado pelo Git.
-
----
-
-## 📱 PWA
-
-O ColdTrack Control está sendo desenvolvido como uma **Progressive Web App**.
-
-A estrutura inclui:
-
-```text
-manifest.json
-sw.js
+```bash
+node --check js/chat.js
 ```
 
-Isso permitirá que, após publicação em ambiente HTTPS compatível, a aplicação possa ser utilizada como uma experiência semelhante a um aplicativo em dispositivos compatíveis.
+O Front-End pode ser executado por um servidor HTTP estático.
+
+As funcionalidades que dependem de serviços externos exigem conectividade e disponibilidade desses serviços.
 
 ---
 
-## 🔮 Próximas Etapas
+## 📱 12. Responsividade e PWA
 
-O roadmap do ColdTrack Control inclui:
+A interface foi planejada para diferentes tamanhos de tela.
 
-- 📈 gráficos históricos de temperatura e umidade;
-- 🚚 cadastro e monitoramento de veículos;
-- 📦 cadastro de cargas;
-- 🗺️ origem e destino das viagens;
-- ⚠️ central de alertas;
-- 📑 relatórios por viagem;
-- 🔔 notificações;
-- 🛰️ localização GPS;
-- 🔐 autenticação de usuários;
-- ☁️ evolução da infraestrutura Cloud;
-- 🤖 modelos preditivos para identificação de riscos à qualidade da carga.
+Recursos de responsividade:
 
----
+- Layout adaptável.
+- Menus ajustados para dispositivos móveis.
+- Cartões reorganizados.
+- Tabelas com rolagem horizontal quando necessário.
+- Formulários responsivos.
+- Chat com dimensões adaptadas à tela.
 
-## 🌱 Aplicação no Agronegócio
+O projeto também contém arquivos relacionados à estrutura PWA:
 
-O projeto foi concebido considerando o ecossistema do agronegócio do **Vale do São Francisco**, especialmente as regiões de **Petrolina/PE e Juazeiro/BA**.
+- `manifest.json`
+- `sw.js`
 
-Uma possível aplicação é o acompanhamento das condições ambientais durante o transporte de produtos agrícolas sensíveis, contribuindo para rastreabilidade e monitoramento da cadeia fria.
+A instalação, o funcionamento offline e o cache dependem da configuração efetiva desses arquivos e devem ser validados separadamente.
 
 ---
 
-## 👥 Equipe
+## 🔐 13. Segurança e limitações
 
-**Projeto Integrador – 4º Período**
+O projeto considera boas práticas de desenvolvimento e separação de responsabilidades.
 
-- Enzo Antônio
+No assistente virtual, as mensagens são inseridas por meio de `textContent`, reduzindo o risco de interpretação de HTML enviado pelo visitante.
+
+Também existe validação da nota antes de registrar a avaliação.
+
+Entretanto, essas medidas não substituem controles de segurança no servidor.
+
+### Limitações atuais
+
+- O chatbot utiliza respostas predefinidas.
+- Não existe IA generativa integrada.
+- As avaliações são armazenadas localmente.
+- Não existe painel centralizado de avaliações.
+- O contato humano utiliza um link externo do WhatsApp.
+- A autenticação segura depende do Back-End.
+- A autorização de usuários ainda não está implementada no servidor.
+- Os módulos administrativos utilizam dados demonstrativos.
+- Os sensores ainda não estão vinculados individualmente às cargas demonstrativas.
+
+Essas limitações fazem parte do estágio atual de desenvolvimento.
+
+---
+
+## 🚀 14. Próximas etapas
+
+### Integração com Back-End
+
+- [ ] Implementar autenticação real.
+- [ ] Aplicar permissões por perfil.
+- [ ] Persistir registros logísticos.
+- [ ] Integrar dispositivos às cargas.
+- [ ] Gerar logs reais de auditoria.
+
+### Assistente Virtual
+
+- [x] Criar botão flutuante.
+- [x] Implementar perguntas e respostas.
+- [x] Criar perguntas rápidas.
+- [x] Implementar atendimento pelo WhatsApp.
+- [x] Adicionar confirmação de resolução.
+- [x] Implementar avaliação por estrelas.
+- [x] Permitir comentário opcional.
+- [x] Salvar avaliações localmente.
+- [x] Validar 32 execuções automatizadas.
+- [ ] Criar base de conhecimento em JSON.
+- [ ] Criar API para armazenamento das avaliações.
+- [ ] Desenvolver painel administrativo de satisfação.
+- [ ] Implementar indicadores de atendimento.
+- [ ] Avaliar futura integração com IA generativa.
+
+### Qualidade
+
+- [ ] Executar regressão completa após cada integração.
+- [ ] Ampliar testes de acessibilidade.
+- [ ] Validar recursos PWA e comportamento offline.
+- [ ] Executar testes de integração com o Back-End.
+- [ ] Realizar revisão de segurança antes da produção.
+
+---
+
+## 👥 15. Equipe do Projeto Integrador
+
+Integrantes:
+
+- Antonio Henzo
 - Everson
 - Emerson Luiz
 - Gabriel Eduardo
-- José Allamberg
+- José Alanberg
 - Marcelo Barbosa
 
----
-
-## ⚠️ Status
-
-O ColdTrack Edge e o ColdTrack Control encontram-se em fase de **protótipo acadêmico / prova de conceito**.
-
-O sistema atual não deve ser considerado um equipamento industrial certificado.
-
-Para utilização comercial seriam necessárias etapas adicionais de engenharia, calibração, validação, segurança, conectividade e atendimento aos requisitos técnicos e regulatórios aplicáveis.
+O desenvolvimento envolve atividades de hardware, IoT, Front-End, Back-End, integração, documentação e testes.
 
 ---
 
-## 📄 Licença
+## 📚 16. Referências técnicas
 
-Projeto desenvolvido para fins acadêmicos no **Projeto Integrador – 4º Período – 2026**.
+- [MDN Web Docs](https://developer.mozilla.org/)
+- [ThingSpeak](https://thingspeak.mathworks.com/)
+- [Playwright](https://playwright.dev/)
+- [GitHub](https://github.com/)
+- [Netlify](https://docs.netlify.com/)
+- [Documentação do ESP32 — Espressif](https://docs.espressif.com/)
 
 ---
 
-# ❄️ ColdTrack
+## 📄 17. Considerações finais
 
-> **Da origem ao destino, sua carga monitorada.**
+O ColdTrack Control demonstra a aplicação de tecnologias IoT e desenvolvimento web no acompanhamento de condições ambientais relacionadas à cadeia de frio.
+
+O Front-End apresenta indicadores reais provenientes do ThingSpeak e módulos administrativos que representam funcionalidades previstas para a solução.
+
+A implementação do assistente virtual acrescenta um canal de orientação aos visitantes, com respostas automáticas, atendimento humano pelo WhatsApp e avaliação de satisfação.
+
+A validação automatizada do chat apresentou 32 execuções aprovadas, contribuindo para a confiabilidade das funcionalidades testadas.
+
+A continuidade do projeto está concentrada na integração com o Back-End, na persistência dos dados administrativos e no desenvolvimento de mecanismos centralizados de autenticação, auditoria e acompanhamento dos atendimentos.
+
+---
+
+**ColdTrack Control — Projeto Integrador | 2026**

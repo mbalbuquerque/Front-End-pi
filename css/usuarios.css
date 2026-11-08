@@ -310,3 +310,7 @@ dialog::backdrop {
   .filters { grid-template-columns: 1fr; }
   .filters label:first-child { grid-column: auto; }
 }
+
+/* Navegação: foco visível e rolagem horizontal no mobile */
+ .sidebar nav a:focus-visible { outline: 3px solid #18c8d4; outline-offset: 2px; }
+@media (max-width: 680px) { .sidebar nav { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 8px; } .sidebar nav a { flex: 0 0 auto; white-space: nowrap; } }

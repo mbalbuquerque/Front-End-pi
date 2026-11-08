@@ -63,3 +63,7 @@ dialog::backdrop{background:#061b2ba6}
 @media(max-width:1300px){.filters{grid-template-columns:repeat(3,minmax(0,1fr))}.search-field{grid-column:span 2}}
 @media(max-width:900px){.sidebar{width:205px}.main-content{padding:25px}.filters{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:680px){.app-layout{display:block}.sidebar{width:100%;padding:18px}.sidebar nav{display:flex;flex-wrap:wrap}.sidebar-label,.sidebar-footer{display:none}.main-content{padding:20px 15px}.page-header{align-items:flex-start;flex-direction:column}.stats{gap:8px}.stat-card{padding:14px}.stat-card strong{font-size:25px}.stat-card span{font-size:12px}.table-card{padding:18px 12px}.filters{grid-template-columns:1fr}.search-field{grid-column:auto}.table-heading{align-items:flex-start;flex-direction:column}}
+
+/* Navegação: foco visível e rolagem horizontal no mobile */
+ .sidebar nav a:focus-visible { outline: 3px solid #18c8d4; outline-offset: 2px; }
+@media (max-width: 680px) { .sidebar nav { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 8px; } .sidebar nav a { flex: 0 0 auto; white-space: nowrap; } }

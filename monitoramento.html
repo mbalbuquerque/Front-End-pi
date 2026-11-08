@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Monitoramento | ColdTrack Control</title><link rel="stylesheet" href="css/monitoramento.css">
+<script src="js/monitoramento.js" defer></script>
+</head>
+<body><div class="layout">
+<aside class="sidebar"><h2>❄ ColdTrack</h2><p>CONTROL</p><nav aria-label="Menu principal"><a href="dashboard.html">Dashboard</a><a href="logistica.html">Gestão Logística</a><a href="monitoramento.html" aria-current="page">Monitoramento</a><a href="usuarios.html">Usuários</a><a href="auditoria.html">Auditoria</a><a href="index.html">Página inicial</a></nav><small>Projeto Integrador · 2026</small></aside>
+<main class="main"><header class="header"><div><span class="eyebrow">TELEMETRIA DO DISPOSITIVO</span><h1>Monitoramento de sensores</h1><p>Leituras do canal ThingSpeak configurado, sem vinculação presumida às cargas.</p></div><button type="button" id="atualizar" class="primary">Atualizar leituras</button></header>
+<div class="notice" id="origemDados">Aguardando consulta ao ThingSpeak. Nenhuma leitura foi confirmada.</div>
+<section class="metrics" aria-label="Leituras atuais"><article class="metric"><span>Temperatura</span><strong id="temperatura">—</strong><small>°C</small></article><article class="metric"><span>Umidade relativa</span><strong id="umidade">—</strong><small>%</small></article><article class="metric"><span>Sinal Wi-Fi</span><strong id="rssi">—</strong><small>dBm</small></article><article class="metric"><span>Situação térmica</span><strong id="situacao" class="state">Sem leitura</strong><small id="criterio">Limites: normal até 15 °C; atenção até 20 °C</small></article></section>
+<section class="panel"><div class="panelhead"><div><h2>Histórico recente</h2><p>Últimas 20 amostras do canal público, quando disponíveis.</p></div><div class="meta"><span id="conexao" role="status">Não verificado</span><span id="ultimaLeitura">Última leitura: —</span></div></div><div class="chartbox"><svg id="grafico" viewBox="0 0 760 230" role="img" aria-label="Gráfico de temperatura das últimas leituras"><text x="24" y="110" fill="#6a8190">Sem dados para exibir</text></svg></div><div class="tablewrap"><table><thead><tr><th>Data / hora</th><th>Temperatura</th><th>Umidade</th><th>RSSI</th></tr></thead><tbody id="historico"><tr><td colspan="4">Aguardando dados.</td></tr></tbody></table></div></section>
+<p class="footnote">O canal ThingSpeak pode ser público, mas o acesso depende da conexão e das permissões configuradas. A ausência de leituras não é interpretada como temperatura normal. Esta tela não autentica usuários nem substitui alertas operacionais do Back-End.</p>
+</main></div></body></html>
