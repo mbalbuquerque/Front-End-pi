@@ -1,0 +1,345 @@
+/* ASSISTENTE DO PAINEL ------------------------------------
+   Botão flutuante + conversa (components/AssistentePainel). Fica na pasta
+   painel: o Vite prefixa tudo com .escopo-painel e os tokens (--navy,
+   --blue-text, --muted...) vêm da raiz do escopo. Movimento: só a entrada
+   do painel (180 ms, ease-out forte); fechar é instantâneo. */
+
+.assistente {
+  font-family: Inter, Arial, sans-serif;
+  color: var(--text);
+}
+
+/* O botão flutuante não cobre o fim da página: o conteúdo ganha folga embaixo. */
+.main {
+  padding-bottom: 104px;
+}
+
+.assistente-botao {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 900;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+
+  min-height: 52px;
+  padding: 0 20px 0 16px;
+
+  border: 0;
+  border-radius: 26px;
+  background: var(--navy);
+  color: white;
+
+  font: inherit;
+  font-size: 15px;
+  font-weight: 700;
+
+  cursor: pointer;
+  box-shadow: 0 10px 28px rgba(11, 31, 51, .28);
+
+  transition: background-color 150ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.assistente-botao:hover {
+  background: #17334e;
+}
+
+.assistente-botao[aria-expanded="true"] {
+  background: var(--blue-text);
+}
+
+.assistente-painel {
+  position: fixed;
+  right: 24px;
+  bottom: 88px;
+  z-index: 901;
+
+  width: min(400px, calc(100vw - 48px));
+  height: min(600px, calc(100dvh - 120px));
+
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: 0 22px 60px rgba(11, 31, 51, .25);
+
+  transform-origin: bottom right;
+  animation: assistente-entra 180ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.assistente-painel[hidden] {
+  display: none;
+}
+
+@keyframes assistente-entra {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.97);
+  }
+}
+
+.assistente-topo {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+
+  padding: 16px 16px 14px 18px;
+
+  background: var(--navy);
+  color: white;
+}
+
+.assistente-topo h2 {
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.assistente-topo p {
+  margin-top: 3px;
+  color: #c3d0dc;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.assistente-fechar {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: white;
+
+  font: inherit;
+  font-size: 26px;
+  line-height: 1;
+
+  cursor: pointer;
+}
+
+.assistente-fechar:hover {
+  background: #17334e;
+}
+
+.assistente-mensagens {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  padding: 16px 14px;
+  background: var(--background);
+}
+
+.assistente-msg {
+  max-width: 90%;
+  padding: 11px 14px;
+
+  border-radius: 14px;
+
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.45;
+
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.assistente-msg-assistente {
+  align-self: flex-start;
+  background: white;
+  border: 1px solid var(--border);
+  border-bottom-left-radius: 4px;
+}
+
+.assistente-msg-usuario {
+  align-self: flex-end;
+  background: var(--navy);
+  color: white;
+  border-bottom-right-radius: 4px;
+}
+
+.assistente-msg-erro {
+  align-self: flex-start;
+  background: #fff4f4;
+  border: 1px solid #f3caca;
+  border-bottom-left-radius: 4px;
+  color: #a82424;
+  font-weight: 600;
+}
+
+.assistente-digitando {
+  align-self: flex-start;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.assistente-fontes {
+  display: block;
+  margin-top: 8px;
+
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.4;
+  white-space: normal;
+}
+
+.assistente-sugestoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.assistente-sugestoes button {
+  padding: 9px 13px;
+
+  border: 1px solid #c7dcf5;
+  border-radius: 18px;
+  background: var(--ice);
+  color: var(--blue-text);
+
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: left;
+
+  cursor: pointer;
+  transition: background-color 150ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.assistente-sugestoes button:hover {
+  background: #dcecff;
+}
+
+.assistente-form {
+  display: flex;
+  gap: 8px;
+
+  padding: 12px;
+  border-top: 1px solid var(--border);
+  background: white;
+}
+
+.assistente-form input {
+  flex: 1;
+  min-width: 0;
+  height: 44px;
+  padding: 0 12px;
+
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: white;
+  color: var(--text);
+
+  font: inherit;
+  font-size: 15px;
+}
+
+.assistente-form input:disabled {
+  background: var(--background);
+}
+
+.assistente-enviar {
+  flex-shrink: 0;
+  height: 44px;
+  padding: 0 16px;
+
+  border: 0;
+  border-radius: 10px;
+  background: var(--blue-text);
+  color: white;
+
+  font: inherit;
+  font-size: 15px;
+  font-weight: 700;
+
+  cursor: pointer;
+}
+
+.assistente-enviar:disabled {
+  background: #9aa6b1;
+  cursor: not-allowed;
+}
+
+.assistente-aviso {
+  padding: 0 12px 10px;
+  background: white;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.assistente-botao:focus-visible,
+.assistente-fechar:focus-visible,
+.assistente-sugestoes button:focus-visible,
+.assistente-enviar:focus-visible,
+.assistente-form input:focus-visible {
+  outline: 3px solid var(--blue);
+  outline-offset: 2px;
+}
+
+.assistente-fechar:focus-visible {
+  outline-color: white;
+}
+
+/* Celular: botão menor no canto e conversa na largura toda, como folha. */
+@media (max-width: 720px) {
+
+  .main {
+    padding-bottom: 92px;
+  }
+
+  .assistente-botao {
+    right: 16px;
+    bottom: 16px;
+    min-height: 48px;
+    padding: 0 16px 0 13px;
+  }
+
+  .assistente-painel {
+    left: 0;
+    right: 0;
+    bottom: 0;
+
+    width: 100%;
+    height: min(88dvh, 640px);
+
+    border-radius: 16px 16px 0 0;
+    border-bottom: 0;
+
+    transform-origin: bottom center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+  .assistente-painel {
+    animation: none;
+  }
+
+  .assistente-botao,
+  .assistente-sugestoes button {
+    transition: none;
+  }
+}
+
+/* Impressão (inclusive a etiqueta QR de Veículos): o assistente não sai. */
+@media print {
+
+  .assistente {
+    display: none !important;
+  }
+}

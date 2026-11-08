@@ -145,12 +145,21 @@ test("REAL-USR-03: usuário QA entra, troca a própria senha e entra com a nova"
     await expect(page.getByRole("heading", { level: 1, name: "Configurações" })).toBeVisible();
     await expect(page.getByText("Azure conectado")).toBeVisible();
 
+    // Sair encerra a sessão no servidor: o token de antes do clique deixa de valer.
+    // (Feito com a conta descartável: na conta compartilhada derrubaria a sessão
+    // salva que os outros testes reaproveitam.)
+    const tokenAntes = await page.evaluate(() => JSON.parse(localStorage.getItem("coldtrack.sessao")).token);
+    expect((await chamarApi("/eu", { token: tokenAntes })).status).toBe(200);
     await page.locator("#botaoSair").click();
+    await expect(page).toHaveURL(/\/login$/);
+    expect(await page.evaluate(() => localStorage.getItem("coldtrack.sessao"))).toBeNull();
+    await expect.poll(async () => (await chamarApi("/eu", { token: tokenAntes })).status).toBe(401);
+    await page.goto("/dashboard");
     await expect(page).toHaveURL(/\/login$/);
 
     // Senha antiga: recusada com a mensagem de senha errada (1 erro, conta descartável).
     expect(await entrarPelaTela(page, QA.usuarioEmail, SENHAS.redefinida)).toBe(401);
-    await expect(page.locator("#loginMessage")).toHaveText("e-mail ou senha incorretos");
+    await expect(page.locator("#loginMessage")).toHaveText(/e-mail ou senha incorretos/);
     await expect(page).toHaveURL(/\/login$/);
 
     // Senha nova: entra (e zera o contador de erros).

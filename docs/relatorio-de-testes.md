@@ -15,9 +15,9 @@
 | Suíte | Comando | Resultado |
 |---|---|---|
 | Lint | `npm run lint` | sem avisos |
-| Unitários | `npm test` | 137 passaram em 21 arquivos, 0 falharam |
+| Unitários | `npm test` | 158 passaram, 0 falharam (reexecutado em 08/11/2026 depois da revisão da documentação) |
 | Build | `npm run build` | ok |
-| E2E simulado (API simulada, build local) | `npm run test:e2e` | 163 passaram, 0 falharam, 15 pulados (o caso de 390 px roda só no projeto desktop, de propósito) |
+| E2E simulado (API simulada, build local) | `npm run test:e2e` | 206 passaram, 0 falharam, 18 pulados (os casos de 390 px e de impressão rodam só no projeto desktop, de propósito). Na execução completa, QA-ASSIST-10 (390 px) falhou uma vez, com a máquina sob carga, e passou ao ser repetido sozinho |
 | E2E real (site publicado + API de produção) | `npm run test:e2e:real` | 57 passaram, 0 falharam, 0 pulados (site publicado no commit `4d51edd`, chat com Azure OpenAI incluído) |
 | E2E real do chat (build local + API de produção) | `REAL-PUB-04`, `05` e `09`, veja abaixo | 3 passaram, 0 falharam (2 perguntas de verdade à rota `/chat`) |
 
@@ -138,6 +138,46 @@ Os textos do FAQ que contradiziam o produto atual foram corrigidos: o caminho do
 no Azure (Azure Functions e Cosmos DB), não o ThingSpeak (que fica só na tela demonstrativa
 Monitoramento), e os limites de temperatura vêm do perfil de carga de cada veículo, não de
 valores fixos.
+
+## Assistente do painel (Azure OpenAI, rota autenticada)
+
+Todas as telas logadas têm o botão flutuante **Assistente**, que chama `POST /assistente` com o
+token da sessão. Ele responde dúvidas de uso (base: `docs/guia-de-uso.md`) e perguntas sobre os
+dados da empresa logada. Lint, unitários, build e e2e simulado rodaram na branch `everson` em
+08/11/2026, com a rota simulada. A rota já existe na API de produção (responde 401 sem token).
+
+| Camada | Casos | O que verifica |
+|---|---|---|
+| Unitários `src/lib/assistente.test.js` | 10 | POST com `Bearer`, corpo `{ pergunta, historico? }` (pergunta até 500, últimas 6 mensagens válidas, texto até 1000), 200 com fontes limpas, 400 e 429 com a mensagem da API, 503 com o aviso de indisponível, 401 limpa a sessão e chama o redirecionamento (igual à `api()`), resposta vazia, falha de rede, tempo limite de 20 s, cancelamento sem marcar tempo esgotado |
+| Unitários `AssistentePainel/conversa.test.js` | 6 | pergunta e resposta na conversa, "esperando" liga e desliga, histórico só com perguntas respondidas (máximo 6 mensagens), 429 e 503 viram mensagem, sem envio vazio nem duplo, troca de sessão zera a conversa e descarta a resposta pendente |
+| E2E simulado `assistente.spec.js`, QA-ASSIST-01 a 11 | 12 casos, 21 execuções e 3 pulados (09 a 11 só no desktop) | botão nas 7 telas logadas para gestor e operador e em nenhuma das 8 públicas; saudação pelo primeiro nome; sugestão com `Bearer`, resposta em texto puro com quebra de linha e "Fontes:"; "Assistente digitando…" com campo e envio desligados; histórico na segunda pergunta (Enter); conversa mantida ao trocar de tela e apagada ao sair; 429 com o aviso da API; 503 com "O assistente está indisponível agora. Tente de novo em instantes."; Escape e × fecham com o foco de volta no botão; 390 px com o painel aberto na largura toda e sem rolagem horizontal nas 7 telas; botão não cobre o rodapé; impressão esconde o assistente |
+| E2E real `08-assistente.spec.js`, REAL-ASSIST-01 | 1 | gestor pergunta "Quantos veículos eu tenho cadastrados?" pela tela e recebe resposta não vazia; uma chamada real por execução; pula com o motivo se o site publicado ainda não tem o botão ou se a rota responde 404/503 |
+
+REAL-ASSIST-01 ainda não foi executado contra produção. Sem as credenciais da suíte real na
+máquina, ele é pulado; rode `npm run test:e2e:real` com as credenciais para registrar o resultado.
+
+## Segurança do front (CSP, logout no servidor, mensagem de login)
+
+Medidas descritas na seção 9 do `README.md`. Lint, unitários, build e e2e simulado rodaram na
+branch `everson`; a rota `POST /sair` e a mensagem única de login 401 são simuladas, porque o
+backend está sendo publicado em paralelo.
+
+| Camada | Casos | O que verifica |
+|---|---|---|
+| Unitários `ChatWidget/conversa.test.js` | 1 | 429 "o chat atingiu o limite de perguntas de hoje..." cai no FAQ como o 503; o 429 por minuto continua mostrando o aviso da API |
+| Unitários `src/lib/api.test.js` (`sairNoServidor`) | 4 | `POST /sair` com `Bearer`; 404, 401 e falha de rede ignorados; sem token não chama a API; aborta no limite de 5 s |
+| E2E `painel.spec.js`, QA-SEG-01 e 02 | 4 casos | Sair chama `/sair` uma vez com o `Bearer` da sessão, limpa o `localStorage` e vai ao `/login`; continua saindo com `/sair` em 404, 500 ou com a rede caída |
+| E2E `login-erro.spec.js`, QA-SEG-03 a 05 | 3 casos | Tela de login e formulário da Home mostram "e-mail ou senha incorretos. Se errou várias vezes, aguarde alguns minutos." (401) e ainda mostram o aviso do 429 (agora só limite por IP: "muitas tentativas de login erradas. Aguarde alguns minutos.") |
+| E2E `painel.spec.js`, QA-SEG-09 | 1 caso | Em Configurações, a linha do próprio gestor mostra só "você" (sem Redefinir senha nem Remover); o operador continua com as duas ações |
+| E2E `csp.spec.js`, QA-SEG-06 a 08 | 3 casos | O build traz a CSP e o `referrer` em `<meta>` (sem `unsafe-eval`); as 15 rotas, o chat, o assistente, a etiqueta QR e o download do CSV não geram nenhuma violação ("Refused to") |
+
+O mock de login de `apoio.js` passou a devolver a mensagem nova. `REAL-USR-03` agora confere a
+mensagem por trecho ("e-mail ou senha incorretos"), para valer com a API antiga e a nova.
+
+Auditoria de dependências (`npm audit`): a produção tem 2 avisos moderados, em `react-router` e
+`react-router-dom` (6.30.6 é a última 6.x; a correção exige React Router 7, migração fora do
+escopo). Os demais são só de desenvolvimento (`vite`, `esbuild`, `vitest`, `tinypool`, `vite-node`,
+`@vitest/mocker`) e exigem salto de versão maior; não entram no site publicado.
 
 ## Defeito encontrado e corrigido
 

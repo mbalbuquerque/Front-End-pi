@@ -8,6 +8,10 @@
 //   cai no FAQ local e os testes do FAQ ficam determinísticos.
 // - `simularChat(page, responder)` simula a rota /chat (Azure OpenAI) e
 //   devolve a lista dos corpos recebidos.
+// - `simularAssistente(page, responder)` simula a rota autenticada
+//   /assistente (assistente do painel) e devolve a lista dos pedidos
+//   ({ corpo, autorizacao }). Sem ela, /assistente responde 503 (o assistente
+//   mostra o aviso de indisponível), com ou sem simularApi.
 // - `entrarComo(page, "gestor" | "operador")` grava uma sessão falsa no
 //   localStorage (chave coldtrack.sessao) antes de a página abrir.
 // - `errosDoConsole(page)` junta console.error e exceções da página.
@@ -21,6 +25,10 @@ export { expect };
 export const HOST_API = /func-coldtrack-7319\.azurewebsites\.net/;
 
 export const ROTA_CHAT = /func-coldtrack-7319\.azurewebsites\.net\/api\/chat(\?|$)/;
+
+export const ROTA_SAIR = /func-coldtrack-7319\.azurewebsites\.net\/api\/sair(\?|$)/;
+
+export const ROTA_ASSISTENTE = /func-coldtrack-7319\.azurewebsites\.net\/api\/assistente(\?|$)/;
 
 const HORA = 3600 * 1000;
 
@@ -130,8 +138,12 @@ export async function simularApi(page) {
       return responder({ erros: ["chat indisponível"] }, 503);
     }
 
+    if (caminho === "/assistente") {
+      return responder({ erros: ["assistente indisponível"] }, 503);
+    }
+
     if (metodo === "POST" && caminho === "/login") {
-      return responder({ erros: ["E-mail ou senha incorretos."] }, 401);
+      return responder({ erros: ["e-mail ou senha incorretos. Se errou várias vezes, aguarde alguns minutos."] }, 401);
     }
 
     if (metodo !== "GET") {
@@ -203,10 +215,79 @@ export async function simularChat(page, responder) {
 
 
 // ---------------------------------------------------------
+// ASSISTENTE DO PAINEL (POST /assistente, com token)
+// ---------------------------------------------------------
+
+// `responder(corpo, numero)` devolve { status = 200, json, atraso = 0 }.
+// Devolve a lista (viva) dos pedidos: { corpo, autorizacao }.
+export async function simularAssistente(page, responder) {
+
+  const pedidos = [];
+
+  await page.route(ROTA_ASSISTENTE, async route => {
+
+    const pedido = route.request();
+
+    if (pedido.method() === "OPTIONS") {
+      return route.fulfill({ status: 204, headers: cors() });
+    }
+
+    const corpo = pedido.postDataJSON();
+    pedidos.push({ corpo, autorizacao: pedido.headers().authorization || "" });
+
+    const { status = 200, json = {}, atraso = 0 } = await responder(corpo, pedidos.length);
+
+    if (atraso) {
+      await new Promise(resolver => setTimeout(resolver, atraso));
+    }
+
+    await route.fulfill({ status, json, headers: cors() }).catch(() => {});
+
+  });
+
+  return pedidos;
+
+}
+
+
+// ---------------------------------------------------------
+// LOGOUT NO SERVIDOR (POST /sair, com token)
+// ---------------------------------------------------------
+
+// `status` é a resposta simulada (204 como a API nova; 404 como a API antiga).
+// Devolve a lista (viva) dos pedidos: { autorizacao }.
+export async function simularSair(page, status = 204) {
+
+  const pedidos = [];
+
+  await page.route(ROTA_SAIR, async route => {
+
+    const pedido = route.request();
+
+    if (pedido.method() === "OPTIONS") {
+      return route.fulfill({ status: 204, headers: cors() });
+    }
+
+    pedidos.push({ autorizacao: pedido.headers().authorization || "" });
+
+    await route.fulfill({
+      status,
+      headers: cors(),
+      ...(status === 204 ? {} : { json: { erros: ["erro simulado"] } })
+    }).catch(() => {});
+
+  });
+
+  return pedidos;
+
+}
+
+
+// ---------------------------------------------------------
 // SESSÃO FALSA
 // ---------------------------------------------------------
 
-function tokenFalso(usuario) {
+export function tokenFalso(usuario) {
 
   const base64url = objeto => Buffer.from(JSON.stringify(objeto)).toString("base64url");
   const exp = Math.floor(Date.now() / 1000) + 8 * 3600;

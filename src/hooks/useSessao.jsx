@@ -3,8 +3,8 @@
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { definirAoExpirar } from "../lib/api.js";
-import { limparSessao, salvarSessao, usuarioAtual } from "../lib/sessao.js";
+import { definirAoExpirar, sairNoServidor } from "../lib/api.js";
+import { lerSessao, limparSessao, salvarSessao, usuarioAtual } from "../lib/sessao.js";
 
 const SessaoContexto = createContext(null);
 
@@ -20,7 +20,9 @@ export function AuthProvider({ children }) {
     setUsuario(novoUsuario);
   }, []);
 
+  // Sair: avisa o servidor (melhor esforço, sem esperar) e limpa a sessão local.
   const sair = useCallback(() => {
+    sairNoServidor(lerSessao()?.token);
     limparSessao();
     setUsuario(null);
     navigate("/login");

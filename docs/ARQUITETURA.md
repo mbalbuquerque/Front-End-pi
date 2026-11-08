@@ -2,7 +2,9 @@
 
 Contrato técnico do painel: estrutura, CSS, módulos compartilhados e regras de código.
 Leia antes de criar ou alterar uma tela. O passo a passo de trabalho (branches, commits,
-verificações) está em [`CONTRIBUTING.md`](../CONTRIBUTING.md).
+verificações) está em [`CONTRIBUTING.md`](../CONTRIBUTING.md). Visão geral do projeto e links: [`README.md`](../README.md).
+A API, o firmware e a infraestrutura estão no repositório
+[projeto-integrador-4-periodo](https://github.com/mbalbuquerque/projeto-integrador-4-periodo).
 Telas de referência: **`src/pages/Login/Login.jsx`** (pública) e **`src/pages/Alertas/Alertas.jsx`** (logada, com polling).
 
 Stack: React 18 + Vite 5 + React Router 6, JavaScript (sem TypeScript). Node 20+.
@@ -30,14 +32,14 @@ src/
   main.jsx                 BrowserRouter > AuthProvider > App; registra o sw.js no build
   App.jsx                  todas as rotas (cada tela com React.lazy)
   rotas.js                 ROTAS_LEGADAS (nome.html -> rota) e PAGINAS_PAINEL (menu)
-  lib/                     lógica sem React (porte de comum.js / config.js)
+  lib/                     lógica sem React (API, sessão, leituras, faixas, formatação)
   hooks/                   useSessao, usePolling, useVeiculoEscolhido, useTitulo,
                            useMovimentoReduzido
   components/              PainelLayout, RequireAuth, Estado, StatusSelo, FiltroPeriodo,
-                           SeletorVeiculo, GraficoTemperatura, ChatWidget/
+                           SeletorVeiculo, GraficoTemperatura, ChatWidget/, AssistentePainel/
   pages/<Nome>/<Nome>.jsx  uma pasta por tela (regras puras em .js e testes ao lado)
   styles/base.css          reset mínimo global
-  styles/<familia>/*.css   CSS antigo, escopado por .escopo-<familia>
+  styles/<familia>/*.css   CSS de cada família de telas, escopado por .escopo-<familia>
   assets/images/           imagens WebP (slide-1..3, coldtrack-infografico)
 ```
 
@@ -65,6 +67,7 @@ ficam dentro de `<Route element={<RequireAuth />}>`. Para criar uma tela nova, s
 | `/logistica` | `pages/Logistica/Logistica.jsx` | logistica | não (demo) |
 | `/monitoramento` | `pages/Monitoramento/Monitoramento.jsx` | monitoramento | não (demo) |
 | (widget da `/`) | `components/ChatWidget/ChatWidget.jsx` | chat | não |
+| (botão de toda tela logada) | `components/AssistentePainel/AssistentePainel.jsx` (montado no `PainelLayout`) | painel | sim |
 
 As telas "não (demo)" usam dados de exemplo no próprio componente, sem API, como no site anterior.
 
@@ -81,12 +84,12 @@ O CSS de cada família veio do site anterior (HTML + JS) e redefine `:root`, `*`
 | `body.pagina-login .x` | `.escopo-painel.pagina-login .x` |
 | `* { box-sizing }` | `.escopo-painel, .escopo-painel * { }` |
 | `@media` | continua, com as regras de dentro prefixadas |
-| `@keyframes` | intacto (nome global; hoje só existe `pulse`, em home) |
+| `@keyframes` | intacto (nome global; hoje existem `pulse`, em home, e `assistente-entra`, em painel) |
 | `@media (prefers-reduced-motion: reduce)` | continua; a home desliga a transição do slider e o `pulse` |
 
 | Família | Classe raiz | Arquivos | Import |
 |---|---|---|---|
-| painel | `escopo-painel` | `style.css`, `telas.css` (via `index.css`) | `styles/painel/index.css` (já feito no `PainelLayout`) |
+| painel | `escopo-painel` | `style.css`, `telas.css`, `assistente.css` (via `index.css`) | `styles/painel/index.css` (já feito no `PainelLayout`) |
 | home | `escopo-home` | `home.css` | `styles/home/home.css` |
 | login | `escopo-login` | `login.css` | `styles/login/login.css` |
 | cadastro-usuario | `escopo-cadastro-usuario` | `cadastro.css` | `styles/cadastro-usuario/cadastro.css` |
@@ -141,6 +144,16 @@ Importe sempre com extensão: `import { api } from "../../lib/api.js"`.
   `ChatWidget` (`components/ChatWidget/conversa.js`): 429 mostra o aviso da API; qualquer outra
   falha responde pelo FAQ local (`respostas.js`). As perguntas rápidas não chamam a rota.
 
+**`assistente.js`** — assistente do painel com Azure OpenAI (rota autenticada).
+- `perguntarAssistente(pergunta, historico = [], { signal, tempoLimite = 20000 }) -> Promise<{ resposta, fontes }>`
+  — `POST /assistente` pela `api()` (leva o token; 401 limpa a sessão e vai para `/login`, como
+  em qualquer tela). Mesmos limites do `/chat`: pergunta até 500, histórico até 6 mensagens de
+  até 1000. Erro HTTP lança com `.status`; tempo esgotado lança com `.tempoEsgotado = true`;
+  resposta vazia lança. `api()` aceita `signal` só para isso.
+- `mensagemDeErro(erro) -> string` — 400/429: a mensagem da API; 401: "Sua sessão terminou...";
+  o resto (503, tempo, rede): `MENSAGEM_INDISPONIVEL` ("O assistente está indisponível agora.
+  Tente de novo em instantes."). Sem plano B local: as perguntas dependem dos dados da empresa.
+
 **`sessao.js`** — `lerSessao()` (null se vencida), `salvarSessao(token, usuario)`, `limparSessao()`,
 `usuarioAtual()`, `ehGestor(usuario = usuarioAtual())`, `expiracaoDoToken(token)`, `CHAVE_SESSAO`.
 Em componente prefira `useSessao()`.
@@ -166,8 +179,9 @@ primeiro), `horarioDe(leitura) -> Date`, `resumir(leituras) -> { total, media, m
 ## 5. Hooks
 
 - **`useSessao()`** → `{ usuario, entrar(token, usuario), sair() }`. `entrar` grava a sessão e
-  atualiza a tela (login, cadastro de empresa, troca de senha em Configurações). `sair` limpa e vai
-  para `/login`.
+  atualiza a tela (login, cadastro de empresa, troca de senha em Configurações). `sair` chama `sairNoServidor()`
+  (`lib/api.js`, `POST /sair` com o Bearer, limite de 5 s, erro ignorado), limpa a sessão e vai para
+  `/login`.
 - **`usePolling(fn, ms, deps)`** → `recarregar()`. Roda `fn(sinal)` agora e a cada `ms`; quando
   `deps` muda, cancela e recomeça na hora. Depois de cada `await`: `if (sinal.aborted) return;`.
   Chame `recarregar()` depois de salvar um formulário (o antigo `carregarX()` direto).
@@ -186,6 +200,17 @@ primeiro), `horarioDe(leitura) -> Date`, `resumir(leituras) -> { total, media, m
   `true` "Azure conectado", `false` "Sem conexão com Azure" (ponto vermelho). `tituloDocumento`
   padrão `"<titulo> · ColdTrack Control"` (Dashboard: passe `"ColdTrack Control"`).
   Os filhos entram no `<main>` entre o topo e o rodapé: normalmente `<div id="conteudo" className="page-grid">`.
+  Monta também o `<AssistentePainel />` (a tela não faz nada para tê-lo).
+- **`<AssistentePainel />`** — botão flutuante `#assistenteBotao` ("Assistente") e conversa
+  (`role="dialog"` não modal, "Assistente do painel"): saudação pelo primeiro nome, 4 sugestões
+  (`SUGESTOES` em `conversa.js`) antes da primeira pergunta, lista `role="log"` `aria-live="polite"`,
+  "Assistente digitando…", campo `#assistenteCampo` + "Enviar" (desligados enquanto espera),
+  resposta em texto puro (`white-space: pre-wrap`) com "Fontes: ...". Escape e × fecham e o foco
+  volta ao botão. A conversa vive em `conversa.js` (módulo, fora do React): sobrevive à troca de
+  tela, pertence ao token da sessão e é apagada ao sair ou com 401. CSS em
+  `styles/painel/assistente.css`: folha na largura toda até 720 px, `.main` ganha folga embaixo
+  para o botão não cobrir o rodapé, `@media print` esconde tudo (etiqueta QR limpa), entrada de
+  180 ms desligada com `prefers-reduced-motion`.
 - **`<RequireAuth perfil?>`** — já envolve as rotas logadas em `App.jsx`. Para bloquear só para
   gestor dentro de uma tela, use `ehGestor(usuario)` e esconda o trecho.
 - **`<Estado titulo? painel?>texto</Estado>`**, **`<Carregando />`** ("Carregando leituras…"),
@@ -238,7 +263,8 @@ export default function Relatorios() {
    referência a input com `useRef`.
 3. **`localStorage` só via `lib/armazenamento.js`** (ou `lib/sessao.js` / `lib/veiculo.js`).
 4. **API do ColdTrack só via `lib/api.js`** (`api`, `postPublico`, `getPublico`); a rota `/chat`,
-   que precisa de tempo limite e cancelamento, fica em `lib/chat.js`. Serviço de
+   que precisa de tempo limite e cancelamento, fica em `lib/chat.js`; a `/assistente` fica em
+   `lib/assistente.js`, por cima da `api()`. Serviço de
    terceiro (Open-Meteo em `risco.js`, ThingSpeak em `monitoramento.js`) pode usar `fetch` direto,
    isolado num arquivo `.js` da própria tela ou em `src/lib/`.
 5. **Polling só com `usePolling`** (nada de `setInterval` solto: vaza ao trocar de tela).

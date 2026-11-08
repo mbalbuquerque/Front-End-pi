@@ -36,19 +36,9 @@ test.describe("com sessão de gestor", () => {
 
   });
 
-  test("REAL-AUTH-04: Sair limpa a sessão e bloqueia as telas logadas", async ({ page }) => {
-
-    await page.goto("/alertas");
-    await expect(page.getByRole("heading", { level: 1, name: "Alertas" })).toBeVisible();
-
-    await page.locator("#botaoSair").click();
-    await expect(page).toHaveURL(/\/login$/);
-    expect(await page.evaluate(() => localStorage.getItem("coldtrack.sessao"))).toBeNull();
-
-    await page.goto("/dashboard");
-    await expect(page).toHaveURL(/\/login$/);
-
-  });
+  // REAL-AUTH-04 (Sair) foi para 05-gestor-usuario, com a conta descartável:
+  // Sair agora encerra no servidor todas as sessões do usuário, e aqui
+  // derrubaria a sessão compartilhada que os outros testes reaproveitam.
 
 });
 

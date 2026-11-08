@@ -82,6 +82,18 @@ describe("responderPergunta", () => {
     expect(resultado).toEqual({ origem: "limite", encontrada: true, texto: mensagem, fontes: [] });
   });
 
+  it("429 do limite diário (\"o chat atingiu o limite de perguntas de hoje\"): cai no FAQ como o 503", async () => {
+    const perguntar = vi.fn().mockRejectedValue(
+      erroHttp(429, "o chat atingiu o limite de perguntas de hoje. Tente amanhã ou fale pelo WhatsApp.")
+    );
+
+    const resultado = await responderPergunta("Quais sensores são utilizados?", [], { perguntar });
+
+    expect(resultado.origem).toBe("faq");
+    expect(resultado.encontrada).toBe(true);
+    expect(resultado.texto).toContain("ESP32");
+  });
+
 });
 
 

@@ -1,13 +1,21 @@
 # ColdTrack Control
 
 Painel web do **ColdTrack Edge**, projeto integrador de monitoramento IoT da cadeia fria.
-Sensores ESP32 instalados no baú dos veículos enviam temperatura, umidade e sinal Wi-Fi para
-uma API no Azure; o painel mostra a situação de cada carga, os alertas fora da faixa do perfil
-da mercadoria, relatórios, viagens e o risco de calor previsto na rota.
+Sensores ESP32-C3 instalados no baú dos veículos enviam temperatura, umidade e sinal Wi-Fi para
+uma API no Azure; o painel (React + Vite) mostra a situação de cada carga, os alertas fora da
+faixa do perfil da mercadoria, relatórios, viagens e o risco de calor previsto na rota.
 
-- Site publicado: <https://stcoldtrackweb7319.z15.web.core.windows.net>
-- Repositório do Front-End: <https://github.com/mbalbuquerque/Front-End-pi>
-- Repositório da API (Back-End, Azure Functions) e do firmware: <https://github.com/mbalbuquerque/projeto-integrador-4-periodo>
+Este é o repositório do **painel (front-end)**. A API, o firmware, a infraestrutura e a análise
+climática ficam no repositório do back-end:
+[mbalbuquerque/projeto-integrador-4-periodo](https://github.com/mbalbuquerque/projeto-integrador-4-periodo).
+
+| | endereço |
+|---|---|
+| Painel publicado | <https://stcoldtrackweb7319.z15.web.core.windows.net> |
+| API (base) | `https://func-coldtrack-7319.azurewebsites.net/api`; exemplo público: <https://func-coldtrack-7319.azurewebsites.net/api/perfis> |
+| Repositório do painel (este) | <https://github.com/mbalbuquerque/Front-End-pi> |
+| Repositório do back-end e do firmware | <https://github.com/mbalbuquerque/projeto-integrador-4-periodo> |
+| Simulação do firmware no Wokwi | <https://wokwi.com/projects/475352296477619201> |
 
 ## 1. Sobre o projeto
 
@@ -27,28 +35,39 @@ Objetivos:
 - oferecer atendimento automatizado aos visitantes, com encaminhamento ao desenvolvedor;
 - manter a interface responsiva e testada automaticamente.
 
-### Fluxo dos dados
+### Arquitetura
 
 ```text
-Sensor DHT + ESP32-C3 (no baú)
-        |  Wi-Fi, HTTPS, chave por dispositivo
+ESP32-C3 + DHT11/DHT22 (no baú)
+        |  Wi-Fi, HTTPS + JSON, chave por dispositivo
         v
-API ColdTrack (Azure Functions)  -- perfis de carga, veículos, sensores, viagens, usuários
-        |  JSON, token de sessão (8 h)
+API ColdTrack (Azure Functions, Python)  <--> Azure OpenAI (gpt-4.1-mini, RAG)
+        |  grava e consulta                      chat público e assistente do painel
         v
-ColdTrack Control (este repositório, React, site estático no Azure Storage)
+Azure Cosmos DB (empresas, usuários, veículos, sensores, viagens, leituras)
+        ^
+        |  JSON, token JWT de sessão (8 h)
+        |
+ColdTrack Control (este repositório): React + Vite, site estático no Azure Storage
 ```
 
+Perfis de usuário: **gestor** (consulta e cadastra) e **operador** (consulta). A API é a única
+fonte dos dados do painel; a especificação das rotas está em
+[`docs/api.md`](https://github.com/mbalbuquerque/projeto-integrador-4-periodo/blob/main/docs/api.md)
+do back-end.
+
 A tela **Monitoramento** é uma demonstração separada que lê o canal público do ThingSpeak
-(`3496439`: field1 temperatura, field2 umidade, field3 RSSI). O **Dashboard** usa a
-previsão da Open-Meteo para estimar o calor na rota Petrolina a Suape.
+(`3496439`: field1 temperatura, field2 umidade, field3 RSSI); o ThingSpeak não faz parte do
+caminho dos dados do painel. O **Dashboard** usa a previsão da Open-Meteo para estimar o calor
+na rota Petrolina a Suape.
 
 ### Faixas de temperatura
 
 As faixas não são fixas no Front-End: cada veículo tem um **perfil de carga** cadastrado na API
-(`GET /perfis`, com `min`, `max` e `margem`). A leitura é Normal dentro da faixa, Atenção até
-`margem` graus fora dela e Crítico além disso. Enquanto os perfis não carregam, vale o perfil
-demonstrativo (até 15 °C Normal, até 20 °C Atenção).
+(`GET /perfis`, com `min`, `max` e `margem`; manga, uva e demonstrativo). A leitura é Normal
+dentro da faixa, Atenção até `margem` graus fora dela e Crítico além disso. Os valores vêm da
+API; só enquanto os perfis não carregam (ou para veículo sem perfil) o painel usa o perfil
+demonstrativo de reserva (Normal até 15 °C, Atenção até 20 °C).
 
 ## 2. Stack
 
@@ -60,8 +79,8 @@ demonstrativo (até 15 °C Normal, até 20 °C Atenção).
 | Qualidade | ESLint 9 (`--max-warnings 0`) |
 | PWA | `public/manifest.json`, `public/sw.js` (rede primeiro, registrado só no build) |
 | Hospedagem | Azure Storage, site estático (container `$web`), publicação por GitHub Actions com OIDC |
-| Hardware | ESP32-C3, sensor DHT |
-| Serviços externos | API ColdTrack (Azure Functions; chat com Azure OpenAI), ThingSpeak, Open-Meteo |
+| Hardware | ESP32-C3, sensor DHT11 ou DHT22 (firmware no repositório do back-end) |
+| Serviços externos | API ColdTrack (Azure Functions; chat e assistente do painel com Azure OpenAI), ThingSpeak, Open-Meteo |
 
 ## 3. Estrutura
 
@@ -77,7 +96,7 @@ src/
   rotas.js                 ROTAS_LEGADAS (nome.html -> rota) e menu do painel
   lib/                     API, sessão, leituras, faixas, formatação, veículo (sem React)
   hooks/                   useSessao, usePolling, useVeiculoEscolhido, useTitulo, useMovimentoReduzido
-  components/              PainelLayout, RequireAuth, GraficoTemperatura, ChatWidget/...
+  components/              PainelLayout, RequireAuth, GraficoTemperatura, ChatWidget/, AssistentePainel/...
   pages/<Nome>/            uma pasta por tela (componente, regras puras e testes)
   styles/<familia>/        CSS de cada família de telas, escopado por .escopo-<familia>
   assets/images/           imagens WebP (slider da página inicial, infográfico do chat)
@@ -85,6 +104,7 @@ coldtrack-qa/              testes e2e (Playwright) e a documentação deles
 scripts/enviar-site.sh     envio de dist/ para o Azure (usado pelo CI e pelo publicar.sh)
 publicar.sh                publicação manual pela máquina local
 docs/ARQUITETURA.md        contrato técnico: estrutura, CSS, lib, hooks, regras
+docs/guia-de-uso.md        guia do usuário final, tela por tela (base do assistente do painel)
 ```
 
 ## 4. Como rodar
@@ -128,9 +148,9 @@ cp .env.example .env.local
 ## 5. Testes
 
 - **Unitários (Vitest):** regras sem tela em `src/lib` e em `src/pages/*/` (leituras,
-  faixas, sessão, API, formatação, CSV, sensores, viagens, etiqueta, chat e plano B do chat).
+  faixas, sessão, API, formatação, CSV, sensores, viagens, etiqueta, chat, plano B do chat e assistente do painel).
 - **E2E (Playwright):** `coldtrack-qa/tests`, em Desktop Chrome e Mobile Chrome. Cobrem as
-  telas públicas e demonstrativas, o chat (com a rota `/chat` simulada), os redirecionamentos das URLs antigas e as telas
+  telas públicas e demonstrativas, o chat (com a rota `/chat` simulada), o assistente do painel (rota `/assistente` simulada), os redirecionamentos das URLs antigas e as telas
   logadas como gestor e como operador. A API e os serviços de terceiros são simulados: nenhum
   teste acessa o Azure. Detalhes em [`coldtrack-qa/README.md`](coldtrack-qa/README.md).
 
@@ -144,6 +164,10 @@ O workflow `.github/workflows/testes.yml` roda lint, unitários, build e e2e a c
 request; quando algum e2e falha, o relatório fica anexado à execução.
 
 ## 6. Deploy
+
+Fluxo de branches: o trabalho acontece na **`everson`**; quando uma etapa fica pronta, abre-se
+um pull request `everson` -> `main`. **A `everson` não pode ser apagada** (nem após o merge):
+o deploy e o login por OIDC no Azure dependem dela.
 
 Cada push na branch **`everson`** dispara `.github/workflows/publicar-site.yml`:
 
@@ -222,21 +246,74 @@ formato abaixo; ainda não há envio para um servidor.
 { "nota": 5, "resolvida": true, "comentario": "Atendimento excelente!", "data": "2026-11-04T17:00:00.000Z" }
 ```
 
+### Assistente do painel (telas logadas)
+
+Todas as telas logadas têm o botão flutuante **Assistente** (canto inferior direito), montado uma
+vez no `PainelLayout`. Ele responde dúvidas de uso do painel e perguntas sobre os dados da empresa
+de quem está logado (veículos, sensores, últimas leituras, alertas das últimas 24 h, viagens).
+
+- **Rota:** `POST /assistente` da API, com o token (`Authorization: Bearer`), pela mesma `api()`
+  das outras telas: 401 limpa a sessão e volta ao login. Corpo
+  `{ pergunta (1 a 500), historico?: [{ papel: "usuario" | "assistente", texto }] (até 6) }`;
+  resposta `{ resposta, fontes, origem: "ia" }`. Cliente em `src/lib/assistente.js` (20 s de
+  tempo limite).
+- **Tela:** saudação pelo primeiro nome, 4 sugestões, resposta em texto puro (quebras de linha
+  mantidas) com a linha "Fontes:", "Assistente digitando…" enquanto espera. Escape ou × fecha e
+  o foco volta ao botão. No celular a conversa ocupa a largura toda; na impressão (inclusive a
+  etiqueta QR) o assistente não aparece.
+- **Erros:** 400 e 429 mostram a mensagem da API; 503, tempo esgotado e falha de rede mostram
+  "O assistente está indisponível agora. Tente de novo em instantes." Não há plano B local: as
+  perguntas dependem dos dados da empresa.
+- **Conversa:** só em memória (`src/components/AssistentePainel/conversa.js`). Sobrevive à troca
+  de tela, some ao sair ou quando a sessão vence. As últimas 6 mensagens respondidas vão como
+  histórico. Nada vai para o `localStorage`.
+- **Base de conhecimento:** [`docs/guia-de-uso.md`](docs/guia-de-uso.md), o guia do usuário tela
+  por tela.
+
 ## 9. Segurança e limitações
 
-- Autenticação na API com token de 8 horas; a sessão fica em `localStorage` (`coldtrack.sessao`)
-  e é descartada quando vence ou quando a API responde 401. As permissões valem na API; o
-  Front-End só esconde o que o perfil não pode usar.
-- Mensagens do chat e dados da API são renderizados como texto pelo React; o lint bloqueia
-  `innerHTML` e `dangerouslySetInnerHTML`.
+Análise completa de segurança (ameaças, API, banco, tokens): no repositório do back-end,
+[`docs/seguranca.md`](https://github.com/mbalbuquerque/projeto-integrador-4-periodo/blob/main/docs/seguranca.md).
+O que o Front-End faz:
+
+- **CSP por `<meta>`:** o site estático não envia cabeçalhos, então o build injeta no `index.html`
+  uma `Content-Security-Policy` (`script-src 'self'`, `object-src 'none'`, `connect-src` só com a
+  API, a Open-Meteo e o ThingSpeak) e `referrer: strict-origin-when-cross-origin`. É feito por um
+  plugin do Vite (`vite.config.js`) só no build; o `npm run dev` não recebe a política, porque o
+  HMR usa script inline e websocket. O e2e `csp.spec.js` percorre todas as rotas do build e falha
+  se houver qualquer violação.
+- **Sem `innerHTML`:** mensagens do chat, do assistente do painel e dados da API são renderizados
+  como texto pelo React; o lint bloqueia `innerHTML` e `dangerouslySetInnerHTML`.
+- **Token no `localStorage` (`coldtrack.sessao`) com validade de 8 horas:** é descartado quando
+  vence ou quando a API responde 401. **Sair** também chama `POST /sair` na API, que invalida os
+  tokens do usuário (melhor esforço: 5 s de limite, erro ignorado; a sessão local é apagada de
+  qualquer jeito). As permissões valem na API; o Front-End só esconde o que o perfil não pode usar.
+- **Login:** a mensagem de erro vem da API e é a mesma para senha errada, e-mail desconhecido e
+  pausa por excesso de tentativas.
+- **Sem segredos no bundle:** só há a URL pública da API (`VITE_API_URL`); chaves e senhas ficam
+  no back-end e nunca entram no código do site.
+- **Dependências:** `npm audit` roda a cada entrega. Os avisos que restam exigem salto de versão
+  maior (React Router 7; Vite/Vitest mais novos) e ficam para uma migração própria.
+
+Limitações:
+
 - Usuários, Auditoria, Cadastro de usuário e Gestão Logística continuam demonstrativos, com
   dados de exemplo e sem persistência.
 - As avaliações do chat ficam no navegador de quem avaliou.
 
-## 10. Contribuição
+## 10. Documentação
 
-Fluxo de branches, convenção de commits e como adicionar uma tela: [`CONTRIBUTING.md`](CONTRIBUTING.md).
-Contrato técnico: [`docs/ARQUITETURA.md`](docs/ARQUITETURA.md).
+| documento | conteúdo |
+|---|---|
+| [`CONTRIBUTING.md`](CONTRIBUTING.md) | branches, commits, verificações e como adicionar uma tela |
+| [`docs/ARQUITETURA.md`](docs/ARQUITETURA.md) | contrato técnico: estrutura, CSS, `src/lib`, hooks, componentes, regras |
+| [`docs/guia-de-uso.md`](docs/guia-de-uso.md) | guia do usuário final, tela por tela |
+| [`docs/relatorio-de-testes.md`](docs/relatorio-de-testes.md) | resultados dos testes (unitários, e2e simulado e real) |
+| [`coldtrack-qa/README.md`](coldtrack-qa/README.md) | suíte e2e: casos, apoio e como rodar |
+| [`coldtrack-qa/real/README.md`](coldtrack-qa/real/README.md) | suíte e2e real contra produção (regras de segurança) |
+| [Back-end: README](https://github.com/mbalbuquerque/projeto-integrador-4-periodo#readme) | API, firmware, infraestrutura |
+| [Back-end: `docs/api.md`](https://github.com/mbalbuquerque/projeto-integrador-4-periodo/blob/main/docs/api.md) | referência das rotas |
+| [Back-end: `docs/seguranca.md`](https://github.com/mbalbuquerque/projeto-integrador-4-periodo/blob/main/docs/seguranca.md) | análise de segurança |
 
 ## 11. Equipe do Projeto Integrador
 
@@ -248,6 +325,7 @@ Contrato técnico: [`docs/ARQUITETURA.md`](docs/ARQUITETURA.md).
 - Marcelo Barbosa
 
 O desenvolvimento envolve hardware, IoT, Front-End, Back-End, integração, documentação e testes.
+Mesma equipe do [repositório do back-end](https://github.com/mbalbuquerque/projeto-integrador-4-periodo#equipe).
 
 ## 12. Referências técnicas
 

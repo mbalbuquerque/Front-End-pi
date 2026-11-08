@@ -1,4 +1,4 @@
-import { entrarComo, errosDoConsole, expect, simularApi, test } from "./apoio.js";
+import { entrarComo, errosDoConsole, expect, simularApi, simularSair, test } from "./apoio.js";
 
 // Telas logadas com sessão de teste e API simulada (nada sai para o Azure).
 // Cada tela abre com o título certo e sem erro no console, para os dois perfis.
@@ -79,5 +79,79 @@ test("QA-PAINEL sair: botão Sair limpa a sessão e volta ao login", async ({ pa
   await expect(page).toHaveURL(/\/login$/);
   const sessao = await page.evaluate(() => localStorage.getItem("coldtrack.sessao"));
   expect(sessao).toBeNull();
+
+});
+
+
+test("QA-SEG-01: Sair chama POST /sair com o Bearer e limpa a sessão", async ({ page }) => {
+
+  await entrarComo(page, "gestor");
+  await simularApi(page);
+  const pedidos = await simularSair(page, 204);
+
+  await page.goto("/alertas");
+  await expect(page.getByRole("heading", { level: 1, name: "Alertas" })).toBeVisible();
+
+  const token = await page.evaluate(() => JSON.parse(localStorage.getItem("coldtrack.sessao")).token);
+
+  await page.locator("#botaoSair").click();
+
+  await expect(page).toHaveURL(/\/login$/);
+  await expect.poll(() => pedidos.length).toBe(1);
+  expect(pedidos[0].autorizacao).toBe(`Bearer ${token}`);
+  expect(await page.evaluate(() => localStorage.getItem("coldtrack.sessao"))).toBeNull();
+
+});
+
+
+for (const status of [404, 500]) {
+
+  test(`QA-SEG-02: Sair continua funcionando se /sair responde ${status}`, async ({ page }) => {
+
+    await entrarComo(page, "operador");
+    await simularApi(page);
+    const pedidos = await simularSair(page, status);
+
+    await page.goto("/alertas");
+    await expect(page.getByRole("heading", { level: 1, name: "Alertas" })).toBeVisible();
+
+    await page.locator("#botaoSair").click();
+
+    await expect(page).toHaveURL(/\/login$/);
+    await expect.poll(() => pedidos.length).toBe(1);
+    expect(await page.evaluate(() => localStorage.getItem("coldtrack.sessao"))).toBeNull();
+
+  });
+
+}
+
+
+test("QA-SEG-02: Sair continua funcionando se /sair não responde (rede cai)", async ({ page }) => {
+
+  await entrarComo(page, "operador");
+  await simularApi(page);
+  await page.route(/azurewebsites\.net\/api\/sair(\?|$)/, route => route.abort());
+
+  await page.goto("/alertas");
+  await expect(page.getByRole("heading", { level: 1, name: "Alertas" })).toBeVisible();
+  await page.locator("#botaoSair").click();
+
+  await expect(page).toHaveURL(/\/login$/);
+  expect(await page.evaluate(() => localStorage.getItem("coldtrack.sessao"))).toBeNull();
+
+});
+
+
+test("QA-SEG-09: lista de usuários não oferece Redefinir senha na linha do próprio gestor", async ({ page }) => {
+
+  await entrarComo(page, "gestor");
+  await simularApi(page);
+  await page.goto("/configuracoes");
+
+  // Operador: tem Redefinir e Remover. Gestor logado (u-gestor): só "você".
+  await expect(page.locator("[data-redefinir='u-operador']")).toHaveCount(1);
+  await expect(page.locator("[data-redefinir='u-gestor']")).toHaveCount(0);
+  await expect(page.locator("[data-remover-usuario='u-gestor']")).toHaveCount(0);
+  await expect(page.locator("tr", { hasText: "Gestora Teste" }).getByText("você")).toBeVisible();
 
 });
