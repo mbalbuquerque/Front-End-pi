@@ -1,4 +1,4 @@
-import { copyFileSync, existsSync, readdirSync, statSync } from "node:fs";
+import { copyFileSync, existsSync, mkdirSync, readdirSync, statSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { defineConfig } from "vite";
@@ -66,6 +66,15 @@ function paginasLegadas() {
       Object.keys(ROTAS_LEGADAS)
         .filter(nome => nome !== "index")
         .forEach(nome => copyFileSync(indice, join(dist, `${nome}.html`)));
+      // Rotas limpas (/dashboard): o site estático serve <pasta>/index.html com
+      // 200; sem isso a página abre pelo documento de erro, com status 404.
+      Object.values(ROTAS_LEGADAS)
+        .filter(rota => rota !== "/")
+        .forEach(rota => {
+          const pasta = join(dist, rota.slice(1));
+          mkdirSync(pasta, { recursive: true });
+          copyFileSync(indice, join(pasta, "index.html"));
+        });
     }
   };
 
