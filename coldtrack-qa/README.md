@@ -1,239 +1,83 @@
-# ColdTrack Control — Testes Automatizados de QA
+# ColdTrack Control: testes e2e (Playwright)
 
-Documentação para instalação, execução e análise dos testes automatizados do Front-End do **ColdTrack Control**, desenvolvido no Projeto Integrador.
+Testes de ponta a ponta do painel React. Rodam no navegador contra o **build de produção**
+(`vite preview` servindo `dist/`), o mesmo conteúdo publicado no Azure.
 
-## 1. Objetivo
+Nenhum teste acessa serviço externo. O arquivo `tests/apoio.js` intercepta:
 
-Validar os fluxos já implementados no Front-End antes da integração com a API do Back-End. A suíte utiliza **Playwright** para executar cenários no navegador desktop e na emulação de dispositivo móvel.
+| Serviço | Comportamento padrão no teste |
+|---|---|
+| API do ColdTrack (`func-coldtrack-7319.azurewebsites.net`) | 503 (fora do ar), a não ser que o teste chame `simularApi(page)` |
+| Open-Meteo (risco de calor no Dashboard) | previsão fixa de 48 h para as 7 cidades da rota |
+| ThingSpeak (Monitoramento) | `{ feeds: [] }`; os testes de monitoramento definem as próprias leituras |
+| Google Fonts | CSS vazio |
 
-> **Escopo:** os testes atuais verificam comportamentos da interface. A aprovação não comprova autenticação, autorização, segurança do servidor ou integração com a API, que ainda depende da equipe de Back-End.
+## Executar
 
-## 2. Pré-requisitos
+Na raiz do repositório:
 
-- Node.js e npm instalados;
-- Python disponível no terminal pelo comando `python`;
-- Dependências do projeto instaladas;
-- Navegador Chromium do Playwright instalado.
-
-Verifique as instalações no **PowerShell**:
-
-```powershell
-node --version
-npm --version
-python --version
+```bash
+npm ci
+npx playwright install chromium   # primeira vez
+npm run build                     # os testes usam dist/
+npm run test:e2e                  # sobe o preview em 127.0.0.1:5500 sozinho
+npm run test:e2e:report           # abre o relatório HTML
 ```
 
-## 3. Estrutura esperada
+Filtros úteis:
 
-Execute os comandos na **raiz do repositório Front-End**, onde estão `package.json` e `playwright.config.js`.
-
-```text
-projeto-integrador-4-periodo-Front/
-├── package.json
-├── package-lock.json
-├── playwright.config.js
-├── index.html
-├── login.html
-├── usuarios.html
-├── ...
-└── coldtrack-qa/
-    ├── README.md
-    └── tests/
-        └── fluxo.spec.js
-```
-
-As páginas `cadastro.html`, `auditoria.html` e `dashboard.html` também são utilizadas pelos cenários de teste e devem estar disponíveis no servidor local.
-
-## 4. Instalação (primeira execução)
-
-Abra o PowerShell na raiz do projeto:
-
-```powershell
-npm install
-npx playwright install chromium
-```
-
-Se a dependência de testes ainda não estiver declarada no projeto, instale-a:
-
-```powershell
-npm install --save-dev @playwright/test
-```
-
-O arquivo `package.json` deve conter os scripts:
-
-```json
-{
-  "scripts": {
-    "test:qa": "playwright test",
-    "test:qa:report": "playwright show-report"
-  }
-}
-```
-
-**Atenção:** esse JSON é um exemplo do conteúdo do arquivo `package.json`, não um comando para digitar diretamente no PowerShell. Preserve os demais campos e scripts existentes.
-
-## 5. Executar os testes
-
-### Execução completa
-
-```powershell
-npm run test:qa
-```
-
-A configuração do Playwright utiliza `http://127.0.0.1:5500` como URL-base e inicia automaticamente um servidor local Python, se necessário. Não é preciso iniciar a API do Back-End.
-
-### Conferir os testes disponíveis
-
-```powershell
-npx playwright test --list --config=./playwright.config.js
-```
-
-### Executar somente no desktop
-
-```powershell
+```bash
 npx playwright test --project="Desktop Chrome"
-```
-
-### Executar somente no mobile
-
-```powershell
 npx playwright test --project="Mobile Chrome"
-```
-
-### Executar um caso específico
-
-```powershell
-npx playwright test -g "QA-001"
-```
-
-### Executar com navegador visível
-
-```powershell
+npx playwright test -g "QA-PAINEL"
 npx playwright test --headed
 ```
 
-## 6. Relatório e evidências
+O `webServer` do `playwright.config.js` roda `npm run preview` na porta 5500. Fora do CI,
+um preview já aberto nessa porta é reaproveitado. O service worker fica bloqueado nos testes
+(`serviceWorkers: "block"`), senão ele atenderia os pedidos antes da interceptação.
 
-Após executar a suíte, abra o relatório HTML:
+## Apoio (`tests/apoio.js`)
 
-```powershell
-npm run test:qa:report
-```
+| Exportação | Uso |
+|---|---|
+| `test`, `expect` | substituem os do `@playwright/test`; `test` já instala as interceptações |
+| `simularApi(page)` | API simulada: `/perfis`, `/veiculos`, `/dispositivos`, `/leituras`, `/viagens`, `/usuarios`; `POST /login` responde 401; escrita responde 200 |
+| `entrarComo(page, "gestor" \| "operador")` | grava uma sessão falsa em `localStorage["coldtrack.sessao"]` antes de a página abrir |
+| `errosDoConsole(page)` | lista de `console.error` e exceções da página |
 
-Ou use diretamente:
+Rotas registradas pelo próprio teste (`page.route`) têm prioridade sobre as do apoio.
 
-```powershell
-npx playwright show-report
-```
+## Casos
 
-Os artefatos locais são gerados normalmente nas pastas:
+Cada caso roda em **Desktop Chrome** e **Mobile Chrome (Pixel 7)**: 65 casos, 130 execuções.
 
-- `playwright-report/` — relatório HTML;
-- `test-results/` — resultados e evidências, como capturas, vídeos e rastros de falhas, conforme a configuração.
-
-## 7. Casos automatizados
-
-| ID | Cenário | Verificação principal |
+| Arquivo | Casos | O que cobre |
 |---|---|---|
-| QA-001 | Abrir login | Formulário e campos visíveis |
-| QA-002 | Login com campos vazios | Validação e permanência no login |
-| QA-003 | Mostrar/ocultar senha | Alternância do tipo do campo |
-| QA-004 | Acessar cadastro | Navegação pelo botão/link Cadastrar |
-| QA-005 | CPF inválido | Rejeição de CPF inválido |
-| QA-006 | Cadastro sem API | Não concluir criação real de conta |
-| QA-007 | Gestão de usuários | Exibição de dados demonstrativos |
-| QA-008 | Pesquisa de usuários | Filtragem da listagem |
-| QA-009 | Abrir auditoria | Navegação para a tela de auditoria |
-| QA-010 | ThingSpeak indisponível | Dashboard apresenta tratamento de erro |
-| QA-011 | Senha e localStorage | Não persistir a senha de teste no localStorage |
+| `fluxo.spec.js` | QA-001 a QA-011 | login, cadastro de usuário (demo), gestão de usuários, auditoria, tela logada sem sessão volta ao login, senha fora do `localStorage` |
+| `navegacao.spec.js` | QA-018 a QA-022, QA-039, QA-040 | rotas respondem, links internos válidos, menu visível, URLs antigas `.html` redirecionam (`/login.html`, `/dashboard.html?veiculo=X` da etiqueta QR), rota desconhecida volta para `/` |
+| `logistica.spec.js` | QA-023 a QA-030 | gestão logística (demo): indicadores, busca, filtro, cadastro e validação de carga, menu até o Dashboard |
+| `logistica-operacoes.spec.js` | QA-031 a QA-034 | editar, concluir e cancelar carga |
+| `monitoramento.spec.js` | QA-035 a QA-038 | leituras do ThingSpeak simuladas: normal, crítica e falha |
+| `chat-atendimento.spec.js` | QA-CHAT-01 a 16 | assistente virtual da página inicial |
+| `painel.spec.js` | QA-PAINEL (15) | `/dashboard`, `/alertas`, `/relatorios`, `/veiculos`, `/sensores`, `/viagens` e `/configuracoes` como gestor e como operador: título, selo "Azure conectado", nenhum erro no console, controles de gestor ocultos para o operador; botão Sair |
 
-A suíte é executada em dois projetos de navegador: **Desktop Chrome** e **Mobile Chrome (Pixel 7)**, totalizando **22 verificações**.
+Controles verificados como exclusivos do gestor: `#painelNovo`/`#formVeiculo` (Veículos),
+`#painelCabo`/`#formSensor` (Sensores), `#painelUsuarios`/`#formUsuario` (Configurações).
 
-## 8. Resultado registrado
+## Escrevendo um teste novo
 
-Na execução informada em **20/10/2026**:
+- Importe de `./apoio.js`, não de `@playwright/test`.
+- Use as rotas novas (`/dashboard`, não `/dashboard.html`) e `a[href="/rota"]`.
+- As telas são carregadas sob demanda: antes de contar elementos logo depois do `goto`,
+  espere algo da tela (`await expect(...).toBeVisible()` ou `locator.first().waitFor()`).
+- Tela logada: `entrarComo` e `simularApi` **antes** do `page.goto`.
+- Não altere um teste só para forçar a aprovação: confirme antes se o comportamento esperado
+  e a implementação estão corretos.
 
-| Indicador | Resultado |
-|---|---:|
-| Casos de teste | 11 |
-| Ambientes | 2 |
-| Verificações executadas | 22 |
-| Aprovadas | 22 |
-| Reprovadas | 0 |
-| Taxa de aprovação | 100% |
-| Duração aproximada | 1,1 minuto |
+## Artefatos
 
-> Este é o resultado de uma execução específica. Novas alterações no código exigem nova execução dos testes; o resultado histórico não garante aprovação futura.
+- `playwright-report/`: relatório HTML.
+- `test-results/`: rastros, capturas e vídeos das falhas.
 
-## 9. Solução de problemas
-
-### `ENOENT ... package.json`
-
-O comando foi executado fora da raiz do projeto ou o arquivo não existe. Acesse a pasta que contém `package.json` e execute novamente `npm install`.
-
-### `playwright.config.js does not exist`
-
-Confirme a existência do arquivo na raiz:
-
-```powershell
-Test-Path .\playwright.config.js
-```
-
-### `Cannot navigate to invalid URL`
-
-O Playwright provavelmente não carregou a configuração com `baseURL`. Confira:
-
-```powershell
-npx playwright test --list --config=./playwright.config.js
-npx playwright test --config=./playwright.config.js
-```
-
-### `No tests found`
-
-Confira se existe `coldtrack-qa/tests/fluxo.spec.js` e se `testDir` aponta para `./coldtrack-qa/tests`.
-
-### Servidor local não inicia
-
-Confirme que o Python está instalado e que a porta `5500` está disponível. Para testar manualmente:
-
-```powershell
-python -m http.server 5500 --bind 127.0.0.1
-```
-
-Em outro terminal, execute `npm run test:qa`.
-
-### Teste falha após carregar a página
-
-Verifique o relatório HTML e os elementos esperados pelo teste. Não altere o teste apenas para forçar aprovação; confirme primeiro se o comportamento esperado e a implementação estão corretos.
-
-## 10. Versionamento no GitHub
-
-Inclua no repositório:
-
-- `package.json` e `package-lock.json`;
-- `playwright.config.js`;
-- `coldtrack-qa/tests/fluxo.spec.js`;
-- `coldtrack-qa/README.md`.
-
-No `.gitignore`, mantenha:
-
-```gitignore
-node_modules/
-playwright-report/
-test-results/
-```
-
-Confira as alterações antes de publicar:
-
-```powershell
-git status
-git add package.json package-lock.json playwright.config.js coldtrack-qa/README.md coldtrack-qa/tests/fluxo.spec.js .gitignore
-git commit -m "docs(qa): documenta execucao dos testes Playwright"
-git push
-```
-
-**Observação:** o comando `git add` pressupõe que os arquivos listados existem. Caso algum não exista, ajuste a lista conforme a estrutura real do repositório.
-
-## 11. Próximas etapas
-
-Quando a API do Back-End estiver disponível, ampliar a suíte para autenticação real, autorização por perfil, integração de cadastro, persistência de dados, auditoria do servidor e testes de segurança de ponta a ponta.
+Os dois estão no `.gitignore`. No CI, o relatório é anexado à execução quando algum teste falha.
