@@ -1,5 +1,5 @@
 // Tela de veículos: situação atual da frota e cadastro (gestor).
-// Porte de legado/veiculos.html + legado/js/veiculos.js.
+// Porte do site antigo: veiculos.html + js/veiculos.js.
 
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";

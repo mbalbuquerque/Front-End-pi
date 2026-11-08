@@ -1,5 +1,5 @@
 // Gestão logística (demonstrativa, dados de exemplo em memória).
-// Porte de legado/logistica.html + legado/js/logistica.js.
+// Porte do site antigo: logistica.html + js/logistica.js.
 
 import { useRef, useState } from "react";
 import { Link } from "react-router-dom";

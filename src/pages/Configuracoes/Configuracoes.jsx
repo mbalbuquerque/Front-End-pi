@@ -1,6 +1,6 @@
 // Tela de configurações: minha conta (troca de senha), faixas das cargas,
 // sensores, fonte de dados e, para o gestor, os usuários da empresa.
-// Porte de legado/configuracoes.html + legado/js/configuracoes.js.
+// Porte do site antigo: configuracoes.html + js/configuracoes.js.
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";

@@ -1,4 +1,4 @@
-// Painel "Calor na rota" do dashboard (antigo carregarRisco() de legado/js/risco.js).
+// Painel "Calor na rota" do dashboard (antigo carregarRisco() de js/risco.js).
 // Busca a previsão agora e a cada 30 minutos; sem previsão, mostra só o histórico.
 
 import { useState } from "react";

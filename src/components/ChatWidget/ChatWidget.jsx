@@ -1,6 +1,6 @@
 // Assistente virtual da página inicial: respostas prontas, confirmação de
 // dúvida resolvida, avaliação de 1 a 5 estrelas (salva no navegador) e link
-// para o WhatsApp do desenvolvedor. Porte de legado/js/chat.js.
+// para o WhatsApp do desenvolvedor. Porte do site antigo: js/chat.js.
 
 import { useEffect, useRef, useState } from "react";
 import infografico from "../../assets/images/coldtrack-infografico.webp";

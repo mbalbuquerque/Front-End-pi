@@ -2,7 +2,7 @@
 // Protocolo do firmware (sketch.ino): uma linha JSON por mensagem,
 // painel -> placa começa com "CT<", placa -> painel com "CT>".
 // O resto da serial é o log comum do sensor e é ignorado aqui.
-// Porte de legado/js/serial.js (mesmo comportamento, agora como módulo).
+// Porte do site antigo: js/serial.js (mesmo comportamento, agora como módulo).
 
 // Lido na hora (e não no carregamento do módulo) para valer o navegador atual.
 export function serialDisponivel() {

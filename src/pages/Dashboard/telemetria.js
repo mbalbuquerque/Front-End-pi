@@ -1,4 +1,4 @@
-// Regras do dashboard sem React (porte das funções de legado/js/app.js).
+// Regras do dashboard sem React (porte das funções do antigo js/app.js).
 
 import { FAIXA_PADRAO } from "../../lib/faixas.js";
 

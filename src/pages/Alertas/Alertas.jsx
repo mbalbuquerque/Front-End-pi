@@ -1,5 +1,5 @@
 // Tela de alertas: leituras fora da faixa normal, agrupadas em ocorrências.
-// Porte de legado/alertas.html + legado/js/alertas.js (página de referência).
+// Porte do site antigo: alertas.html + js/alertas.js (página de referência).
 
 import { useState } from "react";
 import { Carregando, ErroAzure, SemVeiculo } from "../../components/Estado.jsx";

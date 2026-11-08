@@ -1,5 +1,5 @@
 // Base de conhecimento e regras de resposta do assistente virtual
-// (porte da parte sem tela de legado/js/chat.js).
+// (porte da parte sem tela do antigo js/chat.js).
 
 export const WHATSAPP = "558196878213";
 

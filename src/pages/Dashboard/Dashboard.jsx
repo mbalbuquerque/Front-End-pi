@@ -1,5 +1,5 @@
 // Visão geral: última telemetria do veículo, histórico dos últimos 30 min
-// e o calor previsto na rota. Porte de legado/dashboard.html + js/app.js + js/risco.js.
+// e o calor previsto na rota. Porte do site antigo: dashboard.html + js/app.js + js/risco.js.
 
 import { useRef, useState } from "react";
 import Estado, { SemVeiculo } from "../../components/Estado.jsx";

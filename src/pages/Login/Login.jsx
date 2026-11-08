@@ -1,5 +1,5 @@
 // Tela de login: troca e-mail e senha por um token de 8 h.
-// Porte de legado/login.html + legado/js/login.js (página de referência).
+// Porte do site antigo: login.html + js/login.js (página de referência).
 
 import { useRef, useState } from "react";
 import { Link, Navigate, useNavigate } from "react-router-dom";

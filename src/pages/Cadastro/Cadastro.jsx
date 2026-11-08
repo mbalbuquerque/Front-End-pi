@@ -1,5 +1,5 @@
 // Cadastro de empresa nova: cria a empresa e o primeiro gestor, e já entra.
-// Porte de legado/cadastro.html + legado/js/cadastro.js.
+// Porte do site antigo: cadastro.html + js/cadastro.js.
 
 import { useRef, useState } from "react";
 import { Link, Navigate, useNavigate } from "react-router-dom";

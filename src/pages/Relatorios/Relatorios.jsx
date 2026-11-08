@@ -1,6 +1,6 @@
 // Tela de relatórios: resumo da temperatura por período, gráfico,
 // tabela de leituras e exportação em CSV.
-// Porte de legado/relatorios.html + legado/js/relatorios.js.
+// Porte do site antigo: relatorios.html + js/relatorios.js.
 
 import { useState } from "react";
 import Estado, { Carregando, ErroAzure, SemVeiculo } from "../../components/Estado.jsx";

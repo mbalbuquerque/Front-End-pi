@@ -1,5 +1,5 @@
 // Regras da tela de Sensores sem React (situação, sinal, etapa do cabo, mensagens).
-// Porte das funções puras de legado/js/sensores.js.
+// Porte das funções puras do antigo js/sensores.js.
 
 import { UPDATE_INTERVAL } from "../../lib/config.js";
 import { formatarDuracao } from "../../lib/formatar.js";

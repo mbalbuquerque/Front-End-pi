@@ -1,5 +1,5 @@
-// Gráfico de temperatura com a faixa segura da cadeia fria (porte de
-// legado/js/grafico.js, mesmas classes e mesmo desenho).
+// Gráfico de temperatura com a faixa segura da cadeia fria (porte do
+// antigo js/grafico.js, mesmas classes e mesmo desenho).
 // Uma série (temperatura); a faixa NORMAL aparece como banda e os limites de
 // atenção e crítico como linhas tracejadas com rótulo direto.
 //

@@ -1,6 +1,6 @@
 // Tela de viagens: condição da carga do início ao fim de cada trajeto,
 // com cadastro, encerramento e remoção (gestor).
-// Porte de legado/viagens.html + legado/js/viagens.js.
+// Porte do site antigo: viagens.html + js/viagens.js.
 
 import { useRef, useState } from "react";
 import { Carregando, ErroAzure } from "../../components/Estado.jsx";

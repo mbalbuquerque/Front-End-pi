@@ -1,5 +1,5 @@
 // Monitoramento de sensores: leituras do canal público ThingSpeak.
-// Porte de legado/monitoramento.html + legado/js/monitoramento.js.
+// Porte do site antigo: monitoramento.html + js/monitoramento.js.
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";

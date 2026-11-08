@@ -1,5 +1,5 @@
 // Auditoria e logs (demonstrativa, registros fictícios).
-// Porte de legado/auditoria.html + legado/js/auditoria.js.
+// Porte do site antigo: auditoria.html + js/auditoria.js.
 
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";

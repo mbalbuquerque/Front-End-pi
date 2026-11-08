@@ -2,7 +2,7 @@
 // configuração pelo cabo USB (gestor) e registro manual para o simulador.
 // A chave aparece uma vez só: o servidor guarda apenas uma impressão dela.
 // Wi-Fi e senha da rede vão direto para o sensor pelo cabo, nunca para a API.
-// Porte de legado/sensores.html + legado/js/sensores.js + legado/js/serial.js.
+// Porte do site antigo: sensores.html + js/sensores.js + js/serial.js.
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";

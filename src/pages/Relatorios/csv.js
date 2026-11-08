@@ -1,5 +1,5 @@
-// Exportação das leituras do relatório em CSV (porte de baixarCsv() de
-// legado/js/relatorios.js): mesmo cabeçalho, separador ";" e nome de arquivo.
+// Exportação das leituras do relatório em CSV (porte de baixarCsv() do
+// antigo js/relatorios.js): mesmo cabeçalho, separador ";" e nome de arquivo.
 
 import { horarioDe } from "../../lib/leituras.js";
 

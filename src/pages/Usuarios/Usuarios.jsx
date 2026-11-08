@@ -1,5 +1,5 @@
 // Gestão de usuários (demonstrativa, dados de exemplo).
-// Porte de legado/usuarios.html + legado/js/usuarios.js.
+// Porte do site antigo: usuarios.html + js/usuarios.js.
 
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";

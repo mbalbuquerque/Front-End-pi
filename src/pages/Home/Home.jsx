@@ -1,6 +1,6 @@
 // Página inicial (landing): cabeçalho fixo, carrossel do topo, seções do
 // projeto, login embutido, contato e o assistente virtual.
-// Porte de legado/index.html + legado/js/home.js.
+// Porte do site antigo: index.html + js/home.js.
 
 import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";

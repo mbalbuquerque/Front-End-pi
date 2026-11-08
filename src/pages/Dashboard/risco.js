@@ -1,7 +1,7 @@
 // Calor na rota Petrolina → Suape: previsão do dia (Open-Meteo, sem chave)
 // somada ao histórico do INMET (modelo climatológico da pasta analise/ do PI).
 // Hora a hora, vale a cidade mais quente da rota: é o pior caso para o baú.
-// Porte de legado/js/risco.js: a regra fica aqui em funções puras; a busca
+// Porte do antigo js/risco.js: a regra fica aqui em funções puras; a busca
 // (fetch direto, serviço de terceiro) fica isolada em buscarPrevisaoRota().
 
 export const LIMIAR_CALOR = 30;

@@ -1,5 +1,5 @@
 // Cadastro de usuários (demonstrativo: valida e não chama API).
-// Porte de legado/cadastro-usuario.html + legado/js/cadastro-usuario.js.
+// Porte do site antigo: cadastro-usuario.html + js/cadastro-usuario.js.
 
 import { useRef, useState } from "react";
 import { Link } from "react-router-dom";
