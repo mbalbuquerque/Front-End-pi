@@ -12,6 +12,9 @@
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "test:e2e:report": "playwright show-report",
+    "test:e2e:real": "playwright test --config playwright.real.config.js",
+    "test:e2e:real:report": "playwright show-report playwright-report-real",
+    "test:e2e:real:limpar": "node coldtrack-qa/real/limpar-qa.js",
     "lint": "eslint . --max-warnings 0"
   },
   "repository": {

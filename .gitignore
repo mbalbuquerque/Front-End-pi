@@ -7,3 +7,6 @@ dist/
 !.env.example
 __pycache__/
 *.pyc
+playwright-report-real/
+test-results-real/
+coldtrack-qa/real/.auth/
