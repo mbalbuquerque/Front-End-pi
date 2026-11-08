@@ -15,9 +15,9 @@
 | Suíte | Comando | Resultado |
 |---|---|---|
 | Lint | `npm run lint` | sem avisos |
-| Unitários | `npm test` | 137 passaram em 21 arquivos, 0 falharam |
+| Unitários | `npm test` | 153 passaram em 23 arquivos, 0 falharam (137 antes do assistente do painel) |
 | Build | `npm run build` | ok |
-| E2E simulado (API simulada, build local) | `npm run test:e2e` | 163 passaram, 0 falharam, 15 pulados (o caso de 390 px roda só no projeto desktop, de propósito) |
+| E2E simulado (API simulada, build local) | `npm run test:e2e` | 184 passaram, 0 falharam, 18 pulados (os casos de 390 px e de impressão rodam só no projeto desktop, de propósito; 163/15 antes do assistente do painel) |
 | E2E real (site publicado + API de produção) | `npm run test:e2e:real` | 57 passaram, 0 falharam, 0 pulados (site publicado no commit `4d51edd`, chat com Azure OpenAI incluído) |
 | E2E real do chat (build local + API de produção) | `REAL-PUB-04`, `05` e `09`, veja abaixo | 3 passaram, 0 falharam (2 perguntas de verdade à rota `/chat`) |
 
@@ -138,6 +138,23 @@ Os textos do FAQ que contradiziam o produto atual foram corrigidos: o caminho do
 no Azure (Azure Functions e Cosmos DB), não o ThingSpeak (que fica só na tela demonstrativa
 Monitoramento), e os limites de temperatura vêm do perfil de carga de cada veículo, não de
 valores fixos.
+
+## Assistente do painel (Azure OpenAI, rota autenticada)
+
+Todas as telas logadas têm o botão flutuante **Assistente**, que chama `POST /assistente` com o
+token da sessão. Ele responde dúvidas de uso (base: `docs/guia-de-uso.md`) e perguntas sobre os
+dados da empresa logada. Lint, unitários, build e e2e simulado rodaram na branch `everson` em
+08/11/2026, com a rota simulada: o backend da rota está sendo publicado em paralelo.
+
+| Camada | Casos | O que verifica |
+|---|---|---|
+| Unitários `src/lib/assistente.test.js` | 10 | POST com `Bearer`, corpo `{ pergunta, historico? }` (pergunta até 500, últimas 6 mensagens válidas, texto até 1000), 200 com fontes limpas, 400 e 429 com a mensagem da API, 503 com o aviso de indisponível, 401 limpa a sessão e chama o redirecionamento (igual à `api()`), resposta vazia, falha de rede, tempo limite de 20 s, cancelamento sem marcar tempo esgotado |
+| Unitários `AssistentePainel/conversa.test.js` | 6 | pergunta e resposta na conversa, "esperando" liga e desliga, histórico só com perguntas respondidas (máximo 6 mensagens), 429 e 503 viram mensagem, sem envio vazio nem duplo, troca de sessão zera a conversa e descarta a resposta pendente |
+| E2E simulado `assistente.spec.js`, QA-ASSIST-01 a 11 | 12 casos, 21 execuções e 3 pulados (09 a 11 só no desktop) | botão nas 7 telas logadas para gestor e operador e em nenhuma das 8 públicas; saudação pelo primeiro nome; sugestão com `Bearer`, resposta em texto puro com quebra de linha e "Fontes:"; "Assistente digitando…" com campo e envio desligados; histórico na segunda pergunta (Enter); conversa mantida ao trocar de tela e apagada ao sair; 429 com o aviso da API; 503 com "O assistente está indisponível agora. Tente de novo em instantes."; Escape e × fecham com o foco de volta no botão; 390 px com o painel aberto na largura toda e sem rolagem horizontal nas 7 telas; botão não cobre o rodapé; impressão esconde o assistente |
+| E2E real `08-assistente.spec.js`, REAL-ASSIST-01 | 1 | gestor pergunta "Quantos veículos eu tenho cadastrados?" pela tela e recebe resposta não vazia; uma chamada real por execução; pula com o motivo se o site publicado ainda não tem o botão ou se a rota responde 404/503 |
+
+REAL-ASSIST-01 ainda não rodou contra produção: falta publicar o front com o assistente e a
+rota `/assistente` no backend. Sem as credenciais da suíte real na máquina, ele é pulado.
 
 ## Defeito encontrado e corrigido
 

@@ -61,7 +61,7 @@ demonstrativo (até 15 °C Normal, até 20 °C Atenção).
 | PWA | `public/manifest.json`, `public/sw.js` (rede primeiro, registrado só no build) |
 | Hospedagem | Azure Storage, site estático (container `$web`), publicação por GitHub Actions com OIDC |
 | Hardware | ESP32-C3, sensor DHT |
-| Serviços externos | API ColdTrack (Azure Functions; chat com Azure OpenAI), ThingSpeak, Open-Meteo |
+| Serviços externos | API ColdTrack (Azure Functions; chat e assistente do painel com Azure OpenAI), ThingSpeak, Open-Meteo |
 
 ## 3. Estrutura
 
@@ -77,7 +77,7 @@ src/
   rotas.js                 ROTAS_LEGADAS (nome.html -> rota) e menu do painel
   lib/                     API, sessão, leituras, faixas, formatação, veículo (sem React)
   hooks/                   useSessao, usePolling, useVeiculoEscolhido, useTitulo, useMovimentoReduzido
-  components/              PainelLayout, RequireAuth, GraficoTemperatura, ChatWidget/...
+  components/              PainelLayout, RequireAuth, GraficoTemperatura, ChatWidget/, AssistentePainel/...
   pages/<Nome>/            uma pasta por tela (componente, regras puras e testes)
   styles/<familia>/        CSS de cada família de telas, escopado por .escopo-<familia>
   assets/images/           imagens WebP (slider da página inicial, infográfico do chat)
@@ -85,6 +85,7 @@ coldtrack-qa/              testes e2e (Playwright) e a documentação deles
 scripts/enviar-site.sh     envio de dist/ para o Azure (usado pelo CI e pelo publicar.sh)
 publicar.sh                publicação manual pela máquina local
 docs/ARQUITETURA.md        contrato técnico: estrutura, CSS, lib, hooks, regras
+docs/guia-de-uso.md        guia do usuário final, tela por tela (base do assistente do painel)
 ```
 
 ## 4. Como rodar
@@ -128,9 +129,9 @@ cp .env.example .env.local
 ## 5. Testes
 
 - **Unitários (Vitest):** regras sem tela em `src/lib` e em `src/pages/*/` (leituras,
-  faixas, sessão, API, formatação, CSV, sensores, viagens, etiqueta, chat e plano B do chat).
+  faixas, sessão, API, formatação, CSV, sensores, viagens, etiqueta, chat, plano B do chat e assistente do painel).
 - **E2E (Playwright):** `coldtrack-qa/tests`, em Desktop Chrome e Mobile Chrome. Cobrem as
-  telas públicas e demonstrativas, o chat (com a rota `/chat` simulada), os redirecionamentos das URLs antigas e as telas
+  telas públicas e demonstrativas, o chat (com a rota `/chat` simulada), o assistente do painel (rota `/assistente` simulada), os redirecionamentos das URLs antigas e as telas
   logadas como gestor e como operador. A API e os serviços de terceiros são simulados: nenhum
   teste acessa o Azure. Detalhes em [`coldtrack-qa/README.md`](coldtrack-qa/README.md).
 
@@ -222,12 +223,36 @@ formato abaixo; ainda não há envio para um servidor.
 { "nota": 5, "resolvida": true, "comentario": "Atendimento excelente!", "data": "2026-11-04T17:00:00.000Z" }
 ```
 
+### Assistente do painel (telas logadas)
+
+Todas as telas logadas têm o botão flutuante **Assistente** (canto inferior direito), montado uma
+vez no `PainelLayout`. Ele responde dúvidas de uso do painel e perguntas sobre os dados da empresa
+de quem está logado (veículos, sensores, últimas leituras, alertas das últimas 24 h, viagens).
+
+- **Rota:** `POST /assistente` da API, com o token (`Authorization: Bearer`), pela mesma `api()`
+  das outras telas: 401 limpa a sessão e volta ao login. Corpo
+  `{ pergunta (1 a 500), historico?: [{ papel: "usuario" | "assistente", texto }] (até 6) }`;
+  resposta `{ resposta, fontes, origem: "ia" }`. Cliente em `src/lib/assistente.js` (20 s de
+  tempo limite).
+- **Tela:** saudação pelo primeiro nome, 4 sugestões, resposta em texto puro (quebras de linha
+  mantidas) com a linha "Fontes:", "Assistente digitando…" enquanto espera. Escape ou × fecha e
+  o foco volta ao botão. No celular a conversa ocupa a largura toda; na impressão (inclusive a
+  etiqueta QR) o assistente não aparece.
+- **Erros:** 400 e 429 mostram a mensagem da API; 503, tempo esgotado e falha de rede mostram
+  "O assistente está indisponível agora. Tente de novo em instantes." Não há plano B local: as
+  perguntas dependem dos dados da empresa.
+- **Conversa:** só em memória (`src/components/AssistentePainel/conversa.js`). Sobrevive à troca
+  de tela, some ao sair ou quando a sessão vence. As últimas 6 mensagens respondidas vão como
+  histórico. Nada vai para o `localStorage`.
+- **Base de conhecimento:** [`docs/guia-de-uso.md`](docs/guia-de-uso.md), o guia do usuário tela
+  por tela.
+
 ## 9. Segurança e limitações
 
 - Autenticação na API com token de 8 horas; a sessão fica em `localStorage` (`coldtrack.sessao`)
   e é descartada quando vence ou quando a API responde 401. As permissões valem na API; o
   Front-End só esconde o que o perfil não pode usar.
-- Mensagens do chat e dados da API são renderizados como texto pelo React; o lint bloqueia
+- Mensagens do chat, do assistente do painel e dados da API são renderizados como texto pelo React; o lint bloqueia
   `innerHTML` e `dangerouslySetInnerHTML`.
 - Usuários, Auditoria, Cadastro de usuário e Gestão Logística continuam demonstrativos, com
   dados de exemplo e sem persistência.

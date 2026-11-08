@@ -38,6 +38,8 @@ escrever teste novo aqui precisa seguir também:
 6. **Sem telemetria.** `POST /telemetria` nunca é chamado (as leituras não podem ser apagadas).
 7. **Chat com moderação.** A rota `/chat` (Azure OpenAI) tem limite de uso por IP e custo por
    pergunta: a suíte faz no máximo 2 perguntas de verdade por execução (REAL-PUB-05 e 09).
+   O assistente do painel (`/assistente`, com token) segue a mesma regra: no máximo 1
+   pergunta por execução (REAL-ASSIST-01).
 8. **Operador e 403.** Os pedidos de escrita feitos com o token do operador usam ids que não
    existem e corpos inválidos: mesmo que a checagem de perfil falhasse, nada seria gravado.
 
@@ -96,6 +98,7 @@ Leva cerca de 2 a 3 minutos. Falhas guardam rastro (`trace`) e captura em
 | `05-gestor-usuario.spec.js` | REAL-USR-01 a 04 | usuário QA operador: criar, redefinir senha, entrar num contexto novo, trocar a própria senha, senha antiga recusada, entrar com a nova, remover |
 | `06-operador.spec.js` | REAL-OPE-01 a 03 | telas do operador sem controles de gestor; API aceita leitura e recusa com 403 as ações de gestor |
 | `07-telas.spec.js` | REAL-TEL, REAL-TEL-CSV | as 7 telas do painel em 1280 px e 390 px (título, selo "Azure conectado", sem erro no console, sem rolagem horizontal); CSV do relatório baixado e conferido |
+| `08-assistente.spec.js` | REAL-ASSIST-01 | gestor pergunta "Quantos veículos eu tenho cadastrados?" ao assistente do painel, pela tela, e recebe resposta não vazia (status 200). Uma única chamada real. **Pula com o motivo** se o site publicado ainda não tem o botão Assistente ou se a rota `/assistente` ainda não subiu (404, 503 ou sem resposta por CORS) |
 
 Sobre o CSV: quando o sensor não mandou leituras nos últimos 7 dias, a tela mostra o estado
 vazio. O teste então repete o pedido à API real sem o filtro de período (as últimas leituras
