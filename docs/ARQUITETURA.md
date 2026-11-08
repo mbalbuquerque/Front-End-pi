@@ -1,12 +1,14 @@
 # Arquitetura do ColdTrack Control (React)
 
-Contrato para quem porta uma tela de `legado/` para React. Leia inteiro antes de começar.
-Referências prontas: **`src/pages/Login/Login.jsx`** (tela pública) e **`src/pages/Alertas/Alertas.jsx`** (tela logada com polling).
+Contrato técnico do painel: estrutura, CSS, módulos compartilhados e regras de código.
+Leia antes de criar ou alterar uma tela. O passo a passo de trabalho (branches, commits,
+verificações) está em [`CONTRIBUTING.md`](../CONTRIBUTING.md).
+Telas de referência: **`src/pages/Login/Login.jsx`** (pública) e **`src/pages/Alertas/Alertas.jsx`** (logada, com polling).
 
 Stack: React 18 + Vite 5 + React Router 6, JavaScript (sem TypeScript). Node 20+.
 
 ```bash
-npm install
+npm ci
 npm run dev        # http://localhost:5173
 npm run build      # gera dist/ (com as cópias dashboard.html, login.html...)
 npm run preview    # serve dist/
@@ -21,60 +23,54 @@ npm run test:e2e   # Playwright em coldtrack-qa/tests (rode o build antes)
 index.html                 casca única (fonte Inter, manifest, ícones)
 vite.config.js             React + escopo de CSS + cópias das páginas .html antigas
 public/                    vai para dist/ como está: sw.js, manifest.json, assets/icons/
-legado/                    código antigo, SÓ LEITURA, apagado no fim da migração
+scripts/enviar-site.sh     envio de dist/ para o Azure (CI e publicar.sh)
+coldtrack-qa/tests/        testes e2e (Playwright) e apoio.js (API simulada, sessão de teste)
 docs/                      documentação (não vai para o site)
 src/
   main.jsx                 BrowserRouter > AuthProvider > App; registra o sw.js no build
-  App.jsx                  TODAS as rotas (já prontas, não mexer)
+  App.jsx                  todas as rotas (cada tela com React.lazy)
   rotas.js                 ROTAS_LEGADAS (nome.html -> rota) e PAGINAS_PAINEL (menu)
   lib/                     lógica sem React (porte de comum.js / config.js)
-  hooks/                   useSessao, usePolling, useVeiculoEscolhido, useTitulo
+  hooks/                   useSessao, usePolling, useVeiculoEscolhido, useTitulo,
+                           useMovimentoReduzido
   components/              PainelLayout, RequireAuth, Estado, StatusSelo, FiltroPeriodo,
-                           SeletorVeiculo, GraficoTemperatura, EmConstrucao, ChatWidget/
-  pages/<Nome>/<Nome>.jsx  uma pasta por tela
+                           SeletorVeiculo, GraficoTemperatura, ChatWidget/
+  pages/<Nome>/<Nome>.jsx  uma pasta por tela (regras puras em .js e testes ao lado)
   styles/base.css          reset mínimo global
   styles/<familia>/*.css   CSS antigo, escopado por .escopo-<familia>
   assets/images/           imagens WebP (slide-1..3, coldtrack-infografico)
 ```
 
-## 2. Como portar uma tela
+## 2. Telas
 
-1. Abra o placeholder `src/pages/<Nome>/<Nome>.jsx` e **substitua o arquivo inteiro**.
-   A rota já existe em `App.jsx` (carregada com `lazy`). Não edite `App.jsx`, `rotas.js` nem
-   `vite.config.js`: várias pessoas portam em paralelo e esses arquivos são compartilhados.
-2. Fonte: `legado/<pagina>.html` (marcação) + `legado/js/<pagina>.js` (comportamento).
-   O que vinha de `comum.js` já está em `src/lib` e `src/components`.
-3. Importe o CSS da família no topo do arquivo e envolva a tela na raiz do escopo:
-   `<div className="escopo-<familia> raiz-pagina">…</div>` (telas do painel usam `PainelLayout`,
-   que já faz isso). Arquivos novos de CSS da tela vão na pasta da família.
-4. Rode `npm run lint`, `npm test`, `npm run build` e abra a tela no `npm run dev`
-   lado a lado com a antiga (`cd legado && python -m http.server 5600`).
+Cada tela é `src/pages/<Nome>/<Nome>.jsx`, registrada em `App.jsx` com `lazy`. As telas logadas
+ficam dentro de `<Route element={<RequireAuth />}>`. Para criar uma tela nova, siga
+[`CONTRIBUTING.md`](../CONTRIBUTING.md#adicionar-uma-tela).
 
-| Rota | Arquivo | Origem em `legado/` | Família | Login |
-|---|---|---|---|---|
-| `/` | `pages/Home/Home.jsx` | `index.html`, `js/home.js` | home (+ chat) | não |
-| `/login` | `pages/Login/Login.jsx` | **pronta** | login | não |
-| `/cadastro` | `pages/Cadastro/Cadastro.jsx` | `cadastro.html`, `js/cadastro.js` | painel | não |
-| `/dashboard` | `pages/Dashboard/Dashboard.jsx` | `dashboard.html`, `js/app.js`, `js/risco.js` | painel | sim |
-| `/alertas` | `pages/Alertas/Alertas.jsx` | **pronta** | painel | sim |
-| `/relatorios` | `pages/Relatorios/Relatorios.jsx` | `relatorios.html`, `js/relatorios.js` | painel | sim |
-| `/veiculos` | `pages/Veiculos/Veiculos.jsx` | `veiculos.html`, `js/veiculos.js`, `js/vendor/qrcode.js` | painel | sim |
-| `/sensores` | `pages/Sensores/Sensores.jsx` | `sensores.html`, `js/sensores.js`, `js/serial.js` | painel | sim |
-| `/viagens` | `pages/Viagens/Viagens.jsx` | `viagens.html`, `js/viagens.js` | painel | sim |
-| `/configuracoes` | `pages/Configuracoes/Configuracoes.jsx` | `configuracoes.html`, `js/configuracoes.js` | painel | sim |
-| `/usuarios` | `pages/Usuarios/Usuarios.jsx` | `usuarios.html`, `js/usuarios.js` | usuarios | não (demo) |
-| `/auditoria` | `pages/Auditoria/Auditoria.jsx` | `auditoria.html`, `js/auditoria.js` | auditoria | não (demo) |
-| `/cadastro-usuario` | `pages/CadastroUsuario/CadastroUsuario.jsx` | `cadastro-usuario.html`, `js/cadastro-usuario.js` | cadastro-usuario | não (demo) |
-| `/logistica` | `pages/Logistica/Logistica.jsx` | `logistica.html`, `js/logistica.js` | logistica | não (demo) |
-| `/monitoramento` | `pages/Monitoramento/Monitoramento.jsx` | `monitoramento.html`, `js/monitoramento.js` | monitoramento | não (demo) |
-| (widget da `/`) | `components/ChatWidget/ChatWidget.jsx` | `js/chat.js` (marcação no fim de `index.html`) | chat | não |
+| Rota | Arquivo | Família | Login |
+|---|---|---|---|
+| `/` | `pages/Home/Home.jsx` | home (+ chat) | não |
+| `/login` | `pages/Login/Login.jsx` | login | não |
+| `/cadastro` | `pages/Cadastro/Cadastro.jsx` | painel | não |
+| `/dashboard` | `pages/Dashboard/Dashboard.jsx` | painel | sim |
+| `/alertas` | `pages/Alertas/Alertas.jsx` | painel | sim |
+| `/relatorios` | `pages/Relatorios/Relatorios.jsx` | painel | sim |
+| `/veiculos` | `pages/Veiculos/Veiculos.jsx` | painel | sim |
+| `/sensores` | `pages/Sensores/Sensores.jsx` | painel | sim |
+| `/viagens` | `pages/Viagens/Viagens.jsx` | painel | sim |
+| `/configuracoes` | `pages/Configuracoes/Configuracoes.jsx` | painel | sim |
+| `/usuarios` | `pages/Usuarios/Usuarios.jsx` | usuarios | não (demo) |
+| `/auditoria` | `pages/Auditoria/Auditoria.jsx` | auditoria | não (demo) |
+| `/cadastro-usuario` | `pages/CadastroUsuario/CadastroUsuario.jsx` | cadastro-usuario | não (demo) |
+| `/logistica` | `pages/Logistica/Logistica.jsx` | logistica | não (demo) |
+| `/monitoramento` | `pages/Monitoramento/Monitoramento.jsx` | monitoramento | não (demo) |
+| (widget da `/`) | `components/ChatWidget/ChatWidget.jsx` | chat | não |
 
-`legado/coldtrack-auditoria/` é uma cópia antiga de `auditoria.html` (o CSS é uma versão anterior):
-porte a partir de `legado/auditoria.html`. `legado/css/dashboard.css` não é usado por nenhuma página.
+As telas "não (demo)" usam dados de exemplo no próprio componente, sem API, como no site anterior.
 
 ## 3. CSS: famílias e escopo
 
-O CSS antigo de cada arquivo redefine `:root`, `*`, `body` e classes com o mesmo nome
+O CSS de cada família veio do site anterior (HTML + JS) e redefine `:root`, `*`, `body` e classes com o mesmo nome
 (`.sidebar`, `.card`, `.topbar`, `.brand`, `.main`). O PostCSS (em `vite.config.js`) prefixa
 **todo** arquivo em `src/styles/<familia>/` com `.escopo-<familia>`:
 
@@ -86,6 +82,7 @@ O CSS antigo de cada arquivo redefine `:root`, `*`, `body` e classes com o mesmo
 | `* { box-sizing }` | `.escopo-painel, .escopo-painel * { }` |
 | `@media` | continua, com as regras de dentro prefixadas |
 | `@keyframes` | intacto (nome global; hoje só existe `pulse`, em home) |
+| `@media (prefers-reduced-motion: reduce)` | continua; a home desliga a transição do slider e o `pulse` |
 
 | Família | Classe raiz | Arquivos | Import |
 |---|---|---|---|
@@ -167,7 +164,10 @@ primeiro), `horarioDe(leitura) -> Date`, `resumir(leituras) -> { total, media, m
   Chame `recarregar()` depois de salvar um formulário (o antigo `carregarX()` direto).
 - **`useVeiculoEscolhido()`** → `{ escolher, chave, trocarVeiculo }`. `escolher()` chama
   `escolherVeiculo` com o `?veiculo=` da rota atual; ponha `chave` nas `deps` do polling.
-- **`useTitulo(texto)`** — `document.title`. Use o `<title>` exato da página antiga.
+- **`useTitulo(texto)`** — `document.title`.
+- **`useMovimentoReduzido()`** → `true` quando o sistema pede menos movimento
+  (`prefers-reduced-motion: reduce`); acompanha a troca com a página aberta. A home usa para
+  parar a troca automática do slider. `movimentoReduzido()` é a leitura avulsa, fora de componente.
 
 ## 6. Componentes
 
@@ -178,12 +178,12 @@ primeiro), `horarioDe(leitura) -> Date`, `resumir(leituras) -> { total, media, m
   padrão `"<titulo> · ColdTrack Control"` (Dashboard: passe `"ColdTrack Control"`).
   Os filhos entram no `<main>` entre o topo e o rodapé: normalmente `<div id="conteudo" className="page-grid">`.
 - **`<RequireAuth perfil?>`** — já envolve as rotas logadas em `App.jsx`. Para bloquear só para
-  gestor dentro de uma tela, use `ehGestor(usuario)` e esconda o trecho (como o original).
+  gestor dentro de uma tela, use `ehGestor(usuario)` e esconda o trecho.
 - **`<Estado titulo? painel?>texto</Estado>`**, **`<Carregando />`** ("Carregando leituras…"),
   **`<ErroAzure />`** (antigo `ERRO_AZURE`), **`<SemVeiculo />`** (antigo `SEM_VEICULO`).
 - **`<StatusSelo status />`** — antigo `seloStatus()`.
 - **`<FiltroPeriodo horas aoMudar />`** — "Últimas 24 h" / "Últimos 7 dias", `aria-pressed`.
-  Vai dentro de `<div className="acoes">` como no original.
+  Vai dentro de `<div className="acoes">`.
 - **`<SeletorVeiculo veiculos veiculo aoTrocar />`** — `#seletorVeiculo`, some com menos de 2 veículos.
 - **`<GraficoTemperatura leituras faixa id? className? />`** — porte de `desenharGrafico`
   (mesmas classes, tooltip, redesenho por `ResizeObserver`). O `id` é o do container antigo
@@ -233,35 +233,33 @@ export default function Relatorios() {
    isolado num arquivo `.js` da própria tela ou em `src/lib/`.
 5. **Polling só com `usePolling`** (nada de `setInterval` solto: vaza ao trocar de tela).
 6. **Perfil**: `ehGestor(usuario)` com o `usuario` de `useSessao()`; rotas logadas já estão em `RequireAuth`.
-7. **Erros na tela com `Estado`/`ErroAzure`**, `console.error` com a mesma mensagem do original.
-   `alert`/`confirm` do original podem ficar (mesmo comportamento).
-8. **Mantenha os ids** que os testes e2e (`coldtrack-qa/tests`) e o CSS usam, e **os textos
-   visíveis idênticos** (rótulos, mensagens, títulos, `aria-label`).
+7. **Erros na tela com `Estado`/`ErroAzure`** e `console.error("Erro ao carregar <tela>:", erro)`.
+   `alert`/`confirm` são aceitos nas confirmações de remoção.
+8. **Ids, textos e `aria-*`** usados pelos testes e2e (`coldtrack-qa/tests`) e pelo CSS só mudam
+   junto com os testes.
 9. **Links internos com `<Link to="/rota">`**, nunca `href="pagina.html"`. Navegação por código:
    `useNavigate()`; `location.replace(x)` antigo vira `navigate(x, { replace: true })`.
    URL absoluta para QR/etiqueta: `${window.location.origin}/dashboard.html?veiculo=${encodeURIComponent(id)}`
    (mantém o formato das etiquetas já impressas).
 10. **Espaços em JSX**: quebra de linha entre dois elementos inline some no JSX
-    (`<span>❄</span>\n<span>Texto</span>` vira "❄Texto"). Onde o HTML antigo dependia desse
-    espaço, use `{" "}`. Compare com a tela antiga.
-11. Formulário: `onSubmit` com `evento.preventDefault()`; `noValidate` onde o original tinha
-    `novalidate`; `Object.fromEntries(new FormData(evento.currentTarget))` funciona igual.
-12. Não altere `src/lib`, `src/components` ou `src/hooks` compartilhados sem combinar: se faltar
-    algo, crie local na pasta da tela e avise para subir para o compartilhado depois.
+    (`<span>❄</span>\n<span>Texto</span>` vira "❄Texto"). Onde o espaço importa, use `{" "}`.
+11. Formulário: `onSubmit` com `evento.preventDefault()`; `noValidate` quando a validação é
+    feita no código; `Object.fromEntries(new FormData(evento.currentTarget))` funciona igual.
+12. Função usada por uma tela só fica na pasta da tela; usada por duas ou mais, sobe para
+    `src/lib` (sem React), `src/hooks` ou `src/components`, com teste.
 
 ## 8. Checklist por tela
 
-- [ ] Arquivo `src/pages/<Nome>/<Nome>.jsx` substituído (sem `EmConstrucao`).
+- [ ] Rota em `App.jsx` com `lazy`; tela logada dentro de `RequireAuth`; menu em `rotas.js` se for do painel.
 - [ ] CSS da família importado; raiz com `escopo-<familia> raiz-pagina` (ou `PainelLayout`).
-- [ ] `useTitulo` (ou `tituloDocumento`) com o `<title>` antigo.
-- [ ] Mesmos ids, classes, textos, `aria-*` e ordem dos elementos da página antiga.
-- [ ] Chamadas à API iguais (caminho, método, corpo) via `lib/api.js`; mesmas mensagens de erro.
-- [ ] Polling com `usePolling` e `sinal.aborted` checado depois de cada `await`.
+- [ ] `useTitulo` (ou `tituloDocumento`).
+- [ ] API via `lib/api.js`; polling com `usePolling` e `sinal.aborted` checado depois de cada `await`.
 - [ ] Trechos de gestor com `ehGestor(usuario)`.
 - [ ] Links com `<Link>`; nenhum `*.html` em `href`.
 - [ ] Nenhum `innerHTML`, `localStorage` direto, global ou `setInterval` solto.
-- [ ] `npm run lint`, `npm test` e `npm run build` passam.
-- [ ] Conferida lado a lado com a antiga (desktop e 390 px), sem erro no console.
+- [ ] Regras puras com teste unitário; tela coberta em `coldtrack-qa/tests` (logada: `painel.spec.js`).
+- [ ] `npm run lint`, `npm test`, `npm run build` e `npm run test:e2e` passam.
+- [ ] Conferida em desktop e em 390 px: sem rolagem horizontal e sem erro no console.
 
 ## 9. Deploy e URLs antigas
 
@@ -269,7 +267,15 @@ export default function Relatorios() {
   `dist/<nome>.html` de cada entrada de `ROTAS_LEGADAS`. Assim `/dashboard.html?veiculo=X`
   (etiquetas QR impressas) responde 200 no Azure Storage e o React Router redireciona para
   `/dashboard?veiculo=X`. Rota limpa (`/dashboard`) chega pelo documento 404 (= `index.html`).
-- O site publicado é o conteúdo de `dist/` no container `$web` (`publicar.sh` e o workflow
-  `publicar-site.yml`).
+- O site publicado é o conteúdo de `dist/` no container `$web` da conta `stcoldtrackweb7319`
+  (grupo `rg-coldtrack`). O workflow `publicar-site.yml` (push na `everson`) e o `publicar.sh`
+  (máquina local) rodam lint, testes e build e chamam `scripts/enviar-site.sh dist`, que:
+  - envia `dist/assets/*` (nomes com hash) com `Cache-Control: public, max-age=31536000, immutable`;
+  - envia o resto (`index.html`, cópias `*.html`, `sw.js`, `manifest.json`, `assets/icons/`) com
+    `Cache-Control: no-cache`, depois dos arquivos com hash;
+  - apaga do `$web` todo blob que não está em `dist/` (lista remota menos lista local);
+  - confirma `index.html` como documento inicial e de erro (404) do site estático.
+- Etiqueta QR do veículo: `${window.location.origin}/dashboard.html?veiculo=<id>` (formato das
+  etiquetas já impressas; a cópia `dashboard.html` responde 200 e redireciona).
 - `public/sw.js`: suba `CACHE_NAME` (`coldtrack-v12` → `v13`...) quando mudar o service worker.
   Ele só é registrado no build (`import.meta.env.PROD`).
