@@ -88,7 +88,7 @@ export default function Login() {
       <main className="login-layout">
         <section className="brand-panel">
           <Link className="brand" to="/">
-            <span className="brand-icon">❄</span>
+            <span className="brand-icon">❄</span>{" "}
             <span>ColdTrack<span className="brand-accent">.</span></span>
           </Link>
 
