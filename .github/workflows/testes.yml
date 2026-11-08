@@ -1,6 +1,6 @@
 name: Testes
 
-# Roda a cada push e pull request: confere a sintaxe de todos os scripts.
+# Roda a cada push e pull request: lint, testes unitários e build.
 on:
   push:
   pull_request:
@@ -10,8 +10,8 @@ permissions:
   contents: read
 
 jobs:
-  sintaxe:
-    name: Sintaxe JavaScript
+  verificar:
+    name: Lint, testes e build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -19,13 +19,15 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "20"
+          cache: npm
 
-      - name: Conferir scripts
-        run: for f in js/*.js sw.js; do node --check "$f"; done
+      - run: npm ci
+      - run: npm run lint
+      - run: npm test
+      - run: npm run build
 
-      - name: Conferir páginas referenciadas pelo service worker
+      - name: Conferir páginas antigas no build (etiquetas QR)
         run: |
-          grep -o '"\./[^"]*"' sw.js | tr -d '"' | while read arquivo; do
-            [ "$arquivo" = "./" ] && continue
-            test -f "$arquivo" || { echo "falta $arquivo"; exit 1; }
+          for f in index dashboard login alertas relatorios veiculos sensores viagens configuracoes cadastro; do
+            test -f "dist/$f.html" || { echo "falta dist/$f.html"; exit 1; }
           done
