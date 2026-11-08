@@ -50,7 +50,8 @@ Rotas registradas pelo próprio teste (`page.route`) têm prioridade sobre as do
 
 ## Casos
 
-Cada caso roda em **Desktop Chrome** e **Mobile Chrome (Pixel 7)**: 65 casos, 130 execuções.
+Cada caso roda em **Desktop Chrome** e **Mobile Chrome (Pixel 7)**, exceto o responsivo
+(viewport fixo de 390 px, só no projeto desktop): 80 casos, 145 execuções e 15 puladas.
 
 | Arquivo | Casos | O que cobre |
 |---|---|---|
@@ -61,6 +62,7 @@ Cada caso roda em **Desktop Chrome** e **Mobile Chrome (Pixel 7)**: 65 casos, 13
 | `monitoramento.spec.js` | QA-035 a QA-038 | leituras do ThingSpeak simuladas: normal, crítica e falha |
 | `chat-atendimento.spec.js` | QA-CHAT-01 a 16 | assistente virtual da página inicial |
 | `painel.spec.js` | QA-PAINEL (15) | `/dashboard`, `/alertas`, `/relatorios`, `/veiculos`, `/sensores`, `/viagens` e `/configuracoes` como gestor e como operador: título, selo "Azure conectado", nenhum erro no console, controles de gestor ocultos para o operador; botão Sair |
+| `responsivo.spec.js` | QA-041 (15) | todas as rotas em 390 px, as logadas como gestor: sem rolagem horizontal e sem erro no console |
 
 Controles verificados como exclusivos do gestor: `#painelNovo`/`#formVeiculo` (Veículos),
 `#painelCabo`/`#formSensor` (Sensores), `#painelUsuarios`/`#formUsuario` (Configurações).
