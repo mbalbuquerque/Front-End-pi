@@ -24,7 +24,7 @@ export function definirAoExpirar(funcao) {
 }
 
 
-export async function api(caminho, { metodo = "GET", corpo } = {}) {
+export async function api(caminho, { metodo = "GET", corpo, signal } = {}) {
 
   const sessao = lerSessao();
 
@@ -34,7 +34,8 @@ export async function api(caminho, { metodo = "GET", corpo } = {}) {
       ...(corpo !== undefined ? { "Content-Type": "application/json" } : {}),
       ...(sessao ? { Authorization: `Bearer ${sessao.token}` } : {})
     },
-    body: corpo !== undefined ? JSON.stringify(corpo) : undefined
+    body: corpo !== undefined ? JSON.stringify(corpo) : undefined,
+    ...(signal ? { signal } : {})
   });
 
   if (response.status === 401) {
