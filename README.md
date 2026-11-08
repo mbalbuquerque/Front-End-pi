@@ -249,11 +249,31 @@ de quem está logado (veículos, sensores, últimas leituras, alertas das últim
 
 ## 9. Segurança e limitações
 
-- Autenticação na API com token de 8 horas; a sessão fica em `localStorage` (`coldtrack.sessao`)
-  e é descartada quando vence ou quando a API responde 401. As permissões valem na API; o
-  Front-End só esconde o que o perfil não pode usar.
-- Mensagens do chat, do assistente do painel e dados da API são renderizados como texto pelo React; o lint bloqueia
-  `innerHTML` e `dangerouslySetInnerHTML`.
+Análise completa de segurança (ameaças, API, banco, tokens): no repositório do back-end,
+[`docs/seguranca.md`](https://github.com/mbalbuquerque/projeto-integrador-4-periodo/blob/main/docs/seguranca.md).
+O que o Front-End faz:
+
+- **CSP por `<meta>`:** o site estático não envia cabeçalhos, então o build injeta no `index.html`
+  uma `Content-Security-Policy` (`script-src 'self'`, `object-src 'none'`, `connect-src` só com a
+  API, a Open-Meteo e o ThingSpeak) e `referrer: strict-origin-when-cross-origin`. É feito por um
+  plugin do Vite (`vite.config.js`) só no build; o `npm run dev` não recebe a política, porque o
+  HMR usa script inline e websocket. O e2e `csp.spec.js` percorre todas as rotas do build e falha
+  se houver qualquer violação.
+- **Sem `innerHTML`:** mensagens do chat, do assistente do painel e dados da API são renderizados
+  como texto pelo React; o lint bloqueia `innerHTML` e `dangerouslySetInnerHTML`.
+- **Token no `localStorage` (`coldtrack.sessao`) com validade de 8 horas:** é descartado quando
+  vence ou quando a API responde 401. **Sair** também chama `POST /sair` na API, que invalida os
+  tokens do usuário (melhor esforço: 5 s de limite, erro ignorado; a sessão local é apagada de
+  qualquer jeito). As permissões valem na API; o Front-End só esconde o que o perfil não pode usar.
+- **Login:** a mensagem de erro vem da API e é a mesma para senha errada, e-mail desconhecido e
+  pausa por excesso de tentativas.
+- **Sem segredos no bundle:** só há a URL pública da API (`VITE_API_URL`); chaves e senhas ficam
+  no back-end e nunca entram no código do site.
+- **Dependências:** `npm audit` roda a cada entrega. Os avisos que restam exigem salto de versão
+  maior (React Router 7; Vite/Vitest mais novos) e ficam para uma migração própria.
+
+Limitações:
+
 - Usuários, Auditoria, Cadastro de usuário e Gestão Logística continuam demonstrativos, com
   dados de exemplo e sem persistência.
 - As avaliações do chat ficam no navegador de quem avaliou.

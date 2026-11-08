@@ -156,6 +156,29 @@ dados da empresa logada. Lint, unitários, build e e2e simulado rodaram na branc
 REAL-ASSIST-01 ainda não rodou contra produção: falta publicar o front com o assistente e a
 rota `/assistente` no backend. Sem as credenciais da suíte real na máquina, ele é pulado.
 
+## Segurança do front (CSP, logout no servidor, mensagem de login)
+
+Medidas descritas na seção 9 do `README.md`. Lint, unitários, build e e2e simulado rodaram na
+branch `everson`; a rota `POST /sair` e a mensagem única de login 401 são simuladas, porque o
+backend está sendo publicado em paralelo.
+
+| Camada | Casos | O que verifica |
+|---|---|---|
+| Unitários `ChatWidget/conversa.test.js` | 1 | 429 "o chat atingiu o limite de perguntas de hoje..." cai no FAQ como o 503; o 429 por minuto continua mostrando o aviso da API |
+| Unitários `src/lib/api.test.js` (`sairNoServidor`) | 4 | `POST /sair` com `Bearer`; 404, 401 e falha de rede ignorados; sem token não chama a API; aborta no limite de 5 s |
+| E2E `painel.spec.js`, QA-SEG-01 e 02 | 4 casos | Sair chama `/sair` uma vez com o `Bearer` da sessão, limpa o `localStorage` e vai ao `/login`; continua saindo com `/sair` em 404, 500 ou com a rede caída |
+| E2E `login-erro.spec.js`, QA-SEG-03 a 05 | 3 casos | Tela de login e formulário da Home mostram "e-mail ou senha incorretos. Se errou várias vezes, aguarde alguns minutos." (401) e ainda mostram o aviso do 429 (agora só limite por IP: "muitas tentativas de login erradas. Aguarde alguns minutos.") |
+| E2E `painel.spec.js`, QA-SEG-09 | 1 caso | Em Configurações, a linha do próprio gestor mostra só "você" (sem Redefinir senha nem Remover); o operador continua com as duas ações |
+| E2E `csp.spec.js`, QA-SEG-06 a 08 | 3 casos | O build traz a CSP e o `referrer` em `<meta>` (sem `unsafe-eval`); as 15 rotas, o chat, o assistente, a etiqueta QR e o download do CSV não geram nenhuma violação ("Refused to") |
+
+O mock de login de `apoio.js` passou a devolver a mensagem nova. `REAL-USR-03` agora confere a
+mensagem por trecho ("e-mail ou senha incorretos"), para valer com a API antiga e a nova.
+
+Auditoria de dependências (`npm audit`): a produção tem 2 avisos moderados, em `react-router` e
+`react-router-dom` (6.30.6 é a última 6.x; a correção exige React Router 7, migração fora do
+escopo). Os demais são só de desenvolvimento (`vite`, `esbuild`, `vitest`, `tinypool`, `vite-node`,
+`@vitest/mocker`) e exigem salto de versão maior; não entram no site publicado.
+
 ## Defeito encontrado e corrigido
 
 | Onde | Problema | Correção |
