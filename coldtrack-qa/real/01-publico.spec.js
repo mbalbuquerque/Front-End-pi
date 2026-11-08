@@ -110,11 +110,14 @@ test.describe("Chat de atendimento", () => {
     await expect(page.locator("#ctChatResolution")).toBeVisible();
   }
 
-  test("REAL-PUB-04: pergunta conhecida responde e avaliação é salva", async ({ page }) => {
+  // Pergunta rápida responde pelo FAQ local, sem chamar a IA.
+  test("REAL-PUB-04: pergunta rápida responde e avaliação é salva", async ({ page }) => {
 
     await abrir(page);
-    await perguntar(page, "Como funciona o monitoramento?");
-    await expect(page.locator("#ctChatMessages")).toContainText("ThingSpeak");
+    await page.locator('[data-question="Como funciona o monitoramento?"]').click();
+    await expect(page.locator(".ct-chat-message.typing")).toHaveCount(0);
+    await expect(page.locator("#ctChatResolution")).toBeVisible();
+    await expect(page.locator("#ctChatMessages")).toContainText("API no Azure");
 
     await page.locator("#ctChatYes").click();
     await expect(page.locator("#ctChatRating")).toBeVisible();
@@ -134,12 +137,30 @@ test.describe("Chat de atendimento", () => {
 
   });
 
-  test("REAL-PUB-05: pergunta desconhecida oferece o WhatsApp com a dúvida", async ({ page }) => {
+  // Campo livre: chat com Azure OpenAI (POST /chat). Cada execução da suíte
+  // faz só 2 perguntas de verdade (REAL-PUB-05 e REAL-PUB-09), longe do
+  // limite de uso por IP da rota.
+
+  // Última resposta do assistente, já sem o "Digitando...".
+  async function ultimaResposta(page) {
+    const resposta = page.locator(".ct-chat-message.bot:not(.typing)").last();
+    const texto = (await resposta.innerText()).trim();
+    test.info().annotations.push({ type: "resposta do chat", description: texto });
+    return { resposta, texto };
+  }
+
+  test("REAL-PUB-05: pergunta fora do assunto é recusada e oferece o WhatsApp com a dúvida", async ({ page }) => {
 
     await abrir(page);
-    const pergunta = "Qual é a cor do caminhão lunar?";
+    const pergunta = "Me passa uma receita de bolo de chocolate?";
     await perguntar(page, pergunta);
-    await expect(page.locator("#ctChatMessages")).toContainText("não tenho uma resposta cadastrada");
+
+    const { texto } = await ultimaResposta(page);
+    expect(texto.length).toBeGreaterThan(0);
+    expect(texto).toMatch(/whatsapp/i);
+    // Veio da IA, não do FAQ local (plano B quando a rota falha).
+    expect(texto).not.toContain("não tenho uma resposta cadastrada");
+    expect(texto).not.toMatch(/farinha|forno|ovos/i);
 
     await page.locator("#ctChatNo").click();
     await expect(page.locator("#ctChatRating")).toBeVisible();
@@ -151,6 +172,21 @@ test.describe("Chat de atendimento", () => {
     const href = await link.getAttribute("href");
     expect(href).toMatch(/^https:\/\/wa\.me\/558196878213/);
     expect(new URL(href).searchParams.get("text")).toContain(pergunta);
+
+  });
+
+  test("REAL-PUB-09: pergunta sobre o ColdTrack recebe resposta da IA em português, com fontes", async ({ page }) => {
+
+    await abrir(page);
+    await perguntar(page, "Como o ColdTrack decide se a temperatura da carga está em atenção?");
+
+    const { resposta, texto } = await ultimaResposta(page);
+    expect(texto.length).toBeGreaterThan(40);
+    expect(texto).toMatch(/\b(de|que|da|do|para|com|é)\b/i);
+    expect(texto).toMatch(/[ãáâçéêíóôõú]/i);
+
+    await expect(resposta.locator(".ct-chat-fontes")).toHaveText(/^Fontes: \S/);
+    await expect(page.locator("#ctChatYes")).toBeVisible();
 
   });
 

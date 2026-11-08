@@ -4,6 +4,10 @@
 //   (Azure Function), a Open-Meteo, o ThingSpeak e as fontes do Google.
 //   Sem `simularApi`, a API responde 503 (como se estivesse fora do ar).
 // - `simularApi(page)` liga a API simulada com uma empresa de exemplo.
+//   O chat (POST /chat) continua 503 nos dois casos: o campo livre do chat
+//   cai no FAQ local e os testes do FAQ ficam determinísticos.
+// - `simularChat(page, responder)` simula a rota /chat (Azure OpenAI) e
+//   devolve a lista dos corpos recebidos.
 // - `entrarComo(page, "gestor" | "operador")` grava uma sessão falsa no
 //   localStorage (chave coldtrack.sessao) antes de a página abrir.
 // - `errosDoConsole(page)` junta console.error e exceções da página.
@@ -15,6 +19,8 @@ import { test as base, expect } from "@playwright/test";
 export { expect };
 
 export const HOST_API = /func-coldtrack-7319\.azurewebsites\.net/;
+
+export const ROTA_CHAT = /func-coldtrack-7319\.azurewebsites\.net\/api\/chat(\?|$)/;
 
 const HORA = 3600 * 1000;
 
@@ -120,6 +126,10 @@ export async function simularApi(page) {
 
     const responder = (json, status = 200) => route.fulfill({ status, json, headers: cors() });
 
+    if (caminho === "/chat") {
+      return responder({ erros: ["chat indisponível"] }, 503);
+    }
+
     if (metodo === "POST" && caminho === "/login") {
       return responder({ erros: ["E-mail ou senha incorretos."] }, 401);
     }
@@ -150,6 +160,44 @@ function cors() {
     "Access-Control-Allow-Headers": "Authorization, Content-Type",
     "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS"
   };
+
+}
+
+
+// ---------------------------------------------------------
+// CHAT (POST /chat)
+// ---------------------------------------------------------
+
+// `responder(corpo, numero)` devolve { status = 200, json, atraso = 0 }.
+// Com atraso maior que o tempo limite do chat (15 s), o site desiste antes.
+// Devolve a lista (viva) dos corpos JSON recebidos, na ordem.
+export async function simularChat(page, responder) {
+
+  const pedidos = [];
+
+  await page.route(ROTA_CHAT, async route => {
+
+    const pedido = route.request();
+
+    if (pedido.method() === "OPTIONS") {
+      return route.fulfill({ status: 204, headers: cors() });
+    }
+
+    const corpo = pedido.postDataJSON();
+    pedidos.push(corpo);
+
+    const { status = 200, json = {}, atraso = 0 } = await responder(corpo, pedidos.length);
+
+    if (atraso) {
+      await new Promise(resolver => setTimeout(resolver, atraso));
+    }
+
+    // O site pode ter cancelado o pedido (tempo esgotado) ou a página fechado.
+    await route.fulfill({ status, json, headers: cors() }).catch(() => {});
+
+  });
+
+  return pedidos;
 
 }
 
