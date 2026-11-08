@@ -100,7 +100,7 @@ function ConteudoRelatorio({ leituras, veiculo, faixa, horas, horasFiltro, aoMud
     return (
       <>
         <div className="acoes"><FiltroPeriodo horas={horasFiltro} aoMudar={aoMudarHoras} /></div>
-        <Estado painel titulo={`Nenhuma leitura nas ${periodo}.`}>
+        <Estado painel titulo={`Nenhuma leitura ${horas === 24 ? "nas" : "nos"} ${periodo}.`}>
           Confira se o sensor está ligado e conectado.
         </Estado>
       </>
