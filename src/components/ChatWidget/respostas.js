@@ -55,8 +55,9 @@ export const CONHECIMENTO = [
     termos: ["infografico", "material visual", "ilustracao"],
     resposta:
       "O infográfico apresenta visualmente as funcionalidades " +
-      "do ColdTrack e o fluxo Sensor → ESP32 → ThingSpeak → " +
-      "Plataforma Web. Clique em Ver infográfico para abrir a imagem."
+      "do ColdTrack. O fluxo desenhado nele (com ThingSpeak) é o da " +
+      "primeira versão; hoje as leituras vão do ESP32 para a API no Azure. " +
+      "Clique em Ver infográfico para abrir a imagem."
   },
   {
     termos: ["cadastrar carga", "nova carga", "criar carga", "incluir carga"],
@@ -89,17 +90,16 @@ export const CONHECIMENTO = [
       "No Monitoramento, confira o horário da última leitura " +
       "e utilize a atualização manual. Se os dados continuarem " +
       "antigos ou indisponíveis, verifique a conectividade " +
-      "do dispositivo e a disponibilidade do ThingSpeak."
+      "do sensor e o selo de conexão com o Azure no topo do painel."
   },
   {
     termos: ["interpretar temperatura", "temperatura critica"],
     resposta:
-      "Os limites demonstrativos são:\n" +
-      "• Até 15 °C: Normal.\n" +
-      "• Acima de 15 °C até 20 °C: Atenção.\n" +
-      "• Acima de 20 °C: Crítico.\n\n" +
-      "Esses valores não substituem os limites específicos " +
-      "de conservação de cada mercadoria."
+      "A faixa vem do perfil da carga de cada veículo, cadastrado na API:\n" +
+      "• Dentro da faixa do perfil: Normal.\n" +
+      "• Até a margem do perfil fora da faixa: Atenção.\n" +
+      "• Além da margem: Crítico.\n\n" +
+      "No perfil demonstrativo, até 15 °C é Normal e até 20 °C é Atenção."
   },
   {
     termos: ["avaliar atendimento", "dar nota", "estrelas"],
@@ -122,27 +122,27 @@ export const CONHECIMENTO = [
       "O ColdTrack possui estrutura PWA, mas a instalação " +
       "e o funcionamento offline dependem da configuração " +
       "e do suporte do navegador. Leituras atualizadas " +
-      "do ThingSpeak exigem conexão com o serviço."
+      "exigem conexão com a API no Azure."
   },
   {
     termos: ["coldtrack", "projeto", "plataforma", "objetivo"],
-    resposta: "O ColdTrack Control é um projeto de monitoramento da cadeia fria que utiliza sensores IoT, ESP32, ThingSpeak e uma interface web."
+    resposta: "O ColdTrack Control é um projeto de monitoramento da cadeia fria: sensores ESP32 no baú dos veículos enviam temperatura, umidade e sinal Wi-Fi para uma API no Azure (Azure Functions e Cosmos DB), e o painel web mostra a situação de cada carga."
   },
   {
     termos: ["temperatura", "limite", "graus", "critico", "alerta"],
-    resposta: "Na configuração demonstrativa, até 15 °C é Normal; acima de 15 °C até 20 °C é Atenção; acima de 20 °C é Crítico. Os limites devem ser ajustados conforme a mercadoria."
+    resposta: "Os limites não são fixos: cada veículo tem um perfil de carga cadastrado na API, com temperatura mínima, máxima e margem. Dentro da faixa é Normal, até a margem fora dela é Atenção e além disso é Crítico. No perfil demonstrativo, até 15 °C é Normal e até 20 °C é Atenção."
   },
   {
     termos: ["sensor", "sensores", "esp32", "dht", "dispositivo"],
-    resposta: "O protótipo utiliza ESP32 e sensor da família DHT para coletar temperatura e umidade, transmitindo informações pela rede Wi-Fi."
+    resposta: "O protótipo utiliza ESP32-C3 e sensor da família DHT para coletar temperatura e umidade, enviando as leituras pela rede Wi-Fi, por HTTPS, para a API no Azure."
   },
   {
-    termos: ["thingspeak", "api", "nuvem"],
-    resposta: "O ThingSpeak recebe as medições do dispositivo. O ColdTrack consulta o canal público 3496439 para apresentar temperatura, umidade e RSSI."
+    termos: ["thingspeak", "api", "nuvem", "azure"],
+    resposta: "As medições vão do sensor para a API do ColdTrack no Azure (Azure Functions), que grava as leituras no Cosmos DB; o painel lê tudo dessa API. A tela Monitoramento é uma demonstração à parte, que lê o canal público 3496439 do ThingSpeak."
   },
   {
     termos: ["monitoramento", "monitorar", "leituras", "historico"],
-    resposta: "O módulo de Monitoramento apresenta as leituras do ThingSpeak, histórico recente, situação térmica e indicação de dados antigos ou indisponíveis."
+    resposta: "Cada sensor envia temperatura, umidade e sinal Wi-Fi para a API no Azure. No painel, o Dashboard mostra a leitura atual, o histórico e a situação da carga conforme o perfil do veículo, e os Alertas reúnem as leituras fora da faixa. A tela Monitoramento é uma demonstração à parte com o canal público do ThingSpeak."
   },
   {
     termos: ["umidade"],
@@ -154,15 +154,15 @@ export const CONHECIMENTO = [
   },
   {
     termos: ["logistica", "carga", "transporte", "veiculo"],
-    resposta: "A Gestão Logística possui cadastro, consulta, edição e atualização demonstrativa de cargas. A persistência real depende da integração com o Back-End."
+    resposta: "Veículos e Viagens, no painel logado, são cadastrados na API no Azure: o gestor cadastra veículos com o perfil da carga e registra viagens. A tela Gestão Logística continua demonstrativa, com dados de exemplo."
   },
   {
     termos: ["login", "acesso", "senha", "cadastro", "entrar"],
-    resposta: "A plataforma possui telas de acesso e cadastro. A autenticação e as permissões reais ainda dependem da integração com o Back-End."
+    resposta: "O acesso é feito em Entrar, com e-mail e senha; a sessão vale por 8 horas. O cadastro de empresa cria o primeiro gestor, e as permissões (gestor e operador) são controladas pela API."
   },
   {
     termos: ["usuario", "perfil", "permissao"],
-    resposta: "O módulo de Usuários apresenta perfis e registros demonstrativos. A autorização efetiva será controlada pelo servidor."
+    resposta: "Os usuários reais são gerenciados pelo gestor em Configurações, com perfil gestor ou operador, e a API controla o que cada um pode fazer. A tela Usuários continua demonstrativa."
   },
   {
     termos: ["auditoria", "logs", "seguranca"],

@@ -59,7 +59,7 @@ test.describe("QA - Assistente Virtual ColdTrack", () => {
     await perguntar(page, "Como funciona o monitoramento?");
 
     await expect(page.locator("#ctChatMessages"))
-      .toContainText("ThingSpeak");
+      .toContainText("API no Azure");
   });
 
   test("QA-CHAT-05: trata pergunta desconhecida", async ({ page }) => {

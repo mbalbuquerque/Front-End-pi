@@ -19,7 +19,18 @@ describe("responder", () => {
   it("acha a resposta do monitoramento", () => {
     const resultado = responder("Como funciona o monitoramento?");
     expect(resultado.encontrada).toBe(true);
-    expect(resultado.texto).toContain("ThingSpeak");
+    expect(resultado.texto).toContain("API no Azure");
+  });
+
+  it("limites de temperatura vêm do perfil da carga, não de valor fixo", () => {
+    const resultado = responder("Quais são os limites de temperatura?");
+    expect(resultado.encontrada).toBe(true);
+    expect(resultado.texto).toContain("perfil de carga");
+  });
+
+  it("o caminho dos dados é a API no Azure, não o ThingSpeak", () => {
+    expect(responder("O que é ColdTrack?").texto).not.toContain("ThingSpeak");
+    expect(responder("Os dados ficam na nuvem?").texto).toContain("Cosmos DB");
   });
 
   it("termo composto vence palavra solta", () => {
