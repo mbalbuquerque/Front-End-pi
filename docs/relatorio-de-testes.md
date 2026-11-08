@@ -18,7 +18,7 @@
 | Unitários | `npm test` | 137 passaram em 21 arquivos, 0 falharam |
 | Build | `npm run build` | ok |
 | E2E simulado (API simulada, build local) | `npm run test:e2e` | 163 passaram, 0 falharam, 15 pulados (o caso de 390 px roda só no projeto desktop, de propósito) |
-| E2E real (site publicado + API de produção) | `npm run test:e2e:real` | 56 passaram, 0 falharam, 0 pulados (duas execuções seguidas, commit `5e91187`) |
+| E2E real (site publicado + API de produção) | `npm run test:e2e:real` | 57 passaram, 0 falharam, 0 pulados (site publicado no commit `4d51edd`, chat com Azure OpenAI incluído) |
 | E2E real do chat (build local + API de produção) | `REAL-PUB-04`, `05` e `09`, veja abaixo | 3 passaram, 0 falharam (2 perguntas de verdade à rota `/chat`) |
 
 Lint, unitários, build e e2e simulado foram repetidos depois da ligação do chat com Azure
