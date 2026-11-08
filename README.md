@@ -61,7 +61,7 @@ demonstrativo (até 15 °C Normal, até 20 °C Atenção).
 | PWA | `public/manifest.json`, `public/sw.js` (rede primeiro, registrado só no build) |
 | Hospedagem | Azure Storage, site estático (container `$web`), publicação por GitHub Actions com OIDC |
 | Hardware | ESP32-C3, sensor DHT |
-| Serviços externos | API ColdTrack (Azure Functions), ThingSpeak, Open-Meteo |
+| Serviços externos | API ColdTrack (Azure Functions; chat com Azure OpenAI), ThingSpeak, Open-Meteo |
 
 ## 3. Estrutura
 
@@ -128,9 +128,9 @@ cp .env.example .env.local
 ## 5. Testes
 
 - **Unitários (Vitest):** regras sem tela em `src/lib` e em `src/pages/*/` (leituras,
-  faixas, sessão, API, formatação, CSV, sensores, viagens, etiqueta, chat).
+  faixas, sessão, API, formatação, CSV, sensores, viagens, etiqueta, chat e plano B do chat).
 - **E2E (Playwright):** `coldtrack-qa/tests`, em Desktop Chrome e Mobile Chrome. Cobrem as
-  telas públicas e demonstrativas, o chat, os redirecionamentos das URLs antigas e as telas
+  telas públicas e demonstrativas, o chat (com a rota `/chat` simulada), os redirecionamentos das URLs antigas e as telas
   logadas como gestor e como operador. A API e os serviços de terceiros são simulados: nenhum
   teste acessa o Azure. Detalhes em [`coldtrack-qa/README.md`](coldtrack-qa/README.md).
 
@@ -200,11 +200,20 @@ que as etiquetas já coladas nos veículos continuem abrindo o Dashboard do veí
 
 ## 8. Assistente virtual
 
-A página inicial tem um assistente com botão flutuante, perguntas rápidas e campo livre. As
-respostas vêm de uma base local de palavras-chave (`src/components/ChatWidget/respostas.js`),
-sem IA generativa e sem API paga. Quando a resposta não resolve, o visitante pode falar com o
-desenvolvedor pelo WhatsApp (mensagem pré-preenchida com a última pergunta) e avaliar o
-atendimento de 1 a 5 estrelas, com comentário opcional.
+A página inicial tem um assistente com botão flutuante, perguntas rápidas e campo livre.
+
+- **Campo livre:** chat com Azure OpenAI pela rota pública `POST /chat` da API
+  (`src/lib/chat.js`). A resposta aparece como texto, com a linha "Fontes:" dos documentos do
+  projeto usados; as últimas 6 mensagens da conversa vão como histórico. Pergunta fora do
+  assunto é recusada com a indicação do WhatsApp.
+- **Plano B:** se a rota falhar (sem rede, 503, outro erro ou 15 s sem resposta), a pergunta é
+  respondida pela base local de palavras-chave (`src/components/ChatWidget/respostas.js`), e o
+  chat nunca fica sem resposta. Muitas perguntas seguidas (429) mostram o aviso da API.
+- **Perguntas rápidas:** respondem na hora pela base local, sem chamar a rota.
+
+Quando a resposta não resolve, o visitante pode falar com o desenvolvedor pelo WhatsApp
+(mensagem pré-preenchida com a última pergunta) e avaliar o atendimento de 1 a 5 estrelas, com
+comentário opcional.
 
 As avaliações ficam só no navegador (`localStorage`, chave `coldtrack_chat_avaliacoes_v1`), no
 formato abaixo; ainda não há envio para um servidor.

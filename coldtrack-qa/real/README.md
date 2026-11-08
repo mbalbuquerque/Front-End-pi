@@ -36,7 +36,9 @@ escrever teste novo aqui precisa seguir também:
 5. **Sem empresa nova.** A API não tem rota para apagar empresa, então `POST /empresas` só é
    chamado com dados que a validação recusa (400): nada é gravado.
 6. **Sem telemetria.** `POST /telemetria` nunca é chamado (as leituras não podem ser apagadas).
-7. **Operador e 403.** Os pedidos de escrita feitos com o token do operador usam ids que não
+7. **Chat com moderação.** A rota `/chat` (Azure OpenAI) tem limite de uso por IP e custo por
+   pergunta: a suíte faz no máximo 2 perguntas de verdade por execução (REAL-PUB-05 e 09).
+8. **Operador e 403.** Os pedidos de escrita feitos com o token do operador usam ids que não
    existem e corpos inválidos: mesmo que a checagem de perfil falhasse, nada seria gravado.
 
 ## Como rodar
@@ -70,6 +72,15 @@ npm run test:e2e:real:limpar        # apaga registros QA-* que tenham sobrado
 Sem as variáveis, os testes que precisam de login são pulados e só os públicos rodam
 (home, chat, rotas, contrato da API sem token, erros do cadastro).
 
+Só os testes do chat, contra um build local (sem credenciais; o CORS da API aceita
+`http://127.0.0.1:5500`):
+
+```bash
+npm run build
+npm run preview -- --port 5500 --strictPort --host 127.0.0.1     # em outro terminal
+COLDTRACK_SITE_URL=http://127.0.0.1:5500 npx playwright test --config playwright.real.config.js --project real --no-deps -g "REAL-PUB-0(4|5|9)"
+```
+
 Leva cerca de 2 a 3 minutos. Falhas guardam rastro (`trace`) e captura em
 `test-results-real/`; abra com `npx playwright show-trace <arquivo>.zip`.
 
@@ -78,7 +89,7 @@ Leva cerca de 2 a 3 minutos. Falhas guardam rastro (`trace`) e captura em
 | Arquivo | Casos | O que verifica |
 |---|---|---|
 | `login.setup.js` | REAL-AUTH-01, 02 | login do gestor e do operador pela tela; salva a sessão para o resto da suíte |
-| `01-publico.spec.js` | REAL-PUB-01 a 08 | home (carrossel, âncoras do menu, menu do celular), chat (pergunta conhecida, desconhecida com WhatsApp, avaliação), rotas limpas e `.html` respondendo 200, `/login.html`, `/dashboard.html?veiculo=X` com e sem sessão |
+| `01-publico.spec.js` | REAL-PUB-01 a 09 | home (carrossel, âncoras do menu, menu do celular), chat (pergunta rápida pelo FAQ com avaliação; chat com Azure OpenAI: pergunta sobre o ColdTrack respondida em português com fontes, pergunta fora do assunto recusada com WhatsApp), rotas limpas e `.html` respondendo 200, `/login.html`, `/dashboard.html?veiculo=X` com e sem sessão |
 | `02-autenticacao.spec.js` | REAL-AUTH-03 a 07 | sessão sobrevive ao recarregar, Sair, telas logadas sem sessão, token adulterado e sessão vencida voltam ao `/login` |
 | `03-api-contrato.spec.js` | REAL-API-01 a 06, REAL-CAD-01 | `/perfis`, 401 sem token, erros no formato `{"erros": [...]}`, `/eu`, `/leituras` 400/404, tela de cadastro de empresa mostrando os erros sem criar nada |
 | `04-gestor-cadastros.spec.js` | REAL-GES-01 a 06 | sensor (chave mostrada uma vez), veículo com perfil `manga`, etiqueta QR (o desenho é comparado com o QR de `/dashboard.html?veiculo=<código>`), viagem (registrar, encerrar, remover), chave nova, 409 ao remover sensor em uso, remoções |

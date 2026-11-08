@@ -132,6 +132,15 @@ Importe sempre com extensão: `import { api } from "../../lib/api.js"`.
   erro HTTP (401 = senha errada), só em falha de rede. Use em `/login` e `/empresas`.
 - `getPublico(caminho) -> Promise<json>` — GET sem token (usado por `carregarPerfis`).
 
+**`chat.js`** — chat com Azure OpenAI da página inicial (rota pública, sem token).
+- `perguntarChat(pergunta, historico = [], { signal, tempoLimite = 15000 }) -> Promise<{ resposta, fontes }>`
+  — `POST /chat` com `{ pergunta, historico? }` (pergunta até 500 caracteres; só as últimas 6
+  mensagens `{ papel: "usuario" | "assistente", texto }`, texto até 1000). Erro HTTP lança
+  `Error` com a mensagem de `dados.erros` e `.status` (400, 429, 503...); passou do tempo limite,
+  lança com `.tempoEsgotado = true`; falha de rede é repassada. Quem decide o plano B é o
+  `ChatWidget` (`components/ChatWidget/conversa.js`): 429 mostra o aviso da API; qualquer outra
+  falha responde pelo FAQ local (`respostas.js`). As perguntas rápidas não chamam a rota.
+
 **`sessao.js`** — `lerSessao()` (null se vencida), `salvarSessao(token, usuario)`, `limparSessao()`,
 `usuarioAtual()`, `ehGestor(usuario = usuarioAtual())`, `expiracaoDoToken(token)`, `CHAVE_SESSAO`.
 Em componente prefira `useSessao()`.
@@ -228,7 +237,8 @@ export default function Relatorios() {
 2. **Sem globais** e sem `document.getElementById` para montar tela. Estado com `useState`,
    referência a input com `useRef`.
 3. **`localStorage` só via `lib/armazenamento.js`** (ou `lib/sessao.js` / `lib/veiculo.js`).
-4. **API do ColdTrack só via `lib/api.js`** (`api`, `postPublico`, `getPublico`). Serviço de
+4. **API do ColdTrack só via `lib/api.js`** (`api`, `postPublico`, `getPublico`); a rota `/chat`,
+   que precisa de tempo limite e cancelamento, fica em `lib/chat.js`. Serviço de
    terceiro (Open-Meteo em `risco.js`, ThingSpeak em `monitoramento.js`) pode usar `fetch` direto,
    isolado num arquivo `.js` da própria tela ou em `src/lib/`.
 5. **Polling só com `usePolling`** (nada de `setInterval` solto: vaza ao trocar de tela).
