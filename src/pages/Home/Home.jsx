@@ -371,7 +371,7 @@ export default function Home() {
               <article className="feature">
                 <div>☁️</div>
                 <h3>Cloud</h3>
-                <p>Dados enviados e armazenados no ThingSpeak.</p>
+                <p>Dados enviados para a API no Azure e guardados no Cosmos DB.</p>
               </article>
 
               <article className="feature">
@@ -428,7 +428,7 @@ export default function Home() {
               <span>Wi-Fi</span>
               <b>↓</b>
 
-              <span>ThingSpeak</span>
+              <span>Azure Functions + Cosmos DB</span>
               <b>↓</b>
 
               <span>ColdTrack Control</span>
