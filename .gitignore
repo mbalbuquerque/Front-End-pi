@@ -1,8 +1,12 @@
-﻿node_modules/
+node_modules/
 playwright-report/
 test-results/
+dist/
 .env
 .env.*
 !.env.example
 __pycache__/
 *.pyc
+playwright-report-real/
+test-results-real/
+coldtrack-qa/real/.auth/

@@ -1,6 +1,6 @@
 name: Publicar painel
 
-# A cada push na branch everson: confere os scripts e publica o site no Azure.
+# A cada push na branch everson: testa, gera o build (dist/) e publica no Azure.
 # Login no Azure por OIDC (sem senha guardada): a identidade só é aceita
 # para esta branch deste repositório e só enxerga o grupo rg-coldtrack.
 on:
@@ -25,15 +25,14 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "20"
+          cache: npm
 
-      - name: Conferir scripts (a publicação só acontece se passarem)
-        run: for f in js/*.js sw.js; do node --check "$f"; done
-
-      - name: Montar pasta do site
+      - name: Testar e montar o site em dist/ (a publicação só acontece se passarem)
         run: |
-          mkdir site
-          git archive HEAD | tar -x -C site
-          rm -rf site/.vscode site/.github site/README.md site/publicar.sh
+          npm ci
+          npm run lint
+          npm test
+          npm run build
 
       - uses: azure/login@v2
         with:
@@ -41,9 +40,14 @@ jobs:
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
+      # scripts/enviar-site.sh: assets/ com hash em cache longo, o resto em
+      # no-cache, e remove do $web o que não está em dist/ (site antigo).
+      # O mesmo script roda no publicar.sh (publicação pela máquina local).
       - name: Publicar no site estático
         run: |
-          CHAVE="$(az storage account keys list -n stcoldtrackweb7319 -g rg-coldtrack --query '[0].value' -o tsv)"
-          az storage blob upload-batch --account-name stcoldtrackweb7319 --account-key "$CHAVE" \
-            -s site -d '$web' --overwrite -o none
+          AZURE_STORAGE_ACCOUNT=stcoldtrackweb7319
+          AZURE_STORAGE_KEY="$(az storage account keys list -n stcoldtrackweb7319 -g rg-coldtrack --query '[0].value' -o tsv)"
+          echo "::add-mask::$AZURE_STORAGE_KEY"
+          export AZURE_STORAGE_ACCOUNT AZURE_STORAGE_KEY
+          bash scripts/enviar-site.sh dist
           echo "Publicado em https://stcoldtrackweb7319.z15.web.core.windows.net"

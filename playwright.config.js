@@ -1,6 +1,11 @@
-﻿const { defineConfig, devices } = require("@playwright/test");
+import { defineConfig, devices } from "@playwright/test";
 
-module.exports = defineConfig({
+// Testes e2e em coldtrack-qa/tests (ESM; apoio comum em tests/apoio.js).
+// O servidor é o build publicado (vite preview), igual ao que vai para o Azure.
+// Rode `npm run build` antes de `npm run test:e2e`.
+// Nenhum teste fala com a API real: apoio.js intercepta a API, a Open-Meteo,
+// o ThingSpeak e as fontes.
+export default defineConfig({
   testDir: "./coldtrack-qa/tests",
 
   timeout: 30000,
@@ -12,13 +17,11 @@ module.exports = defineConfig({
   fullyParallel: false,
   workers: 1,
   retries: 0,
+  forbidOnly: !!process.env.CI,
 
   reporter: [
     ["list"],
-    ["html", {
-      outputFolder: "playwright-report",
-      open: "never"
-    }]
+    ["html", { outputFolder: "playwright-report", open: "never" }]
   ],
 
   use: {
@@ -26,7 +29,11 @@ module.exports = defineConfig({
     headless: true,
     trace: "retain-on-failure",
     screenshot: "only-on-failure",
-    video: "retain-on-failure"
+    video: "retain-on-failure",
+    actionTimeout: 10000,
+    navigationTimeout: 15000,
+    // O service worker do build atenderia os pedidos antes do page.route().
+    serviceWorkers: "block"
   },
 
   projects: [
@@ -41,7 +48,7 @@ module.exports = defineConfig({
   ],
 
   webServer: {
-    command: "python -m http.server 5500 --bind 127.0.0.1",
+    command: "npm run preview -- --host 127.0.0.1 --port 5500 --strictPort",
     url: "http://127.0.0.1:5500",
     reuseExistingServer: !process.env.CI,
     timeout: 30000

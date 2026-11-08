@@ -1,0 +1,510 @@
+
+/* =====================================================
+   COLDTRACK CONTROL - ASSISTENTE VIRTUAL
+   Widget de chat responsivo
+   ===================================================== */
+
+:root {
+  --chat-navy: #061b2b;
+  --chat-navy-light: #10374b;
+  --chat-cyan: #18c8d4;
+  --chat-blue: #049cf5;
+  --chat-bg: #f4f8fb;
+  --chat-text: #153244;
+  --chat-muted: #667d8d;
+  --chat-border: #dce7ed;
+}
+
+.ct-chat-widget,
+.ct-chat-widget * {
+  box-sizing: border-box;
+}
+
+.ct-chat-widget {
+  position: fixed;
+  right: 22px;
+  bottom: 22px;
+  z-index: 9999;
+  font-family: Inter, "Segoe UI", Arial, sans-serif;
+  color: var(--chat-text);
+}
+
+.ct-chat-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 56px;
+  padding: 0 20px;
+  border: 1px solid rgba(255,255,255,.2);
+  border-radius: 50px;
+  background: linear-gradient(
+    135deg,
+    #049cf5,
+    #087d90
+  );
+  color: #fff;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 12px 32px rgba(0, 39, 63, .3);
+  transition: transform .2s, box-shadow .2s;
+}
+
+.ct-chat-toggle:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 16px 36px rgba(0, 39, 63, .4);
+}
+
+.ct-chat-toggle svg {
+  width: 23px;
+  height: 23px;
+}
+
+.ct-chat-panel {
+  position: absolute;
+  right: 0;
+  bottom: 72px;
+  width: min(380px, calc(100vw - 28px));
+  height: min(550px, calc(100dvh - 110px));
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--chat-border);
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 22px 70px rgba(0, 23, 39, .3);
+}
+
+.ct-chat-panel[hidden] {
+  display: none !important;
+}
+
+.ct-chat-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background: linear-gradient(
+    120deg,
+    #061b2b,
+    #10374b
+  );
+  color: #fff;
+}
+
+.ct-chat-avatar {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  border-radius: 12px;
+  background: rgba(24, 200, 212, .15);
+  color: var(--chat-cyan);
+  font-size: 25px;
+}
+
+.ct-chat-header-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.ct-chat-header-info strong {
+  display: block;
+  font-size: 15px;
+}
+
+.ct-chat-header-info small {
+  display: block;
+  margin-top: 3px;
+  color: #b7d2dd;
+  font-size: 11px;
+}
+
+.ct-chat-close {
+  border: 0;
+  background: transparent;
+  color: #fff;
+  font-size: 26px;
+  cursor: pointer;
+  padding: 4px 8px;
+}
+
+.ct-chat-messages {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+  padding: 18px 14px;
+  background: var(--chat-bg);
+  overscroll-behavior: contain;
+}
+
+.ct-chat-message {
+  max-width: 88%;
+  padding: 12px 14px;
+  border-radius: 14px;
+  font-size: 13px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+.ct-chat-message.bot {
+  align-self: flex-start;
+  border: 1px solid #e0ebf0;
+  border-bottom-left-radius: 4px;
+  background: #fff;
+}
+
+.ct-chat-message.user {
+  align-self: flex-end;
+  border-bottom-right-radius: 4px;
+  background: var(--chat-navy-light);
+  color: #fff;
+}
+
+.ct-chat-message.typing {
+  color: var(--chat-muted);
+  font-style: italic;
+}
+
+.ct-chat-fontes {
+  display: block;
+  margin-top: 8px;
+  color: var(--chat-muted);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.ct-chat-quick {
+  display: flex;
+  gap: 7px;
+  padding: 10px 12px;
+  overflow-x: auto;
+  border-top: 1px solid var(--chat-border);
+  background: #fff;
+  scrollbar-width: thin;
+}
+
+.ct-chat-quick button {
+  flex-shrink: 0;
+  padding: 8px 11px;
+  border: 1px solid #b8dce5;
+  border-radius: 20px;
+  background: #effaff;
+  color: #08677b;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.ct-chat-quick button:hover {
+  background: #d9f4fa;
+}
+
+.ct-chat-form {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  border-top: 1px solid var(--chat-border);
+  background: #fff;
+}
+
+.ct-chat-input {
+  flex: 1;
+  min-width: 0;
+  height: 43px;
+  padding: 0 13px;
+  border: 1px solid var(--chat-border);
+  border-radius: 10px;
+  background: #f8fafb;
+  color: var(--chat-text);
+  font: inherit;
+  font-size: 13px;
+  outline: none;
+}
+
+.ct-chat-input:focus {
+  border-color: var(--chat-blue);
+  box-shadow: 0 0 0 3px rgba(4,156,245,.12);
+}
+
+.ct-chat-send {
+  width: 43px;
+  height: 43px;
+  flex-shrink: 0;
+  border: 0;
+  border-radius: 10px;
+  background: var(--chat-blue);
+  color: #fff;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.ct-chat-send:hover {
+  background: #087d90;
+}
+
+.ct-chat-send:disabled {
+  background: var(--chat-muted);
+  cursor: not-allowed;
+}
+
+.ct-chat-footer {
+  padding: 0 12px 10px;
+  text-align: center;
+  background: #fff;
+  color: var(--chat-muted);
+  font-size: 10px;
+}
+
+.ct-chat-widget button:focus-visible {
+  outline: 3px solid var(--chat-cyan);
+  outline-offset: 3px;
+}
+
+@media (max-width: 480px) {
+  .ct-chat-widget {
+    right: 12px;
+    bottom: 12px;
+  }
+
+  .ct-chat-toggle {
+    min-height: 52px;
+    padding: 0 15px;
+    font-size: 12px;
+  }
+
+  .ct-chat-panel {
+    position: fixed;
+    right: 10px;
+    bottom: 76px;
+    width: calc(100vw - 20px);
+    height: min(590px, calc(100dvh - 92px));
+    border-radius: 16px;
+  }
+
+  .ct-chat-messages {
+    padding: 14px 12px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ct-chat-toggle {
+    transition: none;
+  }
+}
+
+/* ==========================================
+   COLDTRACK - ATENDIMENTO E AVALIAÇÃO
+   ========================================== */
+
+.ct-chat-resolution,
+.ct-chat-rating {
+  padding: 13px;
+  background: #ffffff;
+  border-top: 1px solid #dce7ed;
+  font-size: 13px;
+}
+
+.ct-chat-resolution[hidden],
+.ct-chat-rating[hidden] {
+  display: none !important;
+}
+
+.ct-chat-resolution strong,
+.ct-chat-rating strong {
+  display: block;
+  margin-bottom: 10px;
+  color: #153244;
+}
+
+.ct-chat-resolution-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.ct-chat-resolution-actions button {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid #b8dce5;
+  border-radius: 8px;
+  background: #effaff;
+  color: #08677b;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.ct-chat-resolution-actions button:hover {
+  background: #d9f4fa;
+}
+
+.ct-chat-rating p {
+  margin: 5px 0 10px;
+  color: #667d8d;
+  font-size: 12px;
+}
+
+.ct-chat-stars {
+  display: flex;
+  justify-content: center;
+  gap: 5px;
+  margin: 10px 0 14px;
+}
+
+.ct-chat-stars button {
+  padding: 2px;
+  border: none;
+  background: transparent;
+  color: #e5a500;
+  font-size: 31px;
+  cursor: pointer;
+}
+
+.ct-chat-rating label {
+  display: block;
+  margin-bottom: 7px;
+  font-weight: 600;
+}
+
+.ct-chat-rating textarea {
+  display: block;
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #dce7ed;
+  border-radius: 9px;
+  font: inherit;
+  font-size: 12px;
+  resize: vertical;
+}
+
+#ctChatSaveRating {
+  width: 100%;
+  margin-top: 10px;
+  padding: 11px;
+  border: none;
+  border-radius: 9px;
+  background: #087d90;
+  color: white;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+#ctChatSaveRating:disabled {
+  opacity: .6;
+  cursor: not-allowed;
+}
+
+#ctChatRatingFeedback {
+  margin: 9px 0 0;
+  color: #087d90;
+  font-size: 12px;
+}
+
+.ct-chat-human {
+  padding: 9px 12px;
+  background: #fff;
+  border-top: 1px solid #dce7ed;
+}
+
+.ct-chat-human a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 11px;
+  border-radius: 9px;
+  background: #168c4b;
+  color: white;
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: background .2s;
+}
+
+.ct-chat-human a:hover {
+  background: #116d3a;
+}
+
+.ct-chat-widget button:focus-visible,
+.ct-chat-human a:focus-visible {
+  outline: 3px solid #18c8d4;
+  outline-offset: 3px;
+}
+
+@media (max-width: 480px) {
+  .ct-chat-rating {
+    max-height: 250px;
+    overflow-y: auto;
+  }
+
+  .ct-chat-stars button {
+    font-size: 28px;
+  }
+}
+
+
+/* ==========================================
+   COLDTRACK - MANUAL E INFOGRÁFICO
+   ========================================== */
+
+.ct-chat-infografico {
+  align-self: stretch;
+  padding: 12px;
+  border: 1px solid #dce7ed;
+  border-radius: 12px;
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ct-chat-infografico strong {
+  color: #061b2b;
+  font-size: 13px;
+}
+
+.ct-chat-infografico img {
+  display: block;
+  width: 100%;
+  max-height: 260px;
+  object-fit: contain;
+  border-radius: 8px;
+  background: #f4f8fb;
+}
+
+.ct-chat-infografico p {
+  margin: 0;
+  color: #667d8d;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.ct-chat-infografico a {
+  display: block;
+  padding: 10px;
+  border-radius: 8px;
+  background: #087d90;
+  color: white;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.ct-chat-infografico a:hover {
+  background: #065d6b;
+}
+
+.ct-chat-quick button {
+  white-space: nowrap;
+}

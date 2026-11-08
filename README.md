@@ -1,325 +1,264 @@
-# ❄️ ColdTrack Control
+# ColdTrack Control
 
-### Dashboard PWA para Monitoramento IoT de Transporte Refrigerado
+Painel web do **ColdTrack Edge**, projeto integrador de monitoramento IoT da cadeia fria.
+Sensores ESP32 instalados no baú dos veículos enviam temperatura, umidade e sinal Wi-Fi para
+uma API no Azure; o painel mostra a situação de cada carga, os alertas fora da faixa do perfil
+da mercadoria, relatórios, viagens e o risco de calor previsto na rota.
 
-O **ColdTrack Control** é a interface web do projeto **ColdTrack Edge**, desenvolvido como parte do **Projeto Integrador – 4º Período**.
+- Site publicado: <https://stcoldtrackweb7319.z15.web.core.windows.net>
+- Repositório do Front-End: <https://github.com/mbalbuquerque/Front-End-pi>
+- Repositório da API (Back-End, Azure Functions) e do firmware: <https://github.com/mbalbuquerque/projeto-integrador-4-periodo>
 
-A aplicação permite visualizar dados de **temperatura, umidade relativa e qualidade do sinal Wi-Fi** coletados por um nó sensor baseado em **ESP32-C3** e enviados para a nuvem **Microsoft Azure**.
+## 1. Sobre o projeto
 
-O projeto tem como cenário de aplicação o **monitoramento da cadeia fria durante o transporte refrigerado de mercadorias**, especialmente produtos sensíveis às condições ambientais.
+O ColdTrack Control foi desenvolvido no contexto do Projeto Integrador para acompanhar as
+condições ambientais no transporte e armazenamento de mercadorias refrigeradas. A solução
+integra Internet das Coisas, desenvolvimento web, comunicação HTTP, monitoramento ambiental
+e gestão logística.
 
----
+Objetivos:
 
-## 🚚 Visão Geral
+- monitorar temperatura e umidade relativa do ar de cada veículo;
+- classificar cada leitura conforme a faixa do perfil da carga (Normal, Atenção, Crítico);
+- apresentar a conectividade Wi-Fi (RSSI) e a situação de cada sensor;
+- registrar viagens e mostrar a condição da carga em cada trajeto;
+- gerar relatórios por período, com exportação CSV;
+- separar o que o gestor e o operador logístico podem fazer;
+- oferecer atendimento automatizado aos visitantes, com encaminhamento ao desenvolvedor;
+- manter a interface responsiva e testada automaticamente.
 
-O ColdTrack foi concebido para monitorar as condições ambientais dentro de veículos e compartimentos refrigerados.
-
-A arquitetura atual funciona da seguinte forma:
-
-```text
-Sensor DHT11 / DHT22
-        ↓
-     ESP32-C3
-        ↓
- Processamento Edge
-        ↓
-  Wi-Fi (HTTPS + JSON)
-        ↓
- Azure Functions (validação)
-        ↓
- Azure Cosmos DB
-        ↓
- API REST de leitura
-        ↓
- ColdTrack Control
-        ↓
-       PWA
-```
-
-O **DHT22** é utilizado atualmente na simulação Wokwi, enquanto o **DHT11** é destinado ao protótipo físico.
-
----
-
-## 📊 Funcionalidades
-
-A versão atual do ColdTrack Control possui:
-
-- 🌡️ Visualização da temperatura;
-- 💧 Monitoramento da umidade relativa;
-- 📶 Monitoramento do RSSI Wi-Fi;
-- 🚦 Classificação do estado da carga;
-- ☁️ Integração com o Azure;
-- 🔄 Atualização automática da telemetria;
-- ⚠️ Indicação de condições de atenção e críticas;
-- 📱 Layout responsivo;
-- 📲 Estrutura de Progressive Web App (PWA);
-- 💾 Service Worker para armazenamento dos arquivos principais da aplicação.
-
----
-
-## 🚦 Classificação Edge
-
-Para fins de demonstração do protótipo, foram definidos os seguintes limites:
-
-| Temperatura | Status |
-|---|---|
-| Até 15 °C | 🟢 NORMAL |
-| Acima de 15 °C até 20 °C | 🟡 ATENÇÃO |
-| Acima de 20 °C | 🔴 CRÍTICO |
-
-> **Importante:** esses valores são demonstrativos. Em uma aplicação real, os limites deverão ser configurados conforme o tipo de mercadoria, requisitos técnicos e condições operacionais da cadeia fria.
-
----
-
-## ☁️ Integração com Azure
-
-O dashboard lê as leituras gravadas no Azure Cosmos DB pela rota pública de consulta da Azure Function:
+### Fluxo dos dados
 
 ```text
-GET https://func-coldtrack-7319.azurewebsites.net/api/leituras?deviceId=coldtrack-01&limite=20
+Sensor DHT + ESP32-C3 (no baú)
+        |  Wi-Fi, HTTPS, chave por dispositivo
+        v
+API ColdTrack (Azure Functions)  -- perfis de carga, veículos, sensores, viagens, usuários
+        |  JSON, token de sessão (8 h)
+        v
+ColdTrack Control (este repositório, React, site estático no Azure Storage)
 ```
 
-A rota é somente leitura e liberada via CORS para o Live Server (`http://127.0.0.1:5500` e `http://localhost:5500`) e para o endereço publicado. Ao publicar o dashboard em outro endereço, esse endereço precisa ser adicionado ao CORS do Function App.
+A tela **Monitoramento** é uma demonstração separada que lê o canal público do ThingSpeak
+(`3496439`: field1 temperatura, field2 umidade, field3 RSSI). O **Dashboard** usa a
+previsão da Open-Meteo para estimar o calor na rota Petrolina a Suape.
 
-### Publicação
+### Faixas de temperatura
 
-O site está publicado no Azure Storage (site estático, região Brazil South):
+As faixas não são fixas no Front-End: cada veículo tem um **perfil de carga** cadastrado na API
+(`GET /perfis`, com `min`, `max` e `margem`). A leitura é Normal dentro da faixa, Atenção até
+`margem` graus fora dela e Crítico além disso. Enquanto os perfis não carregam, vale o perfil
+demonstrativo (até 15 °C Normal, até 20 °C Atenção).
 
-**https://stcoldtrackweb7319.z15.web.core.windows.net**
+## 2. Stack
 
-O Azure Static Web Apps não está disponível nas regiões liberadas para a assinatura Azure for Students da instituição, por isso foi usado o site estático do Storage. Para publicar uma nova versão:
-
-```bash
-az storage blob upload-batch --account-name stcoldtrackweb7319 -s <pasta-do-site> -d '$web' --overwrite
-```
-
-O dashboard fica em `dashboard.html` (acessado pelo botão da página inicial).
-
-### Acesso
-
-Todas as telas do painel exigem login (`login.html` ou o formulário da página inicial). O token vale 8 horas.
-
-| perfil | pode |
+| Camada | Tecnologia |
 |---|---|
-| Operador logístico | ver dashboard, alertas, relatórios, sensores, veículos, viagens e configurações; trocar a própria senha |
-| Gestor | tudo do operador + registrar sensores, cadastrar e remover veículos, viagens e usuários, redefinir senha |
+| Interface | React 18, React Router 6, JavaScript (sem TypeScript) |
+| Build | Vite 5, PostCSS (`postcss-prefix-selector` para escopo do CSS por família) |
+| Testes | Vitest + jsdom (unitários), Playwright (e2e, Chromium desktop e Pixel 7) |
+| Qualidade | ESLint 9 (`--max-warnings 0`) |
+| PWA | `public/manifest.json`, `public/sw.js` (rede primeiro, registrado só no build) |
+| Hospedagem | Azure Storage, site estático (container `$web`), publicação por GitHub Actions com OIDC |
+| Hardware | ESP32-C3, sensor DHT |
+| Serviços externos | API ColdTrack (Azure Functions; chat com Azure OpenAI), ThingSpeak, Open-Meteo |
 
-A API confere o perfil em cada chamada; esconder botões na tela é só conveniência.
-Empresa nova se cadastra em `cadastro.html` e entra como gestor; ele cria os demais usuários em **Configurações → Usuários**. Cada empresa só enxerga os próprios dados.
-
-### Telas
-
-| tela | o que mostra |
-|---|---|
-| `dashboard.html` | leitura atual do veículo escolhido, gráfico dos últimos 30 min com a faixa da carga e calor previsto na rota nas próximas 24 h |
-| `alertas.html` | ocorrências fora da faixa (leituras seguidas viram uma ocorrência), com duração e pico |
-| `relatorios.html` | resumo de 24 h ou 7 dias, gráfico, tabela de leituras e exportação em CSV |
-| `sensores.html` | sensores da empresa; registro com chave própria, chave nova e remoção pelo gestor |
-| `veiculos.html` | situação atual de cada veículo, com aviso de sensor sem sinal e etiqueta QR; cadastro pelo gestor |
-| `viagens.html` | condição da carga do início ao fim de cada trajeto; registro e encerramento pelo gestor |
-| `configuracoes.html` | troca de senha, faixas de cada perfil de carga, sensores, fonte de dados e usuários (gestor) |
-| `login.html` | entrada no painel |
-| `cadastro.html` | cadastro de empresa nova |
-
-Arquivos compartilhados: `js/comum.js` (menu, consulta à API, veículo escolhido, faixas, formatação), `js/grafico.js` (gráfico de temperatura), `js/risco.js` (calor na rota), `js/vendor/qrcode.js` (gerador de QR, licença MIT) e `css/telas.css`.
-Sensores, veículos, viagens, usuários e os perfis de carga ficam no Azure; o painel lê tudo da API.
-
----
-
-## 🛠️ Tecnologias
-
-### Hardware / Edge
-
-- ESP32-C3
-- DHT11
-- DHT22 na simulação
-- Wi-Fi
-- Arduino Framework
-- Wokwi
-
-### Cloud
-
-- Microsoft Azure (Functions, Cosmos DB, Storage)
-- API REST
-
-### Front-End
-
-- HTML5
-- CSS3
-- JavaScript
-- Fetch API
-- Web App Manifest
-- Service Worker
-- PWA
-
----
-
-## 📁 Estrutura do Projeto
+## 3. Estrutura
 
 ```text
-Front-End-pi/
-│
-├── index.html
-├── manifest.json
-├── sw.js
-│
-├── css/
-│   └── style.css
-│
-└── js/
-    ├── config.js
-    └── app.js
+index.html                 casca única (fonte Inter, manifest, ícones)
+vite.config.js             React, escopo de CSS, cópias das páginas .html antigas
+playwright.config.js       e2e contra o build (vite preview na porta 5500)
+eslint.config.js
+public/                    copiado para dist/ como está: sw.js, manifest.json, assets/icons/
+src/
+  main.jsx                 BrowserRouter > AuthProvider > App; registra o sw.js no build
+  App.jsx                  rotas (cada tela carregada sob demanda com React.lazy)
+  rotas.js                 ROTAS_LEGADAS (nome.html -> rota) e menu do painel
+  lib/                     API, sessão, leituras, faixas, formatação, veículo (sem React)
+  hooks/                   useSessao, usePolling, useVeiculoEscolhido, useTitulo, useMovimentoReduzido
+  components/              PainelLayout, RequireAuth, GraficoTemperatura, ChatWidget/...
+  pages/<Nome>/            uma pasta por tela (componente, regras puras e testes)
+  styles/<familia>/        CSS de cada família de telas, escopado por .escopo-<familia>
+  assets/images/           imagens WebP (slider da página inicial, infográfico do chat)
+coldtrack-qa/              testes e2e (Playwright) e a documentação deles
+scripts/enviar-site.sh     envio de dist/ para o Azure (usado pelo CI e pelo publicar.sh)
+publicar.sh                publicação manual pela máquina local
+docs/ARQUITETURA.md        contrato técnico: estrutura, CSS, lib, hooks, regras
 ```
 
-### `index.html`
+## 4. Como rodar
 
-Interface principal do dashboard.
-
-### `css/style.css`
-
-Identidade visual, layout, cards, estados da carga e responsividade.
-
-### `js/config.js`
-
-Configurações públicas da aplicação, como:
-
-- endereço da API no Azure;
-- intervalo de atualização;
-- tamanho do histórico do dashboard.
-
-### `js/app.js`
-
-Responsável por:
-
-- consultar a API do Azure;
-- processar a telemetria;
-- atualizar os indicadores;
-- mostrar o status que a API calculou pela faixa da carga;
-- controlar alertas;
-- apresentar informações da última leitura.
-
-### `manifest.json`
-
-Configurações da Progressive Web App.
-
-### `sw.js`
-
-Service Worker responsável pelo cache dos arquivos essenciais da interface.
-
----
-
-## ▶️ Executando Localmente
-
-Clone o repositório:
+Requisitos: Node.js 20 ou superior, npm e Git.
 
 ```bash
 git clone https://github.com/mbalbuquerque/Front-End-pi.git
+cd Front-End-pi
+npm ci
+npm run dev                # http://localhost:5173
 ```
 
-Entre na pasta:
+A API usada por padrão é a publicada (`https://func-coldtrack-7319.azurewebsites.net/api`).
+Para apontar para outra (por exemplo, a Function rodando localmente), copie `.env.example`
+para `.env.local` e ajuste:
 
 ```bash
-cd Front-End-pi
+cp .env.example .env.local
+# VITE_API_URL=http://localhost:7071/api
 ```
 
-Para desenvolvimento, recomenda-se executar o projeto através de um servidor HTTP local, como a extensão **Live Server** do Visual Studio Code.
+`.env.local` não vai para o Git. A variável é lida no build: depois de mudar, reinicie o
+`npm run dev` ou gere o build de novo.
 
-Abra:
+### Scripts
 
-```text
-index.html
+| Comando | O que faz |
+|---|---|
+| `npm run dev` | servidor de desenvolvimento do Vite (porta 5173) |
+| `npm run build` | build de produção em `dist/` (inclui as cópias `*.html` das URLs antigas) |
+| `npm run preview` | serve `dist/` localmente |
+| `npm test` | testes unitários (Vitest, `src/**/*.test.js`) |
+| `npm run test:watch` | Vitest em modo observação |
+| `npm run lint` | ESLint, falha com qualquer aviso |
+| `npm run test:e2e` | testes Playwright contra o build (rode `npm run build` antes) |
+| `npm run test:e2e:report` | abre o último relatório do Playwright |
+| `npm run test:e2e:real` | suíte real (site publicado + API de produção), opt-in, fora do CI; veja `coldtrack-qa/real/README.md` |
+| `npm run test:e2e:real:limpar` | apaga pela API registros `QA-*` que a suíte real tenha deixado |
+
+## 5. Testes
+
+- **Unitários (Vitest):** regras sem tela em `src/lib` e em `src/pages/*/` (leituras,
+  faixas, sessão, API, formatação, CSV, sensores, viagens, etiqueta, chat e plano B do chat).
+- **E2E (Playwright):** `coldtrack-qa/tests`, em Desktop Chrome e Mobile Chrome. Cobrem as
+  telas públicas e demonstrativas, o chat (com a rota `/chat` simulada), os redirecionamentos das URLs antigas e as telas
+  logadas como gestor e como operador. A API e os serviços de terceiros são simulados: nenhum
+  teste acessa o Azure. Detalhes em [`coldtrack-qa/README.md`](coldtrack-qa/README.md).
+
+```bash
+npx playwright install chromium   # primeira vez
+npm run build
+npm run test:e2e
 ```
 
-utilizando:
+O workflow `.github/workflows/testes.yml` roda lint, unitários, build e e2e a cada push e pull
+request; quando algum e2e falha, o relatório fica anexado à execução.
 
-```text
-Open with Live Server
+## 6. Deploy
+
+Cada push na branch **`everson`** dispara `.github/workflows/publicar-site.yml`:
+
+1. `npm ci`, `npm run lint`, `npm test`, `npm run build` (para se algum falhar);
+2. login no Azure por OIDC (`azure/login`, sem senha guardada no repositório);
+3. `bash scripts/enviar-site.sh dist`, que:
+   - envia `assets/` com hash no nome com `Cache-Control: public, max-age=31536000, immutable`;
+   - envia `index.html`, as cópias `*.html`, `sw.js`, `manifest.json` e os ícones com
+     `Cache-Control: no-cache`;
+   - remove do container `$web` todo arquivo que não está em `dist/` (restos do site antigo
+     e de builds anteriores);
+   - confirma `index.html` como documento inicial e de erro do site estático.
+
+Para publicar pela máquina local (Azure CLI logado na assinatura do projeto), com os mesmos
+passos sobre o que está commitado:
+
+```bash
+bash publicar.sh
 ```
 
----
+## 7. Rotas
 
-## 🔐 Segurança
+| Rota | Tela | Acesso |
+|---|---|---|
+| `/` | página inicial, com o assistente virtual | público |
+| `/login` | login | público |
+| `/cadastro` | cadastro de empresa (cria o primeiro gestor) | público |
+| `/dashboard` | visão geral do veículo: leitura atual, histórico, calor na rota | logado |
+| `/alertas` | leituras fora da faixa, agrupadas em ocorrências | logado |
+| `/relatorios` | resumo por período e exportação CSV | logado |
+| `/veiculos` | frota, situação de cada carga, etiqueta QR; cadastro só para gestor | logado |
+| `/sensores` | situação dos sensores; conexão pelo cabo USB e registro manual só para gestor | logado |
+| `/viagens` | viagens e condição da carga em cada trajeto | logado |
+| `/configuracoes` | conta, troca de senha, faixas, sensores; usuários só para gestor | logado |
+| `/usuarios`, `/auditoria`, `/cadastro-usuario`, `/logistica` | telas demonstrativas (dados de exemplo) | público |
+| `/monitoramento` | leitura do canal público do ThingSpeak | público |
 
-Credenciais privadas não devem ser armazenadas no front-end.
+Rota logada sem sessão vai para `/login`. Rota desconhecida volta para `/`.
 
-O dashboard utiliza somente informações necessárias para leitura dos dados públicos.
+**URLs antigas.** O build gera uma cópia de `index.html` para cada página do site antigo
+(`dashboard.html`, `login.html`, `alertas.html` e as demais de `src/rotas.js`). Assim o Azure
+responde 200 e o React Router redireciona, mantendo a query string:
 
-Chaves da API de gravação, senhas Wi-Fi e outras credenciais do dispositivo Edge **não devem ser adicionadas a este repositório**.
+| URL antiga | Vai para |
+|---|---|
+| `/index.html` | `/` |
+| `/login.html` | `/login` |
+| `/dashboard.html?veiculo=VAN-01` | `/dashboard?veiculo=VAN-01` |
+| `/<pagina>.html` | `/<pagina>` |
 
-No firmware do ESP32, essas informações devem permanecer em arquivo separado e ignorado pelo Git.
+**Etiqueta QR do veículo.** A etiqueta impressa em Veículos aponta para
+`<origem do site>/dashboard.html?veiculo=<id>`. O formato antigo foi mantido de propósito, para
+que as etiquetas já coladas nos veículos continuem abrindo o Dashboard do veículo certo.
 
----
+## 8. Assistente virtual
 
-## 📱 PWA
+A página inicial tem um assistente com botão flutuante, perguntas rápidas e campo livre.
 
-O ColdTrack Control está sendo desenvolvido como uma **Progressive Web App**.
+- **Campo livre:** chat com Azure OpenAI pela rota pública `POST /chat` da API
+  (`src/lib/chat.js`). A resposta aparece como texto, com a linha "Fontes:" dos documentos do
+  projeto usados; as últimas 6 mensagens da conversa vão como histórico. Pergunta fora do
+  assunto é recusada com a indicação do WhatsApp.
+- **Plano B:** se a rota falhar (sem rede, 503, outro erro ou 15 s sem resposta), a pergunta é
+  respondida pela base local de palavras-chave (`src/components/ChatWidget/respostas.js`), e o
+  chat nunca fica sem resposta. Muitas perguntas seguidas (429) mostram o aviso da API.
+- **Perguntas rápidas:** respondem na hora pela base local, sem chamar a rota.
 
-A estrutura inclui:
+Quando a resposta não resolve, o visitante pode falar com o desenvolvedor pelo WhatsApp
+(mensagem pré-preenchida com a última pergunta) e avaliar o atendimento de 1 a 5 estrelas, com
+comentário opcional.
 
-```text
-manifest.json
-sw.js
+As avaliações ficam só no navegador (`localStorage`, chave `coldtrack_chat_avaliacoes_v1`), no
+formato abaixo; ainda não há envio para um servidor.
+
+```json
+{ "nota": 5, "resolvida": true, "comentario": "Atendimento excelente!", "data": "2026-11-04T17:00:00.000Z" }
 ```
 
-Isso permitirá que, após publicação em ambiente HTTPS compatível, a aplicação possa ser utilizada como uma experiência semelhante a um aplicativo em dispositivos compatíveis.
+## 9. Segurança e limitações
 
----
+- Autenticação na API com token de 8 horas; a sessão fica em `localStorage` (`coldtrack.sessao`)
+  e é descartada quando vence ou quando a API responde 401. As permissões valem na API; o
+  Front-End só esconde o que o perfil não pode usar.
+- Mensagens do chat e dados da API são renderizados como texto pelo React; o lint bloqueia
+  `innerHTML` e `dangerouslySetInnerHTML`.
+- Usuários, Auditoria, Cadastro de usuário e Gestão Logística continuam demonstrativos, com
+  dados de exemplo e sem persistência.
+- As avaliações do chat ficam no navegador de quem avaliou.
 
-## 🔮 Próximas Etapas
+## 10. Contribuição
 
-O roadmap do ColdTrack Control inclui:
+Fluxo de branches, convenção de commits e como adicionar uma tela: [`CONTRIBUTING.md`](CONTRIBUTING.md).
+Contrato técnico: [`docs/ARQUITETURA.md`](docs/ARQUITETURA.md).
 
-- 📈 gráficos históricos de temperatura e umidade;
-- 🚚 cadastro e monitoramento de veículos;
-- 📦 cadastro de cargas;
-- 🗺️ origem e destino das viagens;
-- ⚠️ central de alertas;
-- 📑 relatórios por viagem;
-- 🔔 notificações;
-- 🛰️ localização GPS;
-- 🔐 autenticação de usuários;
-- ☁️ evolução da infraestrutura Cloud;
-- 🤖 modelos preditivos para identificação de riscos à qualidade da carga.
+## 11. Equipe do Projeto Integrador
 
----
-
-## 🌱 Aplicação no Agronegócio
-
-O projeto foi concebido considerando o ecossistema do agronegócio do **Vale do São Francisco**, especialmente as regiões de **Petrolina/PE e Juazeiro/BA**.
-
-Uma possível aplicação é o acompanhamento das condições ambientais durante o transporte de produtos agrícolas sensíveis, contribuindo para rastreabilidade e monitoramento da cadeia fria.
-
----
-
-## 👥 Equipe
-
-**Projeto Integrador – 4º Período**
-
-- Enzo Antônio
+- Antonio Henzo
 - Everson
 - Emerson Luiz
 - Gabriel Eduardo
-- José Allamberg
+- José Alanberg
 - Marcelo Barbosa
 
----
+O desenvolvimento envolve hardware, IoT, Front-End, Back-End, integração, documentação e testes.
 
-## ⚠️ Status
+## 12. Referências técnicas
 
-O ColdTrack Edge e o ColdTrack Control encontram-se em fase de **protótipo acadêmico / prova de conceito**.
-
-O sistema atual não deve ser considerado um equipamento industrial certificado.
-
-Para utilização comercial seriam necessárias etapas adicionais de engenharia, calibração, validação, segurança, conectividade e atendimento aos requisitos técnicos e regulatórios aplicáveis.
-
----
-
-## 📄 Licença
-
-Projeto desenvolvido para fins acadêmicos no **Projeto Integrador – 4º Período – 2026**.
+- [React](https://react.dev/) e [Vite](https://vite.dev/)
+- [MDN Web Docs](https://developer.mozilla.org/)
+- [Playwright](https://playwright.dev/)
+- [Azure Storage: site estático](https://learn.microsoft.com/azure/storage/blobs/storage-blob-static-website)
+- [ThingSpeak](https://thingspeak.mathworks.com/)
+- [Open-Meteo](https://open-meteo.com/)
+- [Documentação do ESP32 (Espressif)](https://docs.espressif.com/)
 
 ---
 
-# ❄️ ColdTrack
-
-> **Da origem ao destino, sua carga monitorada.**
+ColdTrack Control, Projeto Integrador, 2026.

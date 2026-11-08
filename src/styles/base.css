@@ -1,0 +1,23 @@
+/* Reset mínimo global. Todo o resto do visual vem das famílias em
+   src/styles/<familia>/, escopadas por .escopo-<familia>. */
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+/* Raiz de página: <div className="escopo-<familia> raiz-pagina">. Ocupa a tela
+   toda, como o antigo body (o fundo e a fonte vêm da regra body da família). */
+.raiz-pagina {
+  min-height: 100vh;
+}
