@@ -81,9 +81,42 @@ function paginasLegadas() {
 }
 
 
+// CSP e referrer só no build: o site estático (Azure Storage) não manda
+// cabeçalhos, então vão em <meta>. No dev (vite) ficam de fora, porque o HMR
+// usa script inline e websocket que a política bloquearia.
+export const CSP = [
+  "default-src 'self'",
+  "script-src 'self'",
+  "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+  "font-src 'self' https://fonts.gstatic.com",
+  "img-src 'self' data: blob:",
+  "connect-src 'self' https://func-coldtrack-7319.azurewebsites.net https://api.open-meteo.com https://api.thingspeak.com",
+  "worker-src 'self'",
+  "manifest-src 'self'",
+  "base-uri 'self'",
+  "form-action 'self'",
+  "object-src 'none'"
+].join("; ");
+
+function politicaDeSeguranca() {
+
+  return {
+    name: "coldtrack-csp",
+    apply: "build",
+    transformIndexHtml() {
+      return [
+        { tag: "meta", attrs: { "http-equiv": "Content-Security-Policy", content: CSP }, injectTo: "head-prepend" },
+        { tag: "meta", attrs: { name: "referrer", content: "strict-origin-when-cross-origin" }, injectTo: "head-prepend" }
+      ];
+    }
+  };
+
+}
+
+
 export default defineConfig({
   base: "/",
-  plugins: [react(), paginasLegadas()],
+  plugins: [react(), politicaDeSeguranca(), paginasLegadas()],
   css: {
     postcss: {
       plugins: escoposCss()
