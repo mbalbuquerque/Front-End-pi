@@ -24,6 +24,7 @@
   "homepage": "https://github.com/mbalbuquerque/Front-End-pi#readme",
   "license": "ISC",
   "dependencies": {
+    "qrcode-generator": "^1.4.4",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.28.0"
