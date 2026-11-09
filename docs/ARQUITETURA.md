@@ -4,7 +4,8 @@ Contrato técnico do painel: estrutura, CSS, módulos compartilhados e regras de
 Leia antes de criar ou alterar uma tela. O passo a passo de trabalho (branches, commits,
 verificações) está em [`CONTRIBUTING.md`](../CONTRIBUTING.md). Visão geral do projeto e links: [`README.md`](../README.md).
 A API, o firmware e a infraestrutura estão no repositório
-[projeto-integrador-4-periodo](https://github.com/mbalbuquerque/projeto-integrador-4-periodo).
+[projeto-integrador-4-periodo](https://github.com/mbalbuquerque/projeto-integrador-4-periodo);
+as rotas da API estão documentadas no [Swagger](https://func-coldtrack-7319.azurewebsites.net/api/docs).
 Telas de referência: **`src/pages/Login/Login.jsx`** (pública) e **`src/pages/Alertas/Alertas.jsx`** (logada, com polling).
 
 Stack: React 18 + Vite 5 + React Router 6, JavaScript (sem TypeScript). Node 20+.

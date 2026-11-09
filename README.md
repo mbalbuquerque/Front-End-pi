@@ -12,7 +12,8 @@ climática ficam no repositório do back-end:
 | | endereço |
 |---|---|
 | Painel publicado | <https://stcoldtrackweb7319.z15.web.core.windows.net> |
-| API (base) | `https://func-coldtrack-7319.azurewebsites.net/api`; exemplo público: <https://func-coldtrack-7319.azurewebsites.net/api/perfis> |
+| API (documentação interativa, Swagger) | <https://func-coldtrack-7319.azurewebsites.net/api/docs> |
+| API (base) | `https://func-coldtrack-7319.azurewebsites.net/api` |
 | Repositório do painel (este) | <https://github.com/mbalbuquerque/Front-End-pi> |
 | Repositório do back-end e do firmware | <https://github.com/mbalbuquerque/projeto-integrador-4-periodo> |
 | Simulação do firmware no Wokwi | <https://wokwi.com/projects/475352296477619201> |
@@ -52,9 +53,9 @@ ColdTrack Control (este repositório): React + Vite, site estático no Azure Sto
 ```
 
 Perfis de usuário: **gestor** (consulta e cadastra) e **operador** (consulta). A API é a única
-fonte dos dados do painel; a especificação das rotas está em
-[`docs/api.md`](https://github.com/mbalbuquerque/projeto-integrador-4-periodo/blob/main/docs/api.md)
-do back-end.
+fonte dos dados do painel; a especificação das rotas está no
+[Swagger da API](https://func-coldtrack-7319.azurewebsites.net/api/docs) (OpenAPI 3.0) e, em texto, em
+[`docs/api.md`](https://github.com/mbalbuquerque/projeto-integrador-4-periodo/blob/main/docs/api.md) do back-end.
 
 A tela **Monitoramento** é uma demonstração separada que lê o canal público do ThingSpeak
 (`3515173`: field1 temperatura, field2 umidade, field3 RSSI); o ThingSpeak não faz parte do
@@ -118,7 +119,8 @@ npm ci
 npm run dev                # http://localhost:5173
 ```
 
-A API usada por padrão é a publicada (`https://func-coldtrack-7319.azurewebsites.net/api`).
+A API usada por padrão é a publicada (`https://func-coldtrack-7319.azurewebsites.net/api`;
+rotas documentadas no [Swagger](https://func-coldtrack-7319.azurewebsites.net/api/docs)).
 Para apontar para outra (por exemplo, a Function rodando localmente), copie `.env.example`
 para `.env.local` e ajuste:
 
@@ -314,7 +316,8 @@ Limitações:
 | [Back-end: README](https://github.com/mbalbuquerque/projeto-integrador-4-periodo#readme) | API, firmware, infraestrutura |
 | [Back-end: `docs/funcionalidades.md`](https://github.com/mbalbuquerque/projeto-integrador-4-periodo/blob/main/docs/funcionalidades.md) | mapeamento de funcionalidades de toda a plataforma |
 | [Back-end: `docs/apresentacao.md`](https://github.com/mbalbuquerque/projeto-integrador-4-periodo/blob/main/docs/apresentacao.md) | apresentação do projeto em slides, com roteiro da demonstração |
-| [Back-end: `docs/api.md`](https://github.com/mbalbuquerque/projeto-integrador-4-periodo/blob/main/docs/api.md) | referência das rotas |
+| [Swagger da API](https://func-coldtrack-7319.azurewebsites.net/api/docs) | documentação interativa das rotas (OpenAPI 3.0) |
+| [Back-end: `docs/api.md`](https://github.com/mbalbuquerque/projeto-integrador-4-periodo/blob/main/docs/api.md) | referência das rotas em texto, com as regras em detalhe |
 | [Back-end: `docs/seguranca.md`](https://github.com/mbalbuquerque/projeto-integrador-4-periodo/blob/main/docs/seguranca.md) | análise de segurança |
 
 ## 11. Equipe do Projeto Integrador
