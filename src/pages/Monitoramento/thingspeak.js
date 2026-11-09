@@ -1,7 +1,7 @@
 // Consulta ao canal público ThingSpeak e regras de leitura (sem React, testável).
 // Fonte única de dados; não associa o dispositivo a cargas.
 
-export const CHANNEL_ID = "3496439";
+export const CHANNEL_ID = "3515173";
 
 export const API_URL = `https://api.thingspeak.com/channels/${CHANNEL_ID}/feeds.json?results=20`;
 

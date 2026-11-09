@@ -57,7 +57,7 @@ fonte dos dados do painel; a especificação das rotas está em
 do back-end.
 
 A tela **Monitoramento** é uma demonstração separada que lê o canal público do ThingSpeak
-(`3496439`: field1 temperatura, field2 umidade, field3 RSSI); o ThingSpeak não faz parte do
+(`3515173`: field1 temperatura, field2 umidade, field3 RSSI); o ThingSpeak não faz parte do
 caminho dos dados do painel. O **Dashboard** usa a previsão da Open-Meteo para estimar o calor
 na rota Petrolina a Suape.
 
@@ -312,6 +312,8 @@ Limitações:
 | [`coldtrack-qa/README.md`](coldtrack-qa/README.md) | suíte e2e: casos, apoio e como rodar |
 | [`coldtrack-qa/real/README.md`](coldtrack-qa/real/README.md) | suíte e2e real contra produção (regras de segurança) |
 | [Back-end: README](https://github.com/mbalbuquerque/projeto-integrador-4-periodo#readme) | API, firmware, infraestrutura |
+| [Back-end: `docs/funcionalidades.md`](https://github.com/mbalbuquerque/projeto-integrador-4-periodo/blob/main/docs/funcionalidades.md) | mapeamento de funcionalidades de toda a plataforma |
+| [Back-end: `docs/apresentacao.md`](https://github.com/mbalbuquerque/projeto-integrador-4-periodo/blob/main/docs/apresentacao.md) | apresentação do projeto em slides, com roteiro da demonstração |
 | [Back-end: `docs/api.md`](https://github.com/mbalbuquerque/projeto-integrador-4-periodo/blob/main/docs/api.md) | referência das rotas |
 | [Back-end: `docs/seguranca.md`](https://github.com/mbalbuquerque/projeto-integrador-4-periodo/blob/main/docs/seguranca.md) | análise de segurança |
 

@@ -42,7 +42,7 @@ test.describe("QA - Monitoramento ColdTrack", () => {
 
       await expect(
         page.locator("#origemDados")
-      ).toContainText("canal 3496439");
+      ).toContainText("canal 3515173");
     }
   );
 
