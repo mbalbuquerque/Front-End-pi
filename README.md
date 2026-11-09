@@ -312,6 +312,8 @@ Limitações:
 | [`coldtrack-qa/README.md`](coldtrack-qa/README.md) | suíte e2e: casos, apoio e como rodar |
 | [`coldtrack-qa/real/README.md`](coldtrack-qa/real/README.md) | suíte e2e real contra produção (regras de segurança) |
 | [Back-end: README](https://github.com/mbalbuquerque/projeto-integrador-4-periodo#readme) | API, firmware, infraestrutura |
+| [Back-end: `docs/funcionalidades.md`](https://github.com/mbalbuquerque/projeto-integrador-4-periodo/blob/main/docs/funcionalidades.md) | mapeamento de funcionalidades de toda a plataforma |
+| [Back-end: `docs/apresentacao.md`](https://github.com/mbalbuquerque/projeto-integrador-4-periodo/blob/main/docs/apresentacao.md) | apresentação do projeto em slides, com roteiro da demonstração |
 | [Back-end: `docs/api.md`](https://github.com/mbalbuquerque/projeto-integrador-4-periodo/blob/main/docs/api.md) | referência das rotas |
 | [Back-end: `docs/seguranca.md`](https://github.com/mbalbuquerque/projeto-integrador-4-periodo/blob/main/docs/seguranca.md) | análise de segurança |
 
