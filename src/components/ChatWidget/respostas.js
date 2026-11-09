@@ -138,7 +138,7 @@ export const CONHECIMENTO = [
   },
   {
     termos: ["thingspeak", "api", "nuvem", "azure"],
-    resposta: "As medições vão do sensor para a API do ColdTrack no Azure (Azure Functions), que grava as leituras no Cosmos DB; o painel lê tudo dessa API. A tela Monitoramento é uma demonstração à parte, que lê o canal público 3496439 do ThingSpeak."
+    resposta: "As medições vão do sensor para a API do ColdTrack no Azure (Azure Functions), que grava as leituras no Cosmos DB; o painel lê tudo dessa API. A tela Monitoramento é uma demonstração à parte, que lê o canal público 3515173 do ThingSpeak."
   },
   {
     termos: ["monitoramento", "monitorar", "leituras", "historico"],

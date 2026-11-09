@@ -57,7 +57,7 @@ fonte dos dados do painel; a especificação das rotas está em
 do back-end.
 
 A tela **Monitoramento** é uma demonstração separada que lê o canal público do ThingSpeak
-(`3496439`: field1 temperatura, field2 umidade, field3 RSSI); o ThingSpeak não faz parte do
+(`3515173`: field1 temperatura, field2 umidade, field3 RSSI); o ThingSpeak não faz parte do
 caminho dos dados do painel. O **Dashboard** usa a previsão da Open-Meteo para estimar o calor
 na rota Petrolina a Suape.
 
