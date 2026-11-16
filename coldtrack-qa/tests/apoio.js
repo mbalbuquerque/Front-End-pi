@@ -48,8 +48,8 @@ const PERFIS = [
 ];
 
 const DISPOSITIVOS = [
-  { id: "esp32-teste-01", descricao: "Baú da van" },
-  { id: "esp32-teste-02", descricao: "Reserva" }
+  { id: "esp32-teste-01", descricao: "Baú da van", online: true, ultimoContato: "2026-11-16T19:40:12+00:00" },
+  { id: "esp32-teste-02", descricao: "Reserva", online: false, ultimoContato: null }
 ];
 
 const VEICULOS = [
