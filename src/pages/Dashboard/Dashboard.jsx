@@ -13,6 +13,7 @@ import { descreverNormal } from "../../lib/faixas.js";
 import { STATUS_INFO, formatarTemp } from "../../lib/formatar.js";
 import { buscarLeituras, resumir } from "../../lib/leituras.js";
 import RiscoRota from "./RiscoRota.jsx";
+import RiscoSaida from "./RiscoSaida.jsx";
 import {
   TEXTOS_STATUS,
   contatoDaLeitura,
@@ -242,6 +243,8 @@ export default function Dashboard() {
         </article>
 
       </section>
+
+      <RiscoSaida />
 
       <RiscoRota />
 
