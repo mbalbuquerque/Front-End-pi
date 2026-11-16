@@ -844,6 +844,25 @@ a.botao {
   border: 2px solid var(--blue-text);
 }
 
+/* Selo Online/Offline vindo da API: texto sempre escrito, contraste >= 4.5:1. */
+.selo-conexao {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.selo-conexao.online {
+  color: #065f38;
+  background: #dff7eb;
+}
+
+.selo-conexao.offline {
+  color: #3f4a54;
+  background: #e6ebef;
+}
+
 /* Texto de apoio embaixo do selo, na mesma célula. */
 .linha-apoio {
   display: block;

@@ -6,7 +6,9 @@ import {
   descreverSinal,
   mensagemDeErro,
   situacaoDaPlaca,
+  seloConexao,
   situacaoDoSensor,
+  textoUltimoContato,
   trechoSecrets
 } from "./sensores.js";
 
@@ -83,4 +85,44 @@ describe("mensagemDeErro", () => {
 
 it("trechoSecrets monta as linhas do secrets.h", () => {
   expect(trechoSecrets("coldtrack-02", "abc")).toBe('#define DEVICE_ID  "coldtrack-02"\n#define DEVICE_KEY "abc"');
+});
+
+
+describe("seloConexao", () => {
+
+  it("online true e false viram selo com texto", () => {
+    expect(seloConexao({ online: true })).toEqual({ classe: "online", texto: "Online" });
+    expect(seloConexao({ online: false })).toEqual({ classe: "offline", texto: "Offline" });
+  });
+
+  it("API antiga sem o campo: null, sem quebrar", () => {
+    expect(seloConexao({ id: "x" })).toBeNull();
+    expect(seloConexao(undefined)).toBeNull();
+  });
+
+});
+
+
+describe("textoUltimoContato", () => {
+
+  it("formata dd/mm HH:MM no horário local", () => {
+    const iso = "2026-11-16T19:40:12+00:00";
+    const local = new Date(iso);
+    const dd = String(local.getDate()).padStart(2, "0");
+    const mm = String(local.getMonth() + 1).padStart(2, "0");
+    const hh = String(local.getHours()).padStart(2, "0");
+    const mi = String(local.getMinutes()).padStart(2, "0");
+    expect(textoUltimoContato({ ultimoContato: iso })).toBe(`Último contato: ${dd}/${mm} ${hh}:${mi}`);
+  });
+
+  it("null ou data inválida: Sem contato", () => {
+    expect(textoUltimoContato({ ultimoContato: null })).toBe("Sem contato");
+    expect(textoUltimoContato({ ultimoContato: "lixo" })).toBe("Sem contato");
+  });
+
+  it("campo ausente (API antiga): null", () => {
+    expect(textoUltimoContato({ id: "x" })).toBeNull();
+    expect(textoUltimoContato(undefined)).toBeNull();
+  });
+
 });
