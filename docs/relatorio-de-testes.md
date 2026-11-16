@@ -201,6 +201,20 @@ O piso fica em `test.coverage.thresholds` de `vite.config.js` e o workflow `test
 abaixo do valor medido (não é meta): sobe a cada sprint, rumo a 60% de linhas. As telas restantes
 (Dashboard, Sensores, Veículos, Viagens, Relatórios e demais) ainda são cobertas só pelo e2e.
 
+## Estado offline (issue #13)
+
+| Camada | Caso | Resultado |
+|---|---|---|
+| Unitário `conectividade.test.js` | hora da última recepção, `useOnline` com eventos `online`/`offline` | 4 casos |
+| Unitário `FaixaOffline.test.jsx` | online sem faixa; offline com hora; offline sem dado (não inventa hora); some ao voltar | 4 casos |
+| Unitário `api.test.js` | `api()` registra a recepção só quando a resposta chega | 2 casos |
+| E2E `offline.spec.js`, QA-OFFLINE | `context.setOffline(true)`: faixa com `HH:MM`, indicador "Sem internet", texto >= 15 px, peso >= 600, some ao voltar; faixa presente nas 7 telas logadas | 9 casos, 18 execuções (2 projetos) |
+
+Verificação manual do service worker (build servido por `vite preview`, Chromium, `setOffline`):
+depois da primeira visita o cache `coldtrack-v13` guarda 36 arquivos (shell, JS/CSS e pedaços de tela)
+e as rotas `/login` e `/cadastro` abrem sem internet. O e2e automático roda com o service worker
+bloqueado (`serviceWorkers: "block"`, para a API simulada funcionar), então esta parte não está no CI.
+
 ## Defeito encontrado e corrigido
 
 | Onde | Problema | Correção |

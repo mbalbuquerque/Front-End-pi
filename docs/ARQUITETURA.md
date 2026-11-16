@@ -36,7 +36,7 @@ src/
   lib/                     lógica sem React (API, sessão, leituras, faixas, formatação)
   hooks/                   useSessao, usePolling, useVeiculoEscolhido, useTitulo,
                            useMovimentoReduzido
-  components/              PainelLayout, RequireAuth, Estado, StatusSelo, FiltroPeriodo,
+  components/              PainelLayout, FaixaOffline, RequireAuth, Estado, StatusSelo, FiltroPeriodo,
                            SeletorVeiculo, GraficoTemperatura, ChatWidget/, AssistentePainel/
   pages/<Nome>/<Nome>.jsx  uma pasta por tela (regras puras em .js e testes ao lado)
   styles/base.css          reset mínimo global
@@ -122,6 +122,9 @@ Regras:
 
 Importe sempre com extensão: `import { api } from "../../lib/api.js"`.
 
+**`conectividade.js`** — `registrarRecepcao()` (chamada por `api()` a cada resposta), `useOnline()` e
+`useUltimaRecepcao()` (`navigator.onLine` + eventos `online`/`offline`), `esquecerRecepcao()` (no logout).
+
 **`config.js`** — `API_URL` (de `VITE_API_URL`, padrão a Function do Azure), `HISTORY_SIZE = 60`, `UPDATE_INTERVAL = 20000`.
 
 **`api.js`**
@@ -195,6 +198,11 @@ primeiro), `horarioDe(leitura) -> Date`, `resumir(leituras) -> { total, media, m
 
 ## 6. Componentes
 
+- **`<FaixaOffline />`** — dentro do `<PainelLayout>`, portanto em toda tela logada. Sem internet
+  mostra, fixa no topo (`position: sticky`), "Sem conexão — exibindo os últimos dados recebidos às
+  HH:MM" (ou "nenhum dado foi recebido nesta sessão") e some ao voltar a conexão. Com a faixa, o
+  indicador do topo passa a "Sem internet". Offline e API são coisas diferentes: a API fora do ar
+  com internet continua no "Sem conexão com Azure".
 - **`<PainelLayout titulo subtitulo tituloDocumento? conexao extraTopo dialogos>`** — menu
   (NavLink com `active` + `aria-current="page"`), usuário, `#botaoSair`, topo com `<h1>`/`<p>`,
   `extraTopo` antes do indicador, `#fonteDados`, rodapé. `conexao`: `null` "Conectando...",
@@ -314,5 +322,12 @@ export default function Relatorios() {
   - confirma `index.html` como documento inicial e de erro (404) do site estático.
 - Etiqueta QR do veículo: `${window.location.origin}/dashboard.html?veiculo=<id>` (formato das
   etiquetas já impressas; a cópia `dashboard.html` responde 200 e redireciona).
-- `public/sw.js`: suba `CACHE_NAME` (`coldtrack-v12` → `v13`...) quando mudar o service worker.
+- Offline (issue #13): o `sw.js` guarda na instalação o shell (`index.html`, `manifest.json`), os
+  JS/CSS com hash citados no `index.html` e os pedaços de tela citados no JS de entrada, e renova
+  tudo a cada visita (rede primeiro). Resultado: depois da primeira visita o app abre sem internet.
+  **Respostas da API nunca entram no cache** (o host `*.azurewebsites.net` passa direto): leitura,
+  token e dados de empresa não ficam em disco para outra sessão ler. Sem rede, a tela continua com
+  o que já estava carregada, sob a faixa que informa a hora desses dados; recarregar a página
+  offline abre o shell, mas as telas ficam sem dados (erro do Azure) até a conexão voltar.
+- `public/sw.js`: suba `CACHE_NAME` (`coldtrack-v13` → `v14`...) quando mudar o service worker.
   Ele só é registrado no build (`import.meta.env.PROD`).
