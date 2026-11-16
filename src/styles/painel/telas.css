@@ -1156,3 +1156,22 @@ a.botao {
   color: var(--blue-text);
   font-weight: 700;
 }
+
+
+/* FAIXA OFFLINE: navegador sem internet (sem animação; contraste branco sobre #8f1d1d ≈ 8:1) */
+
+.faixa-offline {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+
+  padding: 10px 20px;
+  margin-bottom: 14px;
+
+  background: #8f1d1d;
+  color: #ffffff;
+
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.4;
+}

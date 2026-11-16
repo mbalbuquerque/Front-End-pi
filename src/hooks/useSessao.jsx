@@ -3,6 +3,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { esquecerRecepcao } from "../lib/conectividade.js";
 import { definirAoExpirar, sairNoServidor } from "../lib/api.js";
 import { lerSessao, limparSessao, salvarSessao, usuarioAtual } from "../lib/sessao.js";
 
@@ -24,6 +25,7 @@ export function AuthProvider({ children }) {
   const sair = useCallback(() => {
     sairNoServidor(lerSessao()?.token);
     limparSessao();
+    esquecerRecepcao();
     setUsuario(null);
     navigate("/login");
   }, [navigate]);
