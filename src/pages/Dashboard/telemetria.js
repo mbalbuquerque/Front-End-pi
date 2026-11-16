@@ -5,6 +5,9 @@ import { FAIXA_PADRAO } from "../../lib/faixas.js";
 // "Tempo real": últimos 30 min a partir da leitura mais recente.
 export const JANELA_HISTORICO_MS = 30 * 60 * 1000;
 
+// Sem leitura nova há mais que isso (6 ciclos de 20 s), o valor na tela deixa de ser "atual".
+export const LIMITE_SEM_DADOS_MS = 2 * 60 * 1000;
+
 export const TEXTOS_STATUS = {
   NORMAL: "Temperatura dentro da faixa da carga",
   ATENCAO: "Temperatura em atenção",
@@ -112,5 +115,22 @@ export function leiturasDoHistorico(ordenadas, faixa) {
 
     })
     .filter(l => !Number.isNaN(l.temperatura));
+
+}
+
+
+// Diz se o valor mostrado ainda é atual. `ultimaLeituraEm` é o horário da leitura mais
+// recente; `semConexao` vale quando a API não respondeu na última consulta.
+export function contatoDaLeitura(ultimaLeituraEm, agora = Date.now(), semConexao = false) {
+
+  const instante = ultimaLeituraEm ? new Date(ultimaLeituraEm).getTime() : NaN;
+  const temHorario = !Number.isNaN(instante);
+
+  return {
+    semDados: semConexao || (temHorario && agora - instante > LIMITE_SEM_DADOS_MS),
+    desde: temHorario
+      ? new Date(instante).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })
+      : null
+  };
 
 }

@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
+  LIMITE_SEM_DADOS_MS,
   classificarTemperatura,
+  contatoDaLeitura,
   leiturasDoHistorico,
   ordenarLeituras,
   resumoUltima,
@@ -85,6 +87,49 @@ describe("leiturasDoHistorico", () => {
       { temperatura: 30, medidoEm: "2026-11-08T12:40:00Z", status: "CRITICO" },
       { temperatura: 4, medidoEm: "2026-11-08T13:00:00Z", status: "NORMAL" }
     ]);
+
+  });
+
+});
+
+
+describe("contatoDaLeitura", () => {
+
+  const LEITURA = "2026-11-16T19:00:00Z";
+  const DEPOIS = ms => new Date(LEITURA).getTime() + ms;
+
+  it("leitura recente continua sendo o valor atual", () => {
+
+    expect(contatoDaLeitura(LEITURA, DEPOIS(20_000)).semDados).toBe(false);
+    expect(contatoDaLeitura(LEITURA, DEPOIS(LIMITE_SEM_DADOS_MS)).semDados).toBe(false);
+
+  });
+
+  it("passou do limite: sem dados, com o horário da última leitura", () => {
+
+    const contato = contatoDaLeitura(LEITURA, DEPOIS(LIMITE_SEM_DADOS_MS + 1));
+
+    expect(contato.semDados).toBe(true);
+    expect(contato.desde).toMatch(/^\d{2}:\d{2}$/);
+
+  });
+
+  it("API fora do ar marca sem dados mesmo com leitura recente", () => {
+
+    expect(contatoDaLeitura(LEITURA, DEPOIS(5_000), true).semDados).toBe(true);
+
+  });
+
+  it("sem leitura nenhuma não há horário", () => {
+
+    expect(contatoDaLeitura(null, Date.now())).toEqual({ semDados: false, desde: null });
+    expect(contatoDaLeitura(null, Date.now(), true)).toEqual({ semDados: true, desde: null });
+
+  });
+
+  it("horário inválido não quebra", () => {
+
+    expect(contatoDaLeitura("isto-nao-e-data", Date.now())).toEqual({ semDados: false, desde: null });
 
   });
 
