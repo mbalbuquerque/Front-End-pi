@@ -1,0 +1,46 @@
+# ColdTrack Control
+
+Web dashboard for **ColdTrack Edge**, an IoT cold chain monitoring integrative project.
+ESP32-C3 sensors installed inside vehicle cargo containers send temperature, humidity, and Wi-Fi signal data to an Azure API; the dashboard (React + Vite) displays the status of each cargo load, out-of-range alerts based on the merchandise profile, reports, trips, and predicted heat risk along the route.
+
+This is the **dashboard (front-end)** repository. The API, firmware, infrastructure, and climate analysis are located in the back-end repository:
+[mbalbuquerque/projeto-integrador-4-periodo](https://github.com/mbalbuquerque/projeto-integrador-4-periodo).
+
+| | address |
+|---|---|
+| Deployed dashboard | <https://stcoldtrackweb7319.z15.web.core.windows.net> |
+| API (interactive documentation, Swagger) | <https://func-coldtrack-7319.azurewebsites.net/api/docs> |
+| API (base) | `https://func-coldtrack-7319.azurewebsites.net/api` |
+| Dashboard repository (this one) | <https://github.com/mbalbuquerque/Front-End-pi> |
+| Back-end and firmware repository | <https://github.com/mbalbuquerque/projeto-integrador-4-periodo> |
+| Firmware simulation on Wokwi | <https://wokwi.com/projects/475352296477619201> |
+
+## 1. About the Project
+
+ColdTrack Control was developed as part of the Integrative Project to track environmental conditions during the transport and storage of refrigerated goods. The solution integrates the Internet of Things, web development, HTTP communication, environmental monitoring, and logistics management.
+
+Objectives:
+
+- monitor temperature and relative air humidity for each vehicle;
+- classify each reading according to the cargo profile range (Normal, Warning, Critical);
+- display Wi-Fi connectivity (RSSI) and the status of each sensor;
+- record trips and display cargo conditions along each route;
+- generate period-based reports with CSV export;
+- separate permissions between managers and logistics operators;
+- provide automated support to visitors, with escalation to the developer;
+- maintain a responsive, automatically tested interface.
+
+### Architecture
+
+```text
+ESP32-C3 + DHT11/DHT22 (in cargo container)
+        |  Wi-Fi, HTTPS + JSON, per-device key
+        v
+ColdTrack API (Azure Functions, Python)  <--> Azure OpenAI (gpt-4.1-mini, RAG)
+        |  writes and queries                   public chat and dashboard assistant
+        v
+Azure Cosmos DB (empresas, usuarios, veiculos, sensores, viagens, leituras)
+        ^
+        |  JSON, session JWT token (8 h)
+        |
+ColdTrack Control (this repository): React + Vite, static site on Azure Storage
