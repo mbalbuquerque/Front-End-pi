@@ -13,7 +13,13 @@ import { descreverNormal } from "../../lib/faixas.js";
 import { STATUS_INFO, formatarTemp } from "../../lib/formatar.js";
 import { buscarLeituras, resumir } from "../../lib/leituras.js";
 import RiscoRota from "./RiscoRota.jsx";
-import { TEXTOS_STATUS, leiturasDoHistorico, ordenarLeituras, resumoUltima } from "./telemetria.js";
+import {
+  TEXTOS_STATUS,
+  contatoDaLeitura,
+  leiturasDoHistorico,
+  ordenarLeituras,
+  resumoUltima
+} from "./telemetria.js";
 
 
 export default function Dashboard() {
@@ -23,6 +29,9 @@ export default function Dashboard() {
 
   // Valores da leitura mais recente (null = "Aguardando dados").
   const [ultima, setUltima] = useState(null);
+
+  // Horário da leitura mais recente, para avisar quando o valor deixa de ser atual.
+  const [ultimaEm, setUltimaEm] = useState(null);
 
   // Conteúdo de #historico:
   // { tipo: "carregando" | "sem-veiculo" | "sem-leituras" | "erro" | "grafico", ... }
@@ -50,6 +59,7 @@ export default function Dashboard() {
         escolhaDaChave.current = { chave, escolha: atual };
         setEscolha(atual);
         setUltima(null);
+        setUltimaEm(null);
         setHistorico({ tipo: "carregando" });
         setComGrafico(false);
 
@@ -77,6 +87,7 @@ export default function Dashboard() {
       const ordenadas = ordenarLeituras(leituras);
 
       setUltima(resumoUltima(ordenadas[ordenadas.length - 1], atual.faixa));
+      setUltimaEm(ordenadas[ordenadas.length - 1].criadoEm);
 
       const doGrafico = leiturasDoHistorico(ordenadas, atual.faixa);
 
@@ -103,6 +114,7 @@ export default function Dashboard() {
 
   const veiculo = escolha?.veiculo;
   const info = ultima ? STATUS_INFO[ultima.situacao] || STATUS_INFO.NORMAL : null;
+  const contato = contatoDaLeitura(ultimaEm, Date.now(), conexao === false);
 
   return (
     <PainelLayout
@@ -114,6 +126,17 @@ export default function Dashboard() {
         <SeletorVeiculo veiculos={escolha.veiculos} veiculo={escolha.veiculo} aoTrocar={trocarVeiculo} />
       )}
     >
+
+      {contato.semDados && (
+        <div id="semDadosAviso" className="alert" role="status">
+          <strong>{contato.desde ? `Sem dados desde ${contato.desde}` : "Sem conexão com a API"}</strong>{" "}
+          <p>
+            {ultima
+              ? "Os valores abaixo são os últimos recebidos, não os atuais."
+              : "Não foi possível consultar as leituras agora."}
+          </p>
+        </div>
+      )}
 
       <section className="cards">
 
