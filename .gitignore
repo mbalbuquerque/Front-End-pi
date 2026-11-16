@@ -10,3 +10,5 @@ __pycache__/
 playwright-report-real/
 test-results-real/
 coldtrack-qa/real/.auth/
+
+coverage/
