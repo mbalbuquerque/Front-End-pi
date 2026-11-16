@@ -124,6 +124,16 @@ export default defineConfig({
   },
   test: {
     environment: "jsdom",
-    include: ["src/**/*.test.{js,jsx}"]
+    include: ["src/**/*.test.{js,jsx}"],
+    setupFiles: ["./src/testes/setup.js"],
+    coverage: {
+      provider: "v8",
+      include: ["src/**/*.{js,jsx}"],
+      exclude: ["src/**/*.test.{js,jsx}", "src/testes/**", "src/main.jsx"],
+      reporter: ["text-summary", "text", "json-summary"],
+      // Piso do CI: logo abaixo do valor medido (29,72% de linhas, 91,72% de ramos,
+      // 84,91% de funções em 16/11/2026). Sobe a cada sprint, rumo a 60% de linhas.
+      thresholds: { lines: 29, statements: 29, branches: 91, functions: 84 }
+    }
   }
 });

@@ -15,7 +15,7 @@
 | Suíte | Comando | Resultado |
 |---|---|---|
 | Lint | `npm run lint` | sem avisos |
-| Unitários | `npm test` | 158 passaram, 0 falharam (reexecutado em 08/11/2026 depois da revisão da documentação) |
+| Unitários | `npm test` | 158 passaram, 0 falharam (reexecutado em 08/11/2026 depois da revisão da documentação). Em 16/11/2026, com os testes de componente: 202 passaram (veja "Cobertura dos testes unitários") |
 | Build | `npm run build` | ok |
 | E2E simulado (API simulada, build local) | `npm run test:e2e` | 206 passaram, 0 falharam, 18 pulados (os casos de 390 px e de impressão rodam só no projeto desktop, de propósito). Na execução completa, QA-ASSIST-10 (390 px) falhou uma vez, com a máquina sob carga, e passou ao ser repetido sozinho |
 | E2E real (site publicado + API de produção) | `npm run test:e2e:real` | 57 passaram, 0 falharam, 0 pulados (site publicado no commit `4d51edd`, chat com Azure OpenAI incluído) |
@@ -178,6 +178,28 @@ Auditoria de dependências (`npm audit`): a produção tem 2 avisos moderados, e
 `react-router-dom` (6.30.6 é a última 6.x; a correção exige React Router 7, migração fora do
 escopo). Os demais são só de desenvolvimento (`vite`, `esbuild`, `vitest`, `tinypool`, `vite-node`,
 `@vitest/mocker`) e exigem salto de versão maior; não entram no site publicado.
+
+## Cobertura dos testes unitários
+
+Medida com `npm run test:cobertura` (Vitest 2.1.9 com `@vitest/coverage-v8`; testes de componente
+com `@testing-library/react` e jsdom), em 16/11/2026, sobre todo o código de `src/` (exceto
+arquivos de teste e `main.jsx`). 202 testes unitários passaram.
+
+| Métrica | Medido | Piso no CI |
+|---|---|---|
+| Linhas | 29,72% | 29% |
+| Instruções | 29,72% | 29% |
+| Ramos | 91,72% | 91% |
+| Funções | 84,91% | 84% |
+
+Antes desta etapa, o painel tinha 19,3% de linhas (`src/lib` em 97,5%; telas e componentes em 0%).
+Telas com teste de componente (API e sessão simuladas): Login (100% de linhas), Cadastro (100%),
+Configurações (100%) e Alertas (99,18%).
+
+O piso fica em `test.coverage.thresholds` de `vite.config.js` e o workflow `testes.yml` roda
+`npm run test:cobertura`, então o CI falha se a cobertura cair abaixo dele. O piso foi fixado logo
+abaixo do valor medido (não é meta): sobe a cada sprint, rumo a 60% de linhas. As telas restantes
+(Dashboard, Sensores, Veículos, Viagens, Relatórios e demais) ainda são cobertas só pelo e2e.
 
 ## Defeito encontrado e corrigido
 
