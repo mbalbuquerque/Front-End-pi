@@ -131,9 +131,9 @@ export default defineConfig({
       include: ["src/**/*.{js,jsx}"],
       exclude: ["src/**/*.test.{js,jsx}", "src/testes/**", "src/main.jsx"],
       reporter: ["text-summary", "text", "json-summary"],
-      // Piso do CI: logo abaixo do valor medido (29,72% de linhas, 91,72% de ramos,
-      // 84,91% de funções em 16/11/2026). Sobe a cada sprint, rumo a 60% de linhas.
-      thresholds: { lines: 29, statements: 29, branches: 91, functions: 84 }
+      // Piso do CI: logo abaixo do valor medido (81,70% de linhas, 93,87% de ramos,
+      // 97,75% de funções em 16/11/2026). Meta de 60% de linhas atingida; Home e ChatWidget ainda sem teste de componente.
+      thresholds: { lines: 81, statements: 81, branches: 93, functions: 97 }
     }
   }
 });
