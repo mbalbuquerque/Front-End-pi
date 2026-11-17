@@ -93,14 +93,11 @@ O CSS de cada família veio do site anterior (HTML + JS) e redefine `:root`, `*`
 | Família | Classe raiz | Arquivos | Import |
 |---|---|---|---|
 | shell | `escopo-shell` | `shell.css` (moldura: barra lateral, barra superior, navegação inferior, faixa offline) | `styles/shell/shell.css` (já feito no `PainelLayout`) |
-| painel | `escopo-painel` | `style.css`, `telas.css`, `assistente.css` (via `index.css`) | `styles/painel/index.css` (já feito no `PainelLayout`) |
+| painel | `escopo-painel` | `style.css`, `telas.css`, `assistente.css`, `alertas.css`, `sensores.css`, `frota.css`, `configuracoes.css` (via `index.css`) | `styles/painel/index.css` (já feito no `PainelLayout`) |
 | home | `escopo-home` | `home.css` | `styles/home/home.css` |
 | login | `escopo-login` | `login.css` | `styles/login/login.css` |
 | cadastro-usuario | `escopo-cadastro-usuario` | `cadastro.css` | `styles/cadastro-usuario/cadastro.css` |
-| usuarios | `escopo-usuarios` | `usuarios.css` | `styles/usuarios/usuarios.css` |
-| auditoria | `escopo-auditoria` | `auditoria.css` | `styles/auditoria/auditoria.css` |
-| logistica | `escopo-logistica` | `logistica.css` | `styles/logistica/logistica.css` |
-| monitoramento | `escopo-monitoramento` | `monitoramento.css` | `styles/monitoramento/monitoramento.css` |
+| gestao | `escopo-gestao` | `gestao.css` (Usuários, Auditoria, Logística e Monitoramento: tiles, filtros, tabela, diálogo, quadro, linha do tempo) | `styles/gestao/gestao.css` |
 | chat | `escopo-chat` | `chat.css` | `styles/chat/chat.css` (raiz do widget, sem `raiz-pagina`) |
 
 Regras:
