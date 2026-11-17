@@ -3,6 +3,8 @@
 import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { render } from "@testing-library/react";
+import { MemoryRouter } from "react-router-dom";
 import { renderizarNaRota } from "../../testes/apoio.jsx";
 import Login from "./Login.jsx";
 
@@ -28,6 +30,15 @@ beforeEach(() => {
 });
 
 describe("Login", () => {
+
+  it("mostra o aviso vindo da navegação (ex.: empresa excluída)", () => {
+    render(
+      <MemoryRouter initialEntries={[{ pathname: "/login", state: { aviso: "Empresa excluída." } }]}>
+        <Login />
+      </MemoryRouter>
+    );
+    expect(screen.getByRole("status")).toHaveTextContent("Empresa excluída.");
+  });
 
   it("e-mail inválido: avisa e não chama a API", async () => {
     abrir();

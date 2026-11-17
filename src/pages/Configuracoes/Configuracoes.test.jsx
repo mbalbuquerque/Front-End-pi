@@ -85,6 +85,19 @@ describe("Configurações", () => {
     expect(screen.getByTestId("conexao")).toHaveTextContent("true");
   });
 
+  it("só o gestor vê a opção de excluir a empresa", async () => {
+    respostas({});
+    sessao.usuario = OPERADOR;
+    const { unmount } = abrir();
+    await screen.findByRole("heading", { name: "Minha conta" });
+    expect(screen.queryByRole("button", { name: "Excluir empresa" })).toBeNull();
+    unmount();
+
+    sessao.usuario = GESTOR;
+    abrir();
+    expect(await screen.findByRole("button", { name: "Excluir empresa" })).toBeInTheDocument();
+  });
+
   it("sem conexão: avisa nas faixas e nos sensores", async () => {
     faixas.carregarPerfis.mockRejectedValue(new Error("fora"));
     abrir();

@@ -22,7 +22,7 @@ Existem três perfis. No painel, o perfil aparece no menu lateral, abaixo do seu
 - **Veículos**: cadastrar (**Cadastrar veículo**) e remover (**Remover veículo**).
 - **Sensores**: conectar sensor pelo cabo USB (**Conectar sensor pelo cabo**), **Registrar sem cabo**, **Gerar nova chave** e **Remover**.
 - **Viagens**: **Registrar viagem**, **Encerrar viagem** e **Remover**.
-- **Configurações**: painel **Usuários** (criar usuário, **Redefinir senha**, **Trocar veículo** do motorista, **Remover**).
+- **Configurações**: painel **Usuários** (criar usuário, **Redefinir senha**, **Trocar veículo** do motorista, **Remover**) e **Excluir empresa**.
 
 **Motorista** só vê, no celular, a carga do veículo vinculado à conta dele. Não cadastra nada e não entra nas outras telas: qualquer endereço do painel o leva de volta à tela do motorista.
 
@@ -273,6 +273,15 @@ Tocar na notificação abre a tela **Alertas** do veículo daquele sensor. Notif
 - **Redefinir senha**: abre uma janela para definir uma **Nova senha (mín. 8)**. A pessoa sai de todos os aparelhos e entra com a senha nova. Use quando alguém esquecer a senha.
 - **Remover**: retira o acesso da pessoa, após confirmação.
 - Na sua própria linha aparece "você", sem botões.
+
+**Excluir empresa (somente gestor).** Painel no fim da tela. Apaga a empresa e tudo o que é dela: usuários, veículos, sensores, viagens e leituras. **Não há como desfazer** (direito de eliminação da LGPD).
+1. Clique em **Excluir empresa**. A janela repete o que será apagado.
+2. Digite o nome da empresa, como foi cadastrado (maiúsculas e espaços nas pontas não importam), e a sua **senha atual**.
+3. O botão **Excluir empresa para sempre** só habilita com os dois preenchidos. Clique nele.
+4. Com muitos dados a exclusão pode levar alguns minutos: a janela mostra "Excluindo… pedido N" e repete o pedido sozinha até terminar. Não feche a janela.
+5. Ao terminar, a sessão é encerrada e a tela de login mostra "Empresa excluída. Todos os dados dela foram apagados.". Os outros usuários saem do painel assim que a exclusão começa.
+
+Se a senha estiver errada ou o nome não conferir, a janela mostra a mensagem da API, mantém o nome digitado e limpa a senha. Depois de vários pedidos errados (limite de 5 por hora) a API responde que é preciso tentar de novo em 1 hora.
 
 ## Faixas por carga: Normal, Atenção e Crítico
 
