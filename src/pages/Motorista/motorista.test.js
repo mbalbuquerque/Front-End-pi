@@ -9,7 +9,6 @@ import {
   haQuanto,
   minutosDesde,
   partesTemperatura,
-  reguaDaFaixa,
   proximoAlerta,
   statusDaTela
 } from "./motorista.js";
@@ -124,50 +123,11 @@ describe("alerta", () => {
 });
 
 
-describe("régua da faixa", () => {
+describe("partesTemperatura", () => {
 
-  const larguras = regua => regua.zonas.map(z => [z.tipo, Math.round(z.largura)]);
-
-  it("partesTemperatura: número e unidade separados", () => {
+  it("número e unidade separados", () => {
     expect(partesTemperatura("17.5 °C")).toEqual({ valor: "17.5", unidade: "°C" });
     expect(partesTemperatura("--")).toEqual({ valor: "--", unidade: "" });
-  });
-
-  it("faixa só com máximo: segura de 0 até o máximo, atenção, crítica", () => {
-    const regua = reguaDaFaixa({ min: null, max: 15, margem: 5 }, 6);
-    expect(regua.inicio).toBe(0);
-    expect(regua.fim).toBe(25);
-    expect(larguras(regua)).toEqual([["normal", 60], ["atencao", 20], ["critico", 20]]);
-    expect(regua.limites).toEqual([{ valor: 15, posicao: 60 }, { valor: 20, posicao: 80 }]);
-    expect(regua.marcador).toBe(24);
-  });
-
-  it("faixa com mínimo e máximo: cinco zonas simétricas", () => {
-    const regua = reguaDaFaixa({ nome: "Frutas", min: 10, max: 13, margem: 3 }, 11.5);
-    expect(regua.inicio).toBe(4);
-    expect(regua.fim).toBe(19);
-    expect(larguras(regua)).toEqual([
-      ["critico", 20], ["atencao", 20], ["normal", 20], ["atencao", 20], ["critico", 20]
-    ]);
-    expect(regua.limites.map(l => l.valor)).toEqual([7, 10, 13, 16]);
-    expect(regua.marcador).toBe(50);
-  });
-
-  it("temperatura fora da escala: a escala cresce e o marcador fica na régua", () => {
-    const quente = reguaDaFaixa({ min: 10, max: 13, margem: 3 }, 26.2);
-    expect(quente.fim).toBe(27);
-    expect(quente.marcador).toBeLessThanOrEqual(100);
-    expect(quente.zonas.reduce((soma, z) => soma + z.largura, 0)).toBeCloseTo(100);
-
-    const frio = reguaDaFaixa({ min: null, max: 15, margem: 5 }, -3.4);
-    expect(frio.inicio).toBe(-4);
-    expect(frio.marcador).toBeGreaterThanOrEqual(0);
-  });
-
-  it("sem leitura: régua sem marcador; faixa inválida: sem régua", () => {
-    expect(reguaDaFaixa({ min: null, max: 15, margem: 5 }, null).marcador).toBeNull();
-    expect(reguaDaFaixa(null, 5)).toBeNull();
-    expect(reguaDaFaixa({ min: null, max: 15 }, 5)).toBeNull();
   });
 
 });

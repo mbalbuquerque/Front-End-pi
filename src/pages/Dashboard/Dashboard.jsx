@@ -6,6 +6,7 @@ import Estado, { SemVeiculo } from "../../components/Estado.jsx";
 import GraficoTemperatura from "../../components/GraficoTemperatura.jsx";
 import Icone from "../../components/Icone.jsx";
 import PainelLayout from "../../components/PainelLayout.jsx";
+import ReguaFaixa from "../../components/ReguaFaixa.jsx";
 import SeletorVeiculo from "../../components/SeletorVeiculo.jsx";
 import { usePolling } from "../../hooks/usePolling.js";
 import { useVeiculoEscolhido } from "../../hooks/useVeiculoEscolhido.js";
@@ -14,7 +15,6 @@ import { descreverNormal } from "../../lib/faixas.js";
 import { STATUS_INFO, formatarTemp } from "../../lib/formatar.js";
 import { buscarLeituras, resumir } from "../../lib/leituras.js";
 import AvisoFalhaSensor from "./AvisoFalhaSensor.jsx";
-import ReguaFaixa from "./ReguaFaixa.jsx";
 import RiscoRota from "./RiscoRota.jsx";
 import RiscoSaida from "./RiscoSaida.jsx";
 import {

@@ -14,6 +14,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Icone from "../../components/Icone.jsx";
+import ReguaFaixa from "../../components/ReguaFaixa.jsx";
 import { usePolling } from "../../hooks/usePolling.js";
 import { useSessao } from "../../hooks/useSessao.jsx";
 import { useTelaAcesa } from "../../hooks/useTelaAcesa.js";
@@ -33,7 +34,6 @@ import {
   minutosDesde,
   partesTemperatura,
   proximoAlerta,
-  reguaDaFaixa,
   statusDaTela
 } from "./motorista.js";
 import "../../styles/motorista/motorista.css";
@@ -224,7 +224,7 @@ export default function Motorista() {
 
               {antigo && <span className="selo-antigo" id="seloAntigo">LEITURA ANTIGA</span>}
 
-              <ReguaFaixa faixa={dados.faixa} temperatura={leitura?.temperatura} />
+              <ReguaFaixa variante="motorista" id="reguaMotorista" faixa={dados.faixa} temperatura={leitura?.temperatura} />
 
               <p className="frase">{info.frase}</p>
             </section>
@@ -272,40 +272,6 @@ export default function Motorista() {
         <p id="telaAcesa">{TELA_ACESA[telaAcesa]}</p>
       </footer>
 
-    </div>
-  );
-
-}
-
-
-// Régua da faixa (design system): zonas crítica / atenção / segura com o
-// marcador no valor atual. Decorativa para leitor de tela: a faixa e o valor
-// já estão em texto logo acima.
-function ReguaFaixa({ faixa, temperatura }) {
-
-  const regua = reguaDaFaixa(faixa, temperatura);
-
-  if (!regua) {
-    return null;
-  }
-
-  return (
-    <div className="regua" id="reguaMotorista" aria-hidden="true">
-      <div className="regua-barra">
-        <span className="regua-zonas">
-          {regua.zonas.map((zona, i) => (
-            <span key={i} className={`zona zona-${zona.tipo}`} style={{ width: `${zona.largura}%` }} />
-          ))}
-        </span>
-        {regua.marcador !== null && (
-          <span className="regua-marcador" style={{ left: `${regua.marcador}%` }} />
-        )}
-      </div>
-      <div className="regua-limites">
-        {regua.limites.map(limite => (
-          <span key={limite.valor} style={{ left: `${limite.posicao}%` }}>{limite.valor} °C</span>
-        ))}
-      </div>
     </div>
   );
 
