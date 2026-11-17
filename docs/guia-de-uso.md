@@ -250,6 +250,13 @@ A tela reúne:
 
 Depois da troca aparece "Senha trocada. Os outros aparelhos conectados saem da conta." Você continua conectado neste aparelho.
 
+**Alertas no celular.** Notificação no aparelho quando um sensor da empresa passa da faixa normal para **Atenção** ou **Crítico**, mesmo com o painel fechado. Vale só para o aparelho em que foi ativado; cada usuário ativa nos próprios aparelhos.
+1. Abra o painel no celular: no Android, pelo Chrome; no iPhone (iOS 16.4 ou mais novo), adicione o ColdTrack à tela de início (Compartilhar → Adicionar à Tela de Início) e abra por lá.
+2. Em **Configurações**, toque em **Ativar alertas no celular** e permita as notificações.
+3. Aparece "Alertas ativos neste aparelho.". Para parar, toque em **Desativar**.
+
+Tocar na notificação abre a tela **Alertas** do veículo daquele sensor. Notificações bloqueadas: a tela explica como liberar no navegador. O alerta sai só na mudança de faixa (de Normal para Atenção, por exemplo), não a cada leitura.
+
 **Faixas de temperatura.** Tabela com **Perfil de carga**, **Normal**, **Atenção** e **Crítico** de cada perfil (veja a próxima seção).
 
 **Sensores e comunicação.** Quantidade de sensores registrados, intervalo de envio (20 s), acesso por chave própria e o fato de o sensor guardar leituras sem sinal (até 500 na memória do sensor).
