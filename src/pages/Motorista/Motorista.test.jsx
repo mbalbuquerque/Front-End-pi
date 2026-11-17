@@ -13,6 +13,11 @@ const api = vi.hoisted(() => ({ api: vi.fn() }));
 const rede = vi.hoisted(() => ({ online: true }));
 const tela = vi.hoisted(() => ({ estado: "ativa" }));
 const polling = vi.hoisted(() => ({ fn: null }));
+const push = vi.hoisted(() => ({
+  estadoPush: vi.fn(async () => "inativo"),
+  ativarPush: vi.fn(async () => "ativo"),
+  desativarPush: vi.fn(async () => "inativo")
+}));
 const alerta = vi.hoisted(() => ({
   vibrar: vi.fn(),
   notificar: vi.fn(),
@@ -22,6 +27,7 @@ const alerta = vi.hoisted(() => ({
 
 vi.mock("../../hooks/useSessao.jsx", () => ({ useSessao: () => sessao }));
 vi.mock("../../lib/api.js", () => api);
+vi.mock("../../lib/push.js", () => push);
 vi.mock("../../lib/conectividade.js", () => ({ useOnline: () => rede.online }));
 vi.mock("../../hooks/useTelaAcesa.js", () => ({ useTelaAcesa: () => tela.estado }));
 vi.mock("./alerta.js", () => ({
@@ -150,7 +156,7 @@ describe("Motorista", () => {
     await userEvent.click(screen.getByRole("button", { name: "Ativar alertas (som e notificação)" }));
     expect(alerta.som.ativar).toHaveBeenCalled();
     expect(alerta.pedirPermissaoDeNotificacao).toHaveBeenCalled();
-    expect(screen.queryByRole("button", { name: /Ativar alertas/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Ativar alertas (som e notificação)" })).not.toBeInTheDocument();
 
     api.api.mockResolvedValue(resposta("CRITICO"));
     await atualizar();
@@ -239,6 +245,16 @@ describe("Motorista", () => {
       await rodada;
     });
     expect(screen.getByText("Carregando a leitura do veículo…")).toBeInTheDocument();
+  });
+
+  it("alerta local e push convivem: ativar o push não tira o botão do alerta local", async () => {
+    await abrir();
+    expect(screen.getByRole("heading", { name: "Alertas com a tela fechada" })).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "Ativar alertas no celular" }));
+    expect(push.ativarPush).toHaveBeenCalledTimes(1);
+    expect(await screen.findByText("Alertas ativos neste celular.")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Ativar alertas (som e notificação)" })).toBeInTheDocument();
+    expect(alerta.som.ativar).not.toHaveBeenCalled();
   });
 
   it("Sair chama o sair da sessão; indicador da tela acesa", async () => {

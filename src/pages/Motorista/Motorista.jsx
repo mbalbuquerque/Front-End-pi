@@ -8,6 +8,9 @@
 // fica na tela até a carga voltar ao normal. A tela fica acesa (Wake Lock).
 // Sem internet, a faixa do topo diz de que hora é a última leitura e o valor
 // fica marcado como antigo.
+//
+// Alertas push (AlertasPushMotorista): inscrevem o celular para receber, com a
+// tela fechada, só os alertas do veículo vinculado; o toque abre esta tela.
 
 import { useEffect, useRef, useState } from "react";
 import { usePolling } from "../../hooks/usePolling.js";
@@ -19,6 +22,7 @@ import { UPDATE_INTERVAL } from "../../lib/config.js";
 import { useOnline } from "../../lib/conectividade.js";
 import { formatarHora, formatarTemp, formatarUmidade } from "../../lib/formatar.js";
 import { criarSom, notificar, pedirPermissaoDeNotificacao, vibrar } from "./alerta.js";
+import AlertasPushMotorista from "./AlertasPushMotorista.jsx";
 import {
   STATUS_MOTORISTA,
   descreverFaixa,
@@ -208,6 +212,8 @@ export default function Motorista() {
             Ativar alertas (som e notificação)
           </button>
         )}
+
+        <AlertasPushMotorista />
 
       </main>
 
