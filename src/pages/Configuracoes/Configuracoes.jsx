@@ -370,7 +370,7 @@ function PainelUsuarios({ eu, aoRedefinir, aoTrocarVeiculo }) {
       larga
       id="painelUsuarios"
       titulo="Usuários"
-      apoio={<p>Quem acessa o painel. Operador acompanha a carga; gestor também cadastra sensores, veículos, viagens e usuários. Motorista só vê, no celular, a temperatura do veículo vinculado a ele.</p>}
+      apoio={<p>Quem acessa o painel. Operador acompanha a carga; gestor também cadastra sensores, veículos, viagens e usuários. Motorista só vê, no celular, a temperatura do veículo vinculado a ele: ele entra pela mesma tela de login (<code>/login</code>), com o e-mail e a senha criados aqui, e cai direto na tela do motorista (<code>/motorista</code>).</p>}
     >
       <div className="tabela-wrap config-tabela">
         <table className="tabela tabela-usuarios">
@@ -416,6 +416,13 @@ function PainelUsuarios({ eu, aoRedefinir, aoTrocarVeiculo }) {
           <label className="campo"><span>Veículo do motorista</span>
             <SeletorFrota veiculos={veiculos} />
           </label>
+        )}
+        {perfilNovo === "motorista" && (
+          <p className="nota" id="dicaMotorista">
+            Passe ao motorista o e-mail e a senha inicial. No celular, ele abre o site em <strong>/login</strong> e
+            vai direto para a tela do motorista (<strong>/motorista</strong>), com a temperatura deste veículo.
+            O gestor não abre essa tela: ela é só do perfil motorista.
+          </p>
         )}
         <label className="campo"><span>Senha inicial (mín. 8)</span><input name="senha" type="password" autoComplete="new-password" required /></label>
         <button type="submit" className="botao">Criar usuário</button>
