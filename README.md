@@ -1,5 +1,7 @@
 # ColdTrack Control
 
+English version: [README.en.md](README.en.md).
+
 Painel web do **ColdTrack Edge**, projeto integrador de monitoramento IoT da cadeia fria.
 Sensores ESP32-C3 instalados no baú dos veículos enviam temperatura, umidade e sinal Wi-Fi para
 uma API no Azure; o painel (React + Vite) mostra a situação de cada carga, os alertas fora da
