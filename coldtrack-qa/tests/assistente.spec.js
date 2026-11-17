@@ -296,6 +296,8 @@ test.describe("QA-ASSIST - celular e impressão", () => {
 
     await page.goto("/configuracoes");
     await expect(page.getByRole("heading", { level: 1, name: "Configurações" })).toBeVisible();
+    // O card "Alertas no celular" muda de altura ao terminar de consultar o aparelho.
+    await expect(page.getByText("Verificando este aparelho…")).toHaveCount(0);
     await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
 
     const rodape = await page.locator("footer").last().boundingBox();

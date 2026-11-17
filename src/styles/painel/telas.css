@@ -1175,3 +1175,25 @@ a.botao {
   font-weight: 600;
   line-height: 1.4;
 }
+
+/* Alertas no celular (Configurações): o texto da ação fica no piso de 15px/600,
+   e o botão ocupado ("Ativando…") mantém contraste de 5.4:1. */
+.alertas-celular .botao,
+.alertas-celular .nota,
+.alertas-celular .aviso-ok,
+.alertas-celular .erro-form {
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.alertas-celular .botao {
+  font-weight: 700;
+  min-height: 44px;
+  margin-top: 12px;
+}
+
+.alertas-celular .botao:disabled {
+  background: var(--muted);
+  color: white;
+}

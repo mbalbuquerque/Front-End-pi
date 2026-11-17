@@ -1,4 +1,4 @@
-// Tela de configurações: minha conta (troca de senha), faixas das cargas,
+// Tela de configurações: minha conta (troca de senha), alertas no celular, faixas das cargas,
 // sensores, fonte de dados e, para o gestor, os usuários da empresa.
 // Porte do site antigo: configuracoes.html + js/configuracoes.js.
 
@@ -11,6 +11,7 @@ import { api } from "../../lib/api.js";
 import { UPDATE_INTERVAL } from "../../lib/config.js";
 import { carregarPerfis, descreverCritico, descreverNormal, faixaDoPerfil } from "../../lib/faixas.js";
 import { ehGestor } from "../../lib/sessao.js";
+import AlertasCelular from "./AlertasCelular.jsx";
 
 
 export default function Configuracoes() {
@@ -79,6 +80,7 @@ export default function Configuracoes() {
         {!dados ? <Carregando /> : (
           <>
             <MinhaConta usuario={usuario} />
+            <AlertasCelular />
             <FaixasTemperatura perfis={dados.perfis} conectado={dados.conectado} />
             <SensoresComunicacao dispositivos={dados.dispositivos} conectado={dados.conectado} />
             {gestor && <PainelUsuarios eu={usuario?.id} aoRedefinir={setRedefinindo} />}
