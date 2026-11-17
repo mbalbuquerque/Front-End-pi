@@ -479,3 +479,34 @@ describe("Sensores - conectar pelo cabo", () => {
   });
 
 });
+
+describe("Sensores - sensor em falha (#52)", () => {
+
+  const desde = new Date();
+  desde.setHours(11, 2, 20, 0);
+
+  it("placa viva com sensor em falha: texto com a hora, continua Online e a última leitura fica marcada como antiga", async () => {
+    dispositivos[0] = { ...dispositivos[0], sensor: "falha", sensorFalhaDesde: desde.toISOString() };
+    abrir();
+    await waitFor(() => expect(linhas()).toHaveLength(2));
+    const b = linhas()[1];
+    expect(b).toHaveClass("sensor-falha");
+    expect(b.querySelector("[data-sensor-falha]")).toHaveTextContent("Sensor em falha desde 11:02");
+    expect(b.querySelector('[data-conexao="online"]')).toHaveTextContent("Online");
+    expect(b.querySelector('[data-conexao="offline"]')).toBeNull();
+    expect(b.querySelector(".sensor-temp")).toHaveClass("antiga");
+    expect(b.querySelector(".sensor-temp")).toHaveTextContent(/^6\.5 °Cúltima válida, de \d{2}:\d{2}$/);
+    expect(linhas()[0].querySelector("[data-sensor-falha]")).toBeNull();
+  });
+
+  it("sensor volta (sensor ok) ou placa offline: a falha some", async () => {
+    dispositivos[0] = { ...dispositivos[0], sensor: "ok", sensorFalhaDesde: null };
+    dispositivos[1] = { ...dispositivos[1], sensor: "falha", sensorFalhaDesde: desde.toISOString() };
+    abrir();
+    await waitFor(() => expect(linhas()).toHaveLength(2));
+    expect(document.querySelector("[data-sensor-falha]")).toBeNull();
+    expect(linhas()[0].querySelector('[data-conexao="offline"]')).toHaveTextContent("Offline");
+    expect(linhas()[1].querySelector(".sensor-temp")).not.toHaveClass("antiga");
+  });
+
+});

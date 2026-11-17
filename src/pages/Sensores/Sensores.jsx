@@ -15,6 +15,7 @@ import { api } from "../../lib/api.js";
 import { UPDATE_INTERVAL } from "../../lib/config.js";
 import { formatarDataHora, formatarMomento, formatarTemp } from "../../lib/formatar.js";
 import { buscarLeituras, horarioDe } from "../../lib/leituras.js";
+import { falhaDoSensor } from "../../lib/sensorFalha.js";
 import { ehGestor } from "../../lib/sessao.js";
 import { SensorUsb, serialDisponivel } from "./serial.js";
 import {
@@ -586,11 +587,12 @@ function TabelaSensores({ dispositivos, veiculos, ultimas, agora, gestor, aoGera
           const selo = seloConexao(d);
           const contato = textoUltimoContato(d);
           const ligado = selo ? selo.classe === "online" : situacao.classe === "normal";
+          const falha = falhaDoSensor(d, new Date(agora));
 
           return (
-            <tr key={d.id} className={ligado ? "sensor-ligado" : "sensor-desligado"}>
+            <tr key={d.id} className={falha ? "sensor-falha" : ligado ? "sensor-ligado" : "sensor-desligado"}>
               <td className="sensor-nome">
-                <span className="sensor-icone" aria-hidden="true"><Icone nome={ligado ? "sensor" : "semSinal"} /></span>
+                <span className="sensor-icone" aria-hidden="true"><Icone nome={falha ? "alerta" : ligado ? "sensor" : "semSinal"} /></span>
                 <strong>{d.id}</strong>
                 <span className="sensor-detalhe">
                   {d.descricao || "--"} · {veiculo ? `veículo ${veiculo.id}` : "nenhum veículo"}
@@ -603,14 +605,24 @@ function TabelaSensores({ dispositivos, veiculos, ultimas, agora, gestor, aoGera
                 {contato
                   ? <small className="linha-apoio" data-ultimo-contato>{contato}</small>
                   : ultima && <small className="linha-apoio">último envio {formatarDataHora(horarioDe(ultima))}</small>}
+                {falha && (
+                  <strong className="falha-sensor" data-sensor-falha>
+                    <Icone nome="alerta" tamanho={18} />{falha.texto}
+                  </strong>
+                )}
               </td>
               <td className="sensor-sinal">
                 <Icone nome="wifi" tamanho={18} />
                 <span>{ultima ? descreverSinal(ultima.rssi) : "--"}</span>
               </td>
-              <td className="sensor-temp">
+              <td className={falha && ultima ? "sensor-temp antiga" : "sensor-temp"}>
                 <strong>{ultima ? formatarTemp(ultima.temperatura) : "--"}</strong>
-                {ultima && <small>leitura de {formatarMomento(horarioDe(ultima), new Date(agora))}</small>}
+                {ultima && (
+                  <small>
+                    {falha ? "última válida, de " : "leitura de "}
+                    {formatarMomento(horarioDe(ultima), new Date(agora))}
+                  </small>
+                )}
               </td>
               {gestor && (
                 <td className="acoes-tabela">

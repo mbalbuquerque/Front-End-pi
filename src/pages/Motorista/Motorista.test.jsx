@@ -273,3 +273,39 @@ describe("Motorista", () => {
   });
 
 });
+
+describe("Motorista - sensor em falha (#52)", () => {
+
+  const DESDE = "2026-11-16T21:40:00Z";
+  const hora = new Date(DESDE).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+
+  it("mostra \"Sensor em falha desde HH:MM\" e marca a última leitura válida como antiga; some quando volta", async () => {
+    api.api.mockResolvedValue(resposta("NORMAL", 20, { sensor: "falha", sensorFalhaDesde: DESDE }));
+    await abrir();
+    const aviso = document.getElementById("falhaSensorMotorista");
+    expect(aviso).toHaveTextContent(`Sensor em falha desde ${hora}`);
+    expect(aviso).toHaveTextContent("O valor abaixo é a última leitura válida.");
+    expect(aviso).toHaveAttribute("role", "status");
+    expect(document.getElementById("tempMotorista")).toHaveClass("antiga");
+    expect(document.getElementById("seloAntigo")).toHaveTextContent("LEITURA ANTIGA");
+
+    api.api.mockResolvedValue(resposta("NORMAL", 0, { sensor: "ok", sensorFalhaDesde: null }));
+    await atualizar();
+    expect(document.getElementById("falhaSensorMotorista")).toBeNull();
+    expect(document.getElementById("seloAntigo")).toBeNull();
+  });
+
+  it("falha sem nenhuma leitura válida ainda", async () => {
+    api.api.mockResolvedValue({ ...resposta("NORMAL", 1), leitura: null, status: "SEM_LEITURA", minutosSemLeitura: null, sensor: "falha", sensorFalhaDesde: DESDE });
+    await abrir();
+    expect(document.getElementById("falhaSensorMotorista")).toHaveTextContent("Nenhuma leitura válida ainda.");
+    expect(document.getElementById("seloAntigo")).toBeNull();
+  });
+
+  it("API antiga, sem o campo sensor: tela como antes", async () => {
+    await abrir();
+    expect(document.getElementById("falhaSensorMotorista")).toBeNull();
+    expect(document.getElementById("tempMotorista")).not.toHaveClass("antiga");
+  });
+
+});

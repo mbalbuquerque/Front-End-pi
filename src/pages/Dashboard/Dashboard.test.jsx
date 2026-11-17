@@ -28,6 +28,7 @@ vi.mock("../../components/PainelLayout.jsx", () => ({
 }));
 vi.mock("./RiscoSaida.jsx", () => ({ default: () => <div data-testid="risco-saida" /> }));
 vi.mock("./RiscoRota.jsx", () => ({ default: () => <div data-testid="risco-rota" /> }));
+vi.mock("./AvisoFalhaSensor.jsx", () => ({ default: ({ deviceId }) => <div data-testid="aviso-falha" data-device={deviceId} /> }));
 
 const FAIXA = { min: null, max: 15, margem: 5 };
 const PERFIL = { id: "demonstrativo", nome: "Demonstrativo" };
