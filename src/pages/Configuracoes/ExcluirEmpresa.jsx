@@ -5,7 +5,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useSessao } from "../../hooks/useSessao.jsx";
 import { api } from "../../lib/api.js";
-import "./ExcluirEmpresa.css";
+import Secao from "./Secao.jsx";
 
 // Teto de repetições: cada pedido trabalha até 120 s no servidor.
 const MAX_PEDIDOS = 60;
@@ -18,12 +18,15 @@ export default function ExcluirEmpresa() {
   const [aberto, setAberto] = useState(false);
 
   return (
-    <article className="panel zona-perigo" id="excluirEmpresa">
-      <h2>Excluir empresa</h2>
-      <p>Apaga a empresa e todos os dados dela: usuários, veículos, sensores, viagens e leituras. Não há como desfazer.</p>
-      <button type="button" className="botao botao-destrutivo" onClick={() => setAberto(true)}>Excluir empresa</button>
+    <Secao
+      id="excluirEmpresa"
+      className="zona-perigo"
+      titulo="Excluir empresa"
+      apoio={<p>Apaga a empresa e todos os dados dela: usuários, veículos, sensores, viagens e leituras. Não há como desfazer.</p>}
+    >
+      <div><button type="button" className="botao botao-destrutivo" onClick={() => setAberto(true)}>Excluir empresa</button></div>
       {aberto && <DialogoExcluir aoFechar={() => setAberto(false)} />}
-    </article>
+    </Secao>
   );
 
 }
@@ -116,13 +119,14 @@ function DialogoExcluir({ aoFechar }) {
   return (
     <dialog
       id="excluirEmpresaDialogo"
-      className="etiqueta"
+      className="etiqueta config-dialogo"
       ref={dialogo}
+      aria-labelledby="tituloExcluirEmpresa"
       onClose={aoFechar}
       onCancel={evento => { if (excluindo) evento.preventDefault(); }}
     >
       <form className="dialogo-form" noValidate onSubmit={excluir}>
-        <h2>Excluir empresa</h2>
+        <h2 id="tituloExcluirEmpresa">Excluir empresa</h2>
         <p>
           Vai apagar para sempre a empresa <strong>{usuario?.empresa}</strong> e tudo o que é dela:
           usuários, veículos, sensores, viagens e leituras. Todos saem do painel na hora.

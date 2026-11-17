@@ -17,7 +17,7 @@ function abrir() {
   return renderizarNaRota(<Auditoria />, "/auditoria");
 }
 
-const linhas = () => within(document.getElementById("logsTabela")).queryAllByRole("row");
+const linhas = () => within(document.getElementById("logsTabela")).queryAllByRole("listitem");
 
 describe("Auditoria", () => {
 

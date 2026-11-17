@@ -25,7 +25,7 @@ test.describe("ColdTrack - Gestão Logística", () => {
   test("QA-025: pesquisa por produto funciona", async ({ page }) => {
     await page.locator("#pesquisaCarga").fill("Manga");
 
-    const linhas = page.locator("#tabelaCargas tr");
+    const linhas = page.locator("#tabelaCargas li");
 
     await expect(linhas).toHaveCount(1);
     await expect(linhas.first()).toContainText("Manga");
@@ -35,7 +35,7 @@ test.describe("ColdTrack - Gestão Logística", () => {
   test("QA-026: filtro por situação funciona", async ({ page }) => {
     await page.locator("#filtroStatus").selectOption("Atenção");
 
-    const linhas = page.locator("#tabelaCargas tr");
+    const linhas = page.locator("#tabelaCargas li");
 
     await expect(linhas).toHaveCount(1);
     await expect(linhas.first()).toContainText("CT-002");
@@ -90,7 +90,7 @@ test.describe("ColdTrack - Gestão Logística", () => {
   });
 
   test("QA-029: detalhes da carga são exibidos", async ({ page }) => {
-    const linha = page.locator("#tabelaCargas tr").filter({
+    const linha = page.locator("#tabelaCargas li").filter({
       hasText: "CT-001"
     });
 

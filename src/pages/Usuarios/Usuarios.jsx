@@ -1,17 +1,16 @@
 // Gestão de usuários (demonstrativa, dados de exemplo).
-// Porte do site antigo: usuarios.html + js/usuarios.js.
+// Porte do site antigo: usuarios.html + js/usuarios.js. Os usuários reais da
+// empresa ficam em Configurações > Usuários (gestor).
 
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
+import Icone from "../../components/Icone.jsx";
 import PainelLayout from "../../components/PainelLayout.jsx";
-import { useTitulo } from "../../hooks/useTitulo.js";
-import "../../styles/usuarios/usuarios.css";
+import "../../styles/gestao/gestao.css";
 import { NOMES_PERFIS, USUARIOS, filtrarUsuarios } from "./usuarios.js";
 
 
 export default function Usuarios() {
-
-  useTitulo("Gestão de Usuários | ColdTrack");
 
   const [termo, setTermo] = useState("");
   const [perfil, setPerfil] = useState("");
@@ -27,13 +26,14 @@ export default function Usuarios() {
   }, [detalhe]);
 
   const filtrados = filtrarUsuarios(USUARIOS, { termo, perfil, status });
+  const ativos = USUARIOS.filter(u => u.status === "ativo").length;
 
   const campos = detalhe && [
     ["Nome", detalhe.nome],
     ["E-mail", detalhe.email],
     ["Função", detalhe.funcao],
     ["Perfil", NOMES_PERFIS[detalhe.perfil]],
-    ["Status", detalhe.status]
+    ["Status", detalhe.status === "ativo" ? "Ativo" : "Inativo"]
   ];
 
   function acao(texto) {
@@ -41,52 +41,62 @@ export default function Usuarios() {
   }
 
   return (
-    <PainelLayout familia="usuarios">
+    <PainelLayout
+      titulo="Gestão de Usuários"
+      subtitulo="Colaboradores, funções e perfis de acesso"
+      familia="gestao"
+      extraTopo={
+        <Link to="/cadastro-usuario" className="botao-g primario">
+          <Icone nome="adicionar" tamanho={20} />
+          Novo usuário
+        </Link>
+      }
+    >
 
-      <div className="main-content">
+      <div className="gestao">
 
-        <header className="page-header">
-          <div>
-            <p className="eyebrow">CONTROLE DE ACESSO</p>
-            <h1>Gestão de Usuários</h1>
-            <p>Gerencie colaboradores, funções e perfis de acesso.</p>
-          </div>
+        <p className="aviso-demo" role="note">
+          <Icone nome="info" />
+          <span>Interface demonstrativa: os usuários listados são dados de exemplo.</span>
+        </p>
 
-          <Link to="/cadastro-usuario" className="btn-primary">
-            + Novo usuário
-          </Link>
-        </header>
-
-        <p className="aviso-demo" role="note">Interface demonstrativa: os usuários listados são dados de exemplo.</p>
-
-        <section className="stats" aria-label="Indicadores">
-          <article className="stat-card">
-            <span>Total de usuários</span>
-            <strong id="totalUsuarios">{USUARIOS.length}</strong>
+        <section className="kpis" aria-label="Indicadores">
+          <article className="kpi">
+            <div>
+              <span className="kpi-rotulo">Total de usuários</span>
+              <strong id="totalUsuarios">{USUARIOS.length}</strong>
+            </div>
+            <span className="kpi-icone"><Icone nome="usuarios" /></span>
           </article>
 
-          <article className="stat-card">
-            <span>Usuários ativos</span>
-            <strong id="usuariosAtivos">{USUARIOS.filter(u => u.status === "ativo").length}</strong>
+          <article className="kpi normal">
+            <div>
+              <span className="kpi-rotulo">Usuários ativos</span>
+              <strong id="usuariosAtivos">{ativos}</strong>
+            </div>
+            <span className="kpi-icone"><Icone nome="ok" /></span>
           </article>
 
-          <article className="stat-card">
-            <span>Usuários inativos</span>
-            <strong id="usuariosInativos">{USUARIOS.filter(u => u.status === "inativo").length}</strong>
+          <article className="kpi">
+            <div>
+              <span className="kpi-rotulo">Usuários inativos</span>
+              <strong id="usuariosInativos">{USUARIOS.length - ativos}</strong>
+            </div>
+            <span className="kpi-icone"><Icone nome="usuario" /></span>
           </article>
         </section>
 
-        <section className="table-card">
-          <div className="table-heading">
+        <section className="cartao" aria-labelledby="tituloUsuarios">
+          <div className="cartao-topo">
             <div>
-              <h2>Usuários cadastrados</h2>
+              <h2 id="tituloUsuarios">Usuários cadastrados</h2>
               <p>Exibição de exemplo para desenvolvimento da interface.</p>
             </div>
-            <span className="demo-label">DADOS DEMONSTRATIVOS</span>
+            <span className="selo-demo">DADOS DEMONSTRATIVOS</span>
           </div>
 
-          <div className="filters">
-            <label>
+          <div className="filtros">
+            <label className="filtro-campo busca">
               Pesquisar
               <input
                 id="pesquisa"
@@ -97,7 +107,7 @@ export default function Usuarios() {
               />
             </label>
 
-            <label>
+            <label className="filtro-campo">
               Perfil
               <select id="filtroPerfil" value={perfil} onChange={e => setPerfil(e.target.value)}>
                 <option value="">Todos os perfis</option>
@@ -108,7 +118,7 @@ export default function Usuarios() {
               </select>
             </label>
 
-            <label>
+            <label className="filtro-campo">
               Situação
               <select id="filtroStatus" value={status} onChange={e => setStatus(e.target.value)}>
                 <option value="">Todos</option>
@@ -118,15 +128,15 @@ export default function Usuarios() {
             </label>
           </div>
 
-          <div className="table-scroll">
-            <table>
+          <div className="tabela-rolagem">
+            <table className="tabela-g tabela-cartoes">
               <thead>
                 <tr>
                   <th>Usuário</th>
                   <th>Função</th>
                   <th>Perfil</th>
                   <th>Status</th>
-                  <th>Ações</th>
+                  <th className="acoes-linha">Ações</th>
                 </tr>
               </thead>
               <tbody id="usuariosTabela">
@@ -134,21 +144,23 @@ export default function Usuarios() {
                   const textoStatus = usuario.status === "ativo" ? "Desativar" : "Ativar";
                   return (
                     <tr key={usuario.id}>
-                      <td className="user-name">
-                        {usuario.nome}
-                        <span className="user-email">{usuario.email}</span>
+                      <td className="nome-com-apoio">
+                        <strong>{usuario.nome}</strong>
+                        <span>{usuario.email}</span>
                       </td>
-                      <td>{usuario.funcao}</td>
-                      <td>{NOMES_PERFIS[usuario.perfil]}</td>
-                      <td>
-                        <span className={`status ${usuario.status}`}>
+                      <td data-rotulo="Função">{usuario.funcao}</td>
+                      <td data-rotulo="Perfil"><span className="pilula info sem-ponto">{NOMES_PERFIS[usuario.perfil]}</span></td>
+                      <td data-rotulo="Status">
+                        <span className={`pilula ${usuario.status === "ativo" ? "normal" : "offline"}`}>
                           {usuario.status === "ativo" ? "Ativo" : "Inativo"}
                         </span>
                       </td>
                       <td>
-                        <button type="button" className="action-button" onClick={() => setDetalhe(usuario)}>Visualizar</button>
-                        <button type="button" className="action-button" onClick={() => acao("Editar")}>Editar</button>
-                        <button type="button" className="action-button" onClick={() => acao(textoStatus)}>{textoStatus}</button>
+                        <div className="acoes-linha">
+                          <button type="button" className="botao-g texto" onClick={() => setDetalhe(usuario)}>Visualizar</button>
+                          <button type="button" className="botao-g texto" onClick={() => acao("Editar")}>Editar</button>
+                          <button type="button" className="botao-g texto" onClick={() => acao(textoStatus)}>{textoStatus}</button>
+                        </div>
                       </td>
                     </tr>
                   );
@@ -157,23 +169,27 @@ export default function Usuarios() {
             </table>
           </div>
 
-          <p id="semResultados" className="empty-state" hidden={filtrados.length !== 0}>
-            Nenhum usuário encontrado.
+          <p id="semResultados" className="vazio" hidden={filtrados.length !== 0}>
+            Nenhum usuário encontrado. Limpe a pesquisa ou escolha outro perfil.
           </p>
 
-          <p id="feedback" className="feedback" role="status" aria-live="polite">{feedback}</p>
+          <p id="feedback" className="retorno" role="status" aria-live="polite">{feedback}</p>
         </section>
       </div>
 
-      <dialog id="detalhesDialog" ref={dialogRef} onClose={() => setDetalhe(null)}>
-        <div className="dialog-content">
-          <h2>Detalhes do usuário</h2>
-          <div id="detalhesConteudo">
+      <dialog id="detalhesDialog" className="dialogo" ref={dialogRef} aria-labelledby="tituloDetalhesUsuario" onClose={() => setDetalhe(null)}>
+        <div className="dialogo-topo">
+          <h2 id="tituloDetalhesUsuario">Detalhes do usuário</h2>
+        </div>
+        <div className="dialogo-corpo">
+          <dl id="detalhesConteudo" className="detalhes">
             {campos && campos.map(([rotulo, valor]) => (
-              <p key={rotulo}><strong>{rotulo}: </strong>{valor}</p>
+              <div key={rotulo}><dt>{rotulo}</dt><dd>{valor}</dd></div>
             ))}
-          </div>
-          <button type="button" id="fecharDialog" className="btn-primary" onClick={() => dialogRef.current.close()}>
+          </dl>
+        </div>
+        <div className="dialogo-rodape">
+          <button type="button" id="fecharDialog" className="botao-g primario" onClick={() => dialogRef.current.close()}>
             Fechar
           </button>
         </div>

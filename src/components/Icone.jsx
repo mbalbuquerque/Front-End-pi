@@ -32,6 +32,13 @@ const TRACOS = {
   usb: <><path d="M12 21V4M12 4l-2.5 3M12 4l2.5 3" /><path d="M12 15l-4.5-3V9.5M12 13l4.5-2.5V8" /><rect x="6" y="7.5" width="3" height="2" /><circle cx="16.5" cy="7" r="1.2" /><circle cx="12" cy="20" r="1.2" /></>,
   adicionar: <path d="M12 5v14M5 12h14" />,
   baixar: <><path d="M12 4v11M7.5 10.5 12 15l4.5-4.5" /><path d="M4.5 19.5h15" /></>,
+  busca: <><circle cx="10.5" cy="10.5" r="6" /><path d="m15 15 5.5 5.5" /></>,
+  calendario: <><rect x="3.5" y="5" width="17" height="15.5" rx="2" /><path d="M3.5 10h17M8 3v4M16 3v4" /></>,
+  atualizar: <><path d="M20 11a8 8 0 0 0-14.3-4.6L3.5 9" /><path d="M3.5 4v5h5" /><path d="M4 13a8 8 0 0 0 14.3 4.6l2.2-2.6" /><path d="M20.5 20v-5h-5" /></>,
+  cadeado: <><rect x="5" y="10.5" width="14" height="10" rx="2" /><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3" /></>,
+  sino: <><path d="M6 16.5V11a6 6 0 0 1 12 0v5.5l1.5 1.5h-15z" /><path d="M10 20.5a2 2 0 0 0 4 0" /></>,
+  entrar: <><path d="M9.5 4.5h9v15h-9" /><path d="M3.5 12H14M10.5 8.5 14 12l-3.5 3.5" /></>,
+  editar: <><path d="M4 20h4L19 9l-4-4L4 16z" /><path d="m13.5 6.5 4 4" /></>,
   marca: <path d="M12 2.5v19M3.8 7.25l16.4 9.5M3.8 16.75l16.4-9.5M9.5 3.8 12 6l2.5-2.2M9.5 20.2 12 18l2.5 2.2M3.6 10.4 6.6 9.6 5.8 6.6M20.4 13.6l-3-.8.8 3M3.6 13.6l3-.8-.8 3M20.4 10.4l-3-.8.8-3" />
 };
 
