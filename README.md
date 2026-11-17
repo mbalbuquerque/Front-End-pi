@@ -169,11 +169,12 @@ request; quando algum e2e falha, o relatório fica anexado à execução.
 
 ## 6. Deploy
 
-Fluxo de branches: o trabalho acontece na **`everson`**; quando uma etapa fica pronta, abre-se
-um pull request `everson` -> `main`. **A `everson` não pode ser apagada** (nem após o merge):
-o deploy e o login por OIDC no Azure dependem dela.
+Fluxo de branches: o trabalho acontece em branches criadas a partir da **`main`**, que entram
+por pull request com os testes verdes. A `everson` fica como reserva (o login por OIDC no Azure
+ainda a aceita) e não deve ser apagada. A proteção da `main` depende de um administrador; o
+comando está no [`CONTRIBUTING.md`](CONTRIBUTING.md).
 
-Cada push na branch **`everson`** dispara `.github/workflows/publicar-site.yml`:
+Cada push na branch **`main`** dispara `.github/workflows/publicar-site.yml`:
 
 1. `npm ci`, `npm run lint`, `npm test`, `npm run build` (para se algum falhar);
 2. login no Azure por OIDC (`azure/login`, sem senha guardada no repositório);
