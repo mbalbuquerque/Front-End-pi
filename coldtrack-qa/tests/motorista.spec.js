@@ -173,6 +173,8 @@ test.describe("QA-MOTORISTA tela", () => {
       await page.clock.fastForward(20000);
       await expect(page.locator("#statusMotorista")).toHaveText(texto);
       await expect(page.locator("#blocoStatus")).toHaveClass(classe);
+      // Fundo da tela tingido pelo status.
+      await expect(page.locator(".escopo-motorista")).toHaveClass(new RegExp(`tela-${classe.source}`));
     }
 
     await expect(page.locator("#seloAntigo")).toHaveText("LEITURA ANTIGA");
@@ -244,7 +246,7 @@ test.describe("QA-MOTORISTA tela", () => {
 
   });
 
-  test("360 px em pé: sem rolagem lateral, número grande e texto no piso", async ({ page }) => {
+  test("360 px em pé: sem rolagem lateral, número grande, texto e botões no piso da tela", async ({ page }) => {
 
     await page.setViewportSize({ width: 360, height: 740 });
     await page.goto("/motorista");
@@ -258,16 +260,24 @@ test.describe("QA-MOTORISTA tela", () => {
         corpo: px("#faixaCarga", "fontSize"),
         peso: px("#faixaCarga", "fontWeight"),
         aviso: px(".aviso-suporte", "fontSize"),
-        botao: document.querySelector("#ativarAlertas").getBoundingClientRect().height
+        botao: document.querySelector("#ativarAlertas").getBoundingClientRect().height,
+        sair: document.querySelector("#botaoSair").getBoundingClientRect().height,
+        transicoes: [...document.querySelectorAll(".escopo-motorista *")]
+          .filter(el => getComputedStyle(el).transitionDuration.split(",").some(d => parseFloat(d) > 0)
+            || getComputedStyle(el).animationName !== "none").length
       };
     });
 
     expect(medidas.rolagem).toBeLessThanOrEqual(0);
-    expect(medidas.temperatura).toBeGreaterThanOrEqual(72);
-    expect(medidas.corpo).toBeGreaterThanOrEqual(15);
+    expect(medidas.temperatura).toBeGreaterThanOrEqual(96);
+    expect(medidas.corpo).toBeGreaterThanOrEqual(17);
     expect(medidas.peso).toBeGreaterThanOrEqual(600);
-    expect(medidas.aviso).toBeGreaterThanOrEqual(15);
-    expect(medidas.botao).toBeGreaterThanOrEqual(44);
+    expect(medidas.aviso).toBeGreaterThanOrEqual(17);
+    expect(medidas.botao).toBeGreaterThanOrEqual(56);
+    expect(medidas.sair).toBeGreaterThanOrEqual(56);
+    // Tela do motorista não anima: dado novo troca no lugar.
+    expect(medidas.transicoes).toBe(0);
+    await expect(page.locator("#reguaMotorista")).toBeVisible();
     await expect(page.getByText("Use com o celular no suporte.")).toBeVisible();
     await expect(page.locator("input, textarea")).toHaveCount(0);
 

@@ -13,6 +13,7 @@
 // tela fechada, só os alertas do veículo vinculado; o toque abre esta tela.
 
 import { useEffect, useRef, useState } from "react";
+import Icone from "../../components/Icone.jsx";
 import { usePolling } from "../../hooks/usePolling.js";
 import { useSessao } from "../../hooks/useSessao.jsx";
 import { useTelaAcesa } from "../../hooks/useTelaAcesa.js";
@@ -30,7 +31,9 @@ import {
   deveDisparar,
   haQuanto,
   minutosDesde,
+  partesTemperatura,
   proximoAlerta,
+  reguaDaFaixa,
   statusDaTela
 } from "./motorista.js";
 import "../../styles/motorista/motorista.css";
@@ -39,6 +42,14 @@ const TELA_ACESA = {
   ativa: "Tela sempre acesa: ligada",
   recusada: "Tela sempre acesa: desligada (o celular pode apagar a tela)",
   indisponivel: "Tela sempre acesa: este navegador não permite"
+};
+
+// Status nunca só por cor: a pílula leva ícone e texto.
+const ICONE_STATUS = {
+  NORMAL: "ok",
+  ATENCAO: "alerta",
+  CRITICO: "alerta",
+  SEM_SINAL: "semSinal"
 };
 
 
@@ -126,19 +137,27 @@ export default function Motorista() {
     faixaTopo = `Sem resposta do servidor — última leitura às ${horaLeitura || "--:--"}`;
   }
 
+  const classeTela = info ? info.classe : "neutra";
+  const temperatura = partesTemperatura(formatarTemp(leitura?.temperatura));
+
   return (
-    <div className="escopo-motorista raiz-pagina">
+    <div className={`escopo-motorista raiz-pagina tela-${classeTela}`}>
 
       {faixaTopo && (
         <div className="faixa-offline" id="faixaOffline" role="status" aria-live="polite">{faixaTopo}</div>
       )}
 
       <header className="topo">
-        <span className="marca"><span aria-hidden="true">❄</span> ColdTrack</span>
-        <span className="veiculo" id="veiculoMotorista">
-          {dados ? `${dados.veiculo.id} · ${dados.veiculo.tipo}` : usuario?.veiculo || ""}
+        <span className="topo-veiculo">
+          <Icone nome="veiculo" tamanho={24} />
+          <span className="veiculo" id="veiculoMotorista">
+            {dados ? `${dados.veiculo.id} · ${dados.veiculo.tipo}` : usuario?.veiculo || ""}
+          </span>
         </span>
-        <button type="button" className="sair" id="botaoSair" onClick={sair}>Sair</button>
+        <button type="button" className="sair" id="botaoSair" onClick={sair}>
+          Sair
+          <Icone nome="sair" tamanho={20} />
+        </button>
       </header>
 
       <main className="conteudo">
@@ -163,17 +182,23 @@ export default function Motorista() {
           <>
             {alerta && (
               <div className={`aviso aviso-${STATUS_MOTORISTA[alerta].classe}`} id="avisoMotorista" role="alert">
-                <strong>{STATUS_MOTORISTA[alerta].texto}</strong>
-                {status === "SEM_SINAL"
-                  ? "Sensor sem sinal: o aviso continua até chegar uma leitura normal."
-                  : "Este aviso fica na tela até a carga voltar ao normal."}
+                <Icone nome="alerta" tamanho={28} />
+                <span className="aviso-texto">
+                  <strong>{STATUS_MOTORISTA[alerta].texto}</strong>
+                  {status === "SEM_SINAL"
+                    ? "Sensor sem sinal: o aviso continua até chegar uma leitura normal."
+                    : "Este aviso fica na tela até a carga voltar ao normal."}
+                </span>
               </div>
             )}
 
             {falhaSensor && (
-              <p className="aviso aviso-critico falha-sensor" id="falhaSensorMotorista" role="status">
-                <strong>{falhaSensor.texto}</strong>
-                {leitura ? "O valor abaixo é a última leitura válida." : "Nenhuma leitura válida ainda."}
+              <p className="aviso aviso-falha falha-sensor" id="falhaSensorMotorista" role="status">
+                <Icone nome="semSinal" tamanho={28} />
+                <span className="aviso-texto">
+                  <strong>{falhaSensor.texto}</strong>
+                  {leitura ? "O valor abaixo é a última leitura válida." : "Nenhuma leitura válida ainda."}
+                </span>
               </p>
             )}
 
@@ -182,19 +207,29 @@ export default function Motorista() {
               id="blocoStatus"
               aria-label="Temperatura da carga"
             >
-              <span className="rotulo-status" id="statusMotorista">{info.texto}</span>
+              <p className="pilula-status">
+                <Icone nome={ICONE_STATUS[status]} tamanho={26} />
+                <span className="rotulo-status" id="statusMotorista">{info.texto}</span>
+              </p>
+
+              <p className="carga">
+                <span className="carga-rotulo">Carga</span>
+                <span id="faixaCarga">{descreverFaixa(dados.faixa)}</span>
+              </p>
+
               <strong className={antigo ? "temperatura antiga" : "temperatura"} id="tempMotorista">
-                {formatarTemp(leitura?.temperatura)}
+                <span className="temp-valor">{temperatura.valor}</span>
+                {temperatura.unidade && <> <span className="temp-unidade">{temperatura.unidade}</span></>}
               </strong>
+
               {antigo && <span className="selo-antigo" id="seloAntigo">LEITURA ANTIGA</span>}
-              <span className="frase">{info.frase}</span>
+
+              <ReguaFaixa faixa={dados.faixa} temperatura={leitura?.temperatura} />
+
+              <p className="frase">{info.frase}</p>
             </section>
 
             <dl className="detalhes">
-              <div>
-                <dt>Faixa da carga</dt>
-                <dd id="faixaCarga">{descreverFaixa(dados.faixa)}</dd>
-              </div>
               <div>
                 <dt>Última leitura</dt>
                 <dd id="ultimaLeitura">{horaLeitura ? `às ${horaLeitura} · ${haQuanto(minutos)}` : "nenhuma ainda"}</dd>
@@ -217,7 +252,12 @@ export default function Motorista() {
           </>
         )}
 
-        {!alertasAtivos && (
+        {alertasAtivos ? (
+          <p className="alertas-ligados" id="alertasLigados" role="status">
+            <Icone nome="ok" tamanho={22} />
+            Alertas com som ligados nesta tela.
+          </p>
+        ) : (
           <button type="button" className="ativar-alertas" id="ativarAlertas" onClick={ativarAlertas}>
             Ativar alertas (som e notificação)
           </button>
@@ -232,6 +272,40 @@ export default function Motorista() {
         <p id="telaAcesa">{TELA_ACESA[telaAcesa]}</p>
       </footer>
 
+    </div>
+  );
+
+}
+
+
+// Régua da faixa (design system): zonas crítica / atenção / segura com o
+// marcador no valor atual. Decorativa para leitor de tela: a faixa e o valor
+// já estão em texto logo acima.
+function ReguaFaixa({ faixa, temperatura }) {
+
+  const regua = reguaDaFaixa(faixa, temperatura);
+
+  if (!regua) {
+    return null;
+  }
+
+  return (
+    <div className="regua" id="reguaMotorista" aria-hidden="true">
+      <div className="regua-barra">
+        <span className="regua-zonas">
+          {regua.zonas.map((zona, i) => (
+            <span key={i} className={`zona zona-${zona.tipo}`} style={{ width: `${zona.largura}%` }} />
+          ))}
+        </span>
+        {regua.marcador !== null && (
+          <span className="regua-marcador" style={{ left: `${regua.marcador}%` }} />
+        )}
+      </div>
+      <div className="regua-limites">
+        {regua.limites.map(limite => (
+          <span key={limite.valor} style={{ left: `${limite.posicao}%` }}>{limite.valor} °C</span>
+        ))}
+      </div>
     </div>
   );
 

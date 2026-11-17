@@ -184,6 +184,23 @@ título e botão nunca peso 300/400; `letter-spacing` negativo só acima de 24 p
 - Desvios do protótipo: sem "Ideal para uva", "MQTT/IoT Hub", "Abertura de porta" nem nome de
   variedade; o gráfico, o risco térmico e o calor na rota continuam como estão (fase própria).
 
+### Tela do motorista implementada (`pages/Motorista/Motorista.jsx`, `styles/motorista/motorista.css`)
+
+- Fundo da tela inteira no tom claro do status (`normal-bg`, `atencao-bg`, `critico-bg`,
+  `offline-bg` para SEM SINAL); barra superior navy só com o veículo e "Sair".
+- Pílula de status cheia na cor do status, com ícone e texto (branco: 5,4:1 a 9,1:1).
+- Temperatura em Barlow Condensed 700, 112–184 px, sempre em `navy-900` (14:1 no fundo crítico);
+  a unidade fica na cor do status. Leitura antiga: número em `status-offline` (7,6:1 ou mais) e
+  selo "LEITURA ANTIGA".
+- Régua da faixa da carga com zonas crítica / atenção / segura (`atencao-borda` só como forma) e
+  marcador navy no valor atual; os limites em °C escritos embaixo. A escala vai uma margem além do
+  último limite e cresce para caber a leitura.
+- Piso reforçado: corpo ≥ 17 px peso ≥ 600, rótulo ≥ 15 px, botões ≥ 56 px (inclusive "Sair").
+- Nada se move: sem transição nem animação (dado novo troca no lugar); o e2e confere.
+- Desvios do protótipo: sem a chave "Manter tela acesa" (o Wake Lock é automático; a tela diz se
+  está ligado), sem "próxima leitura em N s", número com o separador decimal que o resto do painel
+  usa, cores do protótipo (verde do Tailwind) trocadas pelos tokens.
+
 ## 8. Acessibilidade
 
 - Contraste ≥ 4,5:1 em todo texto.
