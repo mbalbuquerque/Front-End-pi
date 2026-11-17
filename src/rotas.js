@@ -14,19 +14,32 @@ export const ROTAS_LEGADAS = {
   sensores: "/sensores",
   viagens: "/viagens",
   configuracoes: "/configuracoes",
-  usuarios: "/usuarios",
-  auditoria: "/auditoria",
-  "cadastro-usuario": "/cadastro-usuario",
-  logistica: "/logistica",
+  usuarios: "/configuracoes",
+  auditoria: "/dashboard",
+  "cadastro-usuario": "/configuracoes",
+  logistica: "/viagens",
   monitoramento: "/monitoramento",
   motorista: "/motorista"
+};
+
+
+// Telas que mostravam dados de exemplo (sem API) e foram retiradas. O endereço
+// continua vivo e leva à tela real: usuários são geridos em Configurações
+// (GET /usuarios), cargas são as viagens (GET /viagens) e a API não tem registro
+// de auditoria, então /auditoria volta à visão geral.
+export const ROTAS_REMOVIDAS = {
+  "/usuarios": "/configuracoes#painelUsuarios",
+  "/cadastro-usuario": "/configuracoes#painelUsuarios",
+  "/logistica": "/viagens",
+  "/auditoria": "/dashboard"
 };
 
 
 // Navegação única do painel (PainelLayout), em dois grupos, como no design
 // system (docs/design-system.md, seção 7). "celular": posição do item na barra
 // inferior do celular (Visão geral, Alertas, Sensores, Viagens; o resto fica em "Mais"). "tambem": rotas que acendem
-// o mesmo item (o formulário de novo usuário pertence a Usuários).
+// o mesmo item. "gestor": só aparece para o perfil gestor (Usuários abre a seção
+// de usuários de Configurações, que só o gestor vê).
 export const GRUPOS_PAINEL = [
   {
     nome: "Operação",
@@ -42,9 +55,7 @@ export const GRUPOS_PAINEL = [
   {
     nome: "Gestão",
     paginas: [
-      { rota: "/logistica", icone: "logistica", nome: "Logística" },
-      { rota: "/usuarios", icone: "usuarios", nome: "Usuários", tambem: ["/cadastro-usuario"] },
-      { rota: "/auditoria", icone: "auditoria", nome: "Auditoria" },
+      { rota: "/configuracoes#painelUsuarios", icone: "usuarios", nome: "Usuários", gestor: true },
       { rota: "/monitoramento", icone: "monitoramento", nome: "Monitoramento ThingSpeak" },
       { rota: "/configuracoes", icone: "configuracoes", nome: "Configurações" }
     ]

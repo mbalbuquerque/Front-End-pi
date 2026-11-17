@@ -59,7 +59,7 @@ fonte dos dados do painel; a especificação das rotas está no
 [Swagger da API](https://func-coldtrack-7319.azurewebsites.net/api/docs) (OpenAPI 3.0) e, em texto, em
 [`docs/api.md`](https://github.com/mbalbuquerque/projeto-integrador-4-periodo/blob/main/docs/api.md) do back-end.
 
-A tela **Monitoramento** é uma demonstração separada que lê o canal público do ThingSpeak
+A tela **Monitoramento** (só com login) mostra as leituras do canal público do ThingSpeak
 (`3515173`: field1 temperatura, field2 umidade, field3 RSSI); o ThingSpeak não faz parte do
 caminho dos dados do painel. O **Dashboard** usa a previsão da Open-Meteo para estimar o calor
 na rota Petrolina a Suape.
@@ -155,7 +155,7 @@ cp .env.example .env.local
 - **Unitários (Vitest):** regras sem tela em `src/lib` e em `src/pages/*/` (leituras,
   faixas, sessão, API, formatação, CSV, sensores, viagens, etiqueta, chat, plano B do chat e assistente do painel).
 - **E2E (Playwright):** `coldtrack-qa/tests`, em Desktop Chrome e Mobile Chrome. Cobrem as
-  telas públicas e demonstrativas, o chat (com a rota `/chat` simulada), o assistente do painel (rota `/assistente` simulada), os redirecionamentos das URLs antigas e as telas
+  telas públicas, o chat (com a rota `/chat` simulada), o assistente do painel (rota `/assistente` simulada), os redirecionamentos das URLs antigas e as telas
   logadas como gestor e como operador. A API e os serviços de terceiros são simulados: nenhum
   teste acessa o Azure. Detalhes em [`coldtrack-qa/README.md`](coldtrack-qa/README.md).
 
@@ -208,8 +208,10 @@ bash publicar.sh
 | `/sensores` | situação dos sensores; conexão pelo cabo USB e registro manual só para gestor | logado |
 | `/viagens` | viagens e condição da carga em cada trajeto | logado |
 | `/configuracoes` | conta, troca de senha, faixas, sensores; usuários só para gestor | logado |
-| `/usuarios`, `/auditoria`, `/cadastro-usuario`, `/logistica` | telas demonstrativas (dados de exemplo) | público |
-| `/monitoramento` | leitura do canal público do ThingSpeak | público |
+| `/usuarios`, `/cadastro-usuario` | redirecionam para a seção Usuários de `/configuracoes` (telas de exemplo retiradas) | sim |
+| `/logistica` | redireciona para `/viagens` (tela de exemplo retirada) | sim |
+| `/auditoria` | redireciona para `/dashboard` (a API não tem registro de auditoria) | sim |
+| `/monitoramento` | leitura do canal público do ThingSpeak | sim |
 
 Rota logada sem sessão vai para `/login`. Rota desconhecida volta para `/`.
 
@@ -303,8 +305,7 @@ O que o Front-End faz:
 
 Limitações:
 
-- Usuários, Auditoria, Cadastro de usuário e Gestão Logística continuam demonstrativos, com
-  dados de exemplo e sem persistência.
+- Não há tela de auditoria: a API ainda não registra um histórico de eventos para consulta.
 - As avaliações do chat ficam no navegador de quem avaliou.
 
 ## 10. Documentação

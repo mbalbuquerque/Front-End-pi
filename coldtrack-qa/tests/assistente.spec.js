@@ -24,7 +24,7 @@ const LOGADAS = [
   { rota: "/configuracoes", titulo: "Configurações" }
 ];
 
-const PUBLICAS = ["/", "/login", "/cadastro", "/usuarios", "/auditoria", "/cadastro-usuario", "/logistica", "/monitoramento"];
+const PUBLICAS = ["/", "/login", "/cadastro"];
 
 const INDISPONIVEL = "O assistente está indisponível agora. Tente de novo em instantes.";
 

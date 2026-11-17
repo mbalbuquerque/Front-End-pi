@@ -62,7 +62,7 @@ source of the dashboard's data; the route specification is in the
 [API Swagger](https://func-coldtrack-7319.azurewebsites.net/api/docs) (OpenAPI 3.0) and, in text, in
 [`docs/api.md`](https://github.com/mbalbuquerque/projeto-integrador-4-periodo/blob/main/docs/api.md) of the back end.
 
-The **Monitoramento** (Monitoring) screen is a separate demonstration that reads the public
+The **Monitoramento** (Monitoring) screen (signed in only) shows the readings of the public
 ThingSpeak channel (`3515173`: field1 temperature, field2 humidity, field3 RSSI); ThingSpeak is not
 part of the dashboard's data path. The **Dashboard** uses the Open-Meteo forecast to estimate the
 heat along the Petrolina to Suape route.
@@ -210,8 +210,10 @@ bash publicar.sh
 | `/sensores` | situation of the sensors; USB cable connection and manual registration for managers only | logged in |
 | `/viagens` | trips and cargo condition on each route | logged in |
 | `/configuracoes` | account, password change, ranges, sensors; users for managers only | logged in |
-| `/usuarios`, `/auditoria`, `/cadastro-usuario`, `/logistica` | demonstration screens (sample data) | public |
-| `/monitoramento` | reading of the public ThingSpeak channel | public |
+| `/usuarios`, `/cadastro-usuario` | redirect to the Users section of `/configuracoes` (sample-data screens removed) | yes |
+| `/logistica` | redirects to `/viagens` (sample-data screen removed) | yes |
+| `/auditoria` | redirects to `/dashboard` (the API has no audit log) | yes |
+| `/monitoramento` | reading of the public ThingSpeak channel | yes |
 
 A logged-in route without a session goes to `/login`. An unknown route goes back to `/`.
 
@@ -305,8 +307,7 @@ What the front end does:
 
 Limitations:
 
-- Usuários (Users), Auditoria (Audit), Cadastro de usuário (User registration) and Gestão
-  Logística (Logistics management) remain demonstrations, with sample data and no persistence.
+- There is no audit screen: the API does not yet keep a queryable event log.
 - Chat ratings stay in the browser of whoever rated.
 
 ## 10. Documentation

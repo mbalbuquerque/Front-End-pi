@@ -4,13 +4,13 @@ import { cleanup, render, screen } from "@testing-library/react";
 import { MemoryRouter, Outlet, useLocation } from "react-router-dom";
 import { describe, expect, it, vi } from "vitest";
 import App from "./App.jsx";
-import { ROTAS_LEGADAS } from "./rotas.js";
+import { ROTAS_LEGADAS, ROTAS_REMOVIDAS } from "./rotas.js";
 
 // Cada tela vira um marcador com o nome e a busca da URL; as telas têm testes próprios.
 const tela = nome => ({
   default: function Tela() {
-    const { search } = useLocation();
-    return <p data-testid="tela">{`${nome}${search}`}</p>;
+    const { search, hash } = useLocation();
+    return <p data-testid="tela">{`${nome}${search}${hash}`}</p>;
   }
 });
 
@@ -24,10 +24,6 @@ vi.mock("./pages/Veiculos/Veiculos.jsx", () => tela("Veiculos"));
 vi.mock("./pages/Sensores/Sensores.jsx", () => tela("Sensores"));
 vi.mock("./pages/Viagens/Viagens.jsx", () => tela("Viagens"));
 vi.mock("./pages/Configuracoes/Configuracoes.jsx", () => tela("Configuracoes"));
-vi.mock("./pages/Usuarios/Usuarios.jsx", () => tela("Usuarios"));
-vi.mock("./pages/Auditoria/Auditoria.jsx", () => tela("Auditoria"));
-vi.mock("./pages/CadastroUsuario/CadastroUsuario.jsx", () => tela("CadastroUsuario"));
-vi.mock("./pages/Logistica/Logistica.jsx", () => tela("Logistica"));
 vi.mock("./pages/Monitoramento/Monitoramento.jsx", () => tela("Monitoramento"));
 vi.mock("./pages/Motorista/Motorista.jsx", () => tela("Motorista"));
 
@@ -56,10 +52,6 @@ describe("App - rotas", () => {
     ["/sensores", "Sensores"],
     ["/viagens", "Viagens"],
     ["/configuracoes", "Configuracoes"],
-    ["/usuarios", "Usuarios"],
-    ["/auditoria", "Auditoria"],
-    ["/cadastro-usuario", "CadastroUsuario"],
-    ["/logistica", "Logistica"],
     ["/monitoramento", "Monitoramento"],
     ["/motorista", "Motorista"]
   ])("%s abre %s", async (caminho, nome) => {
@@ -77,6 +69,16 @@ describe("App - rotas", () => {
       const esperado = rota === "/" ? "Home" : rota.slice(1).replace(/(^|-)(\w)/g, (_, __, letra) => letra.toUpperCase());
       expect(resultado.textContent).toBe(esperado);
     }
+  });
+
+  it.each([
+    ["/usuarios", "Configuracoes#painelUsuarios"],
+    ["/cadastro-usuario", "Configuracoes#painelUsuarios"],
+    ["/logistica", "Viagens"],
+    ["/auditoria", "Dashboard"]
+  ])("tela de exemplo removida: %s leva à tela real (%s)", async (caminho, esperado) => {
+    expect(ROTAS_REMOVIDAS).toHaveProperty(caminho);
+    expect(await abrir(caminho)).toHaveTextContent(new RegExp(`^${esperado}$`));
   });
 
   it("caminho que não existe volta ao início", async () => {

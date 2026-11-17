@@ -21,10 +21,11 @@ export const MANUAL =
   "e horário da última leitura.\n\n" +
   "3. Monitoramento: veja o histórico, confira a " +
   "atualização dos dados e consulte as leituras.\n\n" +
-  "4. Gestão Logística: consulte, cadastre, edite, " +
-  "conclua ou cancele cargas demonstrativas.\n\n" +
-  "5. Usuários: consulte registros e perfis demonstrativos.\n\n" +
-  "6. Auditoria: pesquise eventos e exporte registros CSV.\n\n" +
+  "4. Veículos e Viagens: o gestor cadastra os veículos, " +
+  "com o perfil da carga, e registra as viagens.\n\n" +
+  "5. Usuários: em Configurações, o gestor cria os acessos " +
+  "de gestor, operador e motorista.\n\n" +
+  "6. Relatórios: exporte as leituras em CSV.\n\n" +
   "7. Atendimento: faça perguntas, confirme se a dúvida " +
   "foi resolvida e avalie de 1 a 5 estrelas.\n\n" +
   "8. Suporte: utilize Falar com o desenvolvedor.\n\n" +
@@ -46,8 +47,8 @@ export const CONHECIMENTO = [
     termos: ["manual", "guia", "tutorial", "instrucoes", "como usar", "ajuda do sistema"],
     resposta:
       "O Manual do ColdTrack Control explica o acesso, " +
-      "Dashboard, Monitoramento, Gestão Logística, Usuários, " +
-      "Auditoria, Assistente Virtual e avaliação. " +
+      "Dashboard, Monitoramento, Veículos, Viagens, Usuários, " +
+      "Relatórios, Assistente Virtual e avaliação. " +
       "Use o botão Manual do sistema para consultar " +
       "os principais procedimentos."
   },
@@ -62,27 +63,24 @@ export const CONHECIMENTO = [
   {
     termos: ["cadastrar carga", "nova carga", "criar carga", "incluir carga"],
     resposta:
-      "Para cadastrar uma carga:\n" +
-      "1. Abra Gestão Logística.\n" +
-      "2. Selecione a opção de nova carga.\n" +
-      "3. Preencha os campos do formulário.\n" +
-      "4. Revise e confirme.\n\n" +
-      "Atenção: o cadastro ainda é demonstrativo e " +
-      "não possui persistência definitiva no servidor."
+      "A carga é acompanhada pela viagem do veículo:\n" +
+      "1. Em Veículos, o gestor cadastra o veículo com o perfil da carga.\n" +
+      "2. Em Viagens, registra a viagem desse veículo.\n" +
+      "3. Revise e confirme.\n\n" +
+      "Os dados ficam gravados na API no Azure."
   },
   {
     termos: ["editar carga", "alterar carga"],
     resposta:
-      "Abra Gestão Logística, localize a carga, " +
-      "selecione Editar, altere as informações e confirme. " +
-      "As alterações ainda são demonstrativas."
+      "A viagem não é editada depois de registrada: em Viagens, " +
+      "o gestor pode encerrá-la ou removê-la e registrar outra. " +
+      "A faixa da carga vem do perfil escolhido no cadastro do veículo."
   },
   {
     termos: ["cancelar carga", "concluir carga"],
     resposta:
-      "Em Gestão Logística, localize o registro e escolha " +
-      "a ação correspondente. Confira os dados antes de confirmar. " +
-      "Essas operações ainda não possuem persistência no servidor."
+      "Em Viagens, o gestor localiza a viagem e usa Encerrar viagem " +
+      "(concluída) ou Remover. Confira os dados antes de confirmar."
   },
   {
     termos: ["atualizar leitura", "dados antigos", "sem dados"],
@@ -110,11 +108,10 @@ export const CONHECIMENTO = [
       "Atualmente, ela é salva apenas neste navegador."
   },
   {
-    termos: ["exportar auditoria", "baixar csv"],
+    termos: ["exportar csv", "baixar csv"],
     resposta:
-      "Abra Auditoria, aplique os filtros desejados " +
-      "e utilize a opção de exportação CSV. " +
-      "Os registros atuais são demonstrativos."
+      "Abra Relatórios, escolha o veículo e o período " +
+      "e utilize a opção de exportação CSV."
   },
   {
     termos: ["aplicativo", "instalar", "pwa", "offline"],
@@ -138,11 +135,11 @@ export const CONHECIMENTO = [
   },
   {
     termos: ["thingspeak", "api", "nuvem", "azure"],
-    resposta: "As medições vão do sensor para a API do ColdTrack no Azure (Azure Functions), que grava as leituras no Cosmos DB; o painel lê tudo dessa API. A tela Monitoramento é uma demonstração à parte, que lê o canal público 3515173 do ThingSpeak."
+    resposta: "As medições vão do sensor para a API do ColdTrack no Azure (Azure Functions), que grava as leituras no Cosmos DB; o painel lê tudo dessa API. A tela Monitoramento, no painel logado, mostra as leituras do canal público 3515173 do ThingSpeak."
   },
   {
     termos: ["monitoramento", "monitorar", "leituras", "historico"],
-    resposta: "Cada sensor envia temperatura, umidade e sinal Wi-Fi para a API no Azure. No painel, o Dashboard mostra a leitura atual, o histórico e a situação da carga conforme o perfil do veículo, e os Alertas reúnem as leituras fora da faixa. A tela Monitoramento é uma demonstração à parte com o canal público do ThingSpeak."
+    resposta: "Cada sensor envia temperatura, umidade e sinal Wi-Fi para a API no Azure. No painel, o Dashboard mostra a leitura atual, o histórico e a situação da carga conforme o perfil do veículo, e os Alertas reúnem as leituras fora da faixa. A tela Monitoramento mostra as leituras do canal público do ThingSpeak."
   },
   {
     termos: ["umidade"],
@@ -154,7 +151,7 @@ export const CONHECIMENTO = [
   },
   {
     termos: ["logistica", "carga", "transporte", "veiculo"],
-    resposta: "Veículos e Viagens, no painel logado, são cadastrados na API no Azure: o gestor cadastra veículos com o perfil da carga e registra viagens. A tela Gestão Logística continua demonstrativa, com dados de exemplo."
+    resposta: "Veículos e Viagens, no painel logado, são cadastrados na API no Azure: o gestor cadastra veículos com o perfil da carga e registra viagens."
   },
   {
     termos: ["login", "acesso", "senha", "cadastro", "entrar"],
@@ -162,11 +159,11 @@ export const CONHECIMENTO = [
   },
   {
     termos: ["usuario", "perfil", "permissao"],
-    resposta: "Os usuários reais são gerenciados pelo gestor em Configurações, com perfil gestor ou operador, e a API controla o que cada um pode fazer. A tela Usuários continua demonstrativa."
+    resposta: "Os usuários reais são gerenciados pelo gestor em Configurações, com perfil gestor, operador ou motorista, e a API controla o que cada um pode fazer. O motorista entra pela mesma tela de login e vê só o veículo vinculado a ele."
   },
   {
     termos: ["auditoria", "logs", "seguranca"],
-    resposta: "A área de Auditoria permite explorar registros demonstrativos de eventos. Os logs operacionais reais dependerão do Back-End."
+    resposta: "O acesso exige login, a sessão vale por 8 horas e a API confere o perfil do usuário em cada operação. O painel ainda não tem uma tela de auditoria."
   },
   {
     termos: ["equipe", "desenvolvedor", "contato", "suporte", "atendimento", "humano"],

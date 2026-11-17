@@ -10,7 +10,7 @@
 //   </PainelLayout>
 //
 // familia: família de CSS do conteúdo (src/styles/<familia>/). As telas de
-// gestão (Usuários, Auditoria...) passam a própria família e o próprio
+// gestão (Monitoramento) passam a própria família e o próprio
 // cabeçalho: sem "titulo", a barra superior não repete o <h1> da tela.
 // Sem "conexao" (undefined), a tela não fala com a API e o indicador some.
 //
@@ -27,7 +27,7 @@ import { useOnline, useUltimaRecepcao } from "../lib/conectividade.js";
 import { formatarHora } from "../lib/formatar.js";
 import { useSessao } from "../hooks/useSessao.jsx";
 import { useTitulo } from "../hooks/useTitulo.js";
-import { nomeDoPerfil } from "../lib/sessao.js";
+import { ehGestor, nomeDoPerfil } from "../lib/sessao.js";
 import { GRUPOS_PAINEL } from "../rotas.js";
 import FaixaOffline from "./FaixaOffline.jsx";
 import Icone from "./Icone.jsx";
@@ -125,7 +125,7 @@ export default function PainelLayout({
           {GRUPOS_PAINEL.map(grupo => (
             <div className="ct-nav-grupo" key={grupo.nome}>
               <span className="ct-nav-titulo">{grupo.nome}</span>
-              {grupo.paginas.map(pagina => {
+              {grupo.paginas.filter(pagina => !pagina.gestor || ehGestor(usuario)).map(pagina => {
                 const atual = ativa(pagina, pathname);
                 return (
                   <Link

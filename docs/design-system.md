@@ -113,7 +113,7 @@ título e botão nunca peso 300/400; `letter-spacing` negativo só acima de 24 p
 
 | componente | regra |
 |---|---|
-| Barra lateral | navy, logo + "ColdTrack Control"; grupos Operação (Visão geral, Veículos, Sensores, Viagens, Alertas, Relatórios) e Gestão (Logística, Usuários, Auditoria, Monitoramento ThingSpeak, Configurações); rodapé com usuário e "Sair" |
+| Barra lateral | navy, logo + "ColdTrack Control"; grupos Operação (Visão geral, Veículos, Sensores, Viagens, Alertas, Relatórios) e Gestão (Usuários, só para o gestor, Monitoramento ThingSpeak, Configurações); rodapé com usuário e "Sair" |
 | Barra superior | título da página, seletor de veículo, pílula "Azure conectado" e "atualizado há N s" |
 | Navegação inferior (celular) | Visão geral, Alertas, Sensores, Viagens, Mais; alvo ≥ 44 px |
 | Cartão herói de temperatura | número display, pílula de status, régua de faixa com marcador |
@@ -202,22 +202,12 @@ título e botão nunca peso 300/400; `letter-spacing` negativo só acima de 24 p
 
 ### Telas de gestão implementadas (`styles/gestao/gestao.css`, `styles/painel/configuracoes.css`)
 
-- Todas usam a barra superior do shell (título e apoio); Usuários, Auditoria, Logística e
-  Monitoramento são uma família própria (`gestao`), sem o assistente, porque abrem sem sessão.
-- Telas demonstrativas mantêm o aviso: faixa azul com ícone de informação ("Ambiente
-  demonstrativo...", "Interface demonstrativa...") e o selo cinza "DADOS DEMONSTRATIVOS" /
-  "SOMENTE LEITURA".
+- Todas usam a barra superior do shell (título e apoio); Monitoramento é uma família própria
+  (`gestao`), sem o assistente. As telas de exemplo (Usuários, Auditoria, Logística, Novo usuário)
+  foram retiradas: o produto não mostra dado inventado; usuários ficam em Configurações.
 - **Diálogo** (`.dialogo`): centralizado, 520 px, topo com título (e X de 44 px quando o protótipo
   tem), corpo e rodapé com as ações à direita; entra de `scale(0.96)` + opacidade em 200 ms e sai na
   hora. Detalhes em lista rótulo/valor.
-- **Usuários**: três tiles, filtros com rótulo visível, tabela com pílula de perfil e de status
-  (Ativo/Inativo com ponto e texto); no celular cada linha vira cartão.
-- **Auditoria**: filtros num cartão (Limpar filtros e Exportar CSV juntos); histórico como linha do
-  tempo agrupada por dia, um ícone por tipo de evento, pílula Sucesso/Negado, evento negado com
-  borda vermelha de 4 px.
-- **Logística**: quadro por situação com uma coluna por status que a carga pode ter (Em transporte,
-  Em atenção, Entregue, Cancelada) e contagem; cartão da carga com produto, rota, sensor,
-  temperatura e a situação escrita.
 - **Monitoramento ThingSpeak**: "Atualizar leituras" na barra superior; temperatura em display
   (56 px, cor do status) como maior número; gráfico com limites tracejados (verde 15 °C, âmbar
   20 °C) e legenda em HTML; abaixo de 1100 px os rótulos de dentro do SVG somem (ficariam com
@@ -226,10 +216,8 @@ título e botão nunca peso 300/400; `letter-spacing` negativo só acima de 24 p
   de 900 px); Faixas e Usuários ocupam a largura toda. Faixas com pílula de cor por zona; Usuários
   com "você" em selo, Trocar veículo/Redefinir senha/Remover e o bloco "Novo usuário" logo abaixo
   da lista; "Excluir empresa" em seção de borda vermelha.
-- Desvios do protótipo: sem coluna "Aguardando" no quadro (a carga não tem esse estado; as colunas
-  são os quatro estados reais); o formulário de novo usuário continua na própria tela, não num
-  diálogo (o fluxo e os testes preenchem o formulário direto); títulos "Gestão Logística",
-  "Monitoramento de sensores", "Gestão de Usuários" e "Auditoria e Logs" mantidos; sem "Azure
+- Desvios do protótipo: o formulário de novo usuário continua na própria tela, não num
+  diálogo (o fluxo e os testes preenchem o formulário direto); título "Monitoramento de sensores" mantido; sem "Azure
   conectado" nas telas que não falam com a API; sem avatar com iniciais; sem a frase "placa física
   via MQTT" nem "Auditoria contínua da cadeia de custódia" (texto inventado).
 

@@ -51,7 +51,7 @@ Depois do cadastro você é levado direto à tela Sensores para conectar o prime
 
 **Duração da sessão.** O login vale por 8 horas. Quando a sessão vence, o painel volta sozinho para a tela de login e você entra de novo. Para encerrar manualmente, use o botão **Sair** no rodapé do menu lateral (no celular, dentro de **Mais**).
 
-**Menu lateral.** Um menu só, em dois grupos: **Operação** (Visão geral, Veículos, Sensores, Viagens, Alertas, Relatórios) e **Gestão** (Logística, Usuários, Auditoria, Monitoramento ThingSpeak, Configurações). No celular o menu fica embaixo, com Visão geral, Alertas, Sensores, Viagens e **Mais** (que abre o resto do menu e o botão Sair). No topo de cada tela há um indicador de conexão: "Conectando...", "Azure conectado" ou "Sem conexão com Azure", e a hora da última atualização recebida. Se aparecer "Sem conexão com Azure", os dados voltam na próxima atualização (20 s).
+**Menu lateral.** Um menu só, em dois grupos: **Operação** (Visão geral, Veículos, Sensores, Viagens, Alertas, Relatórios) e **Gestão** (Usuários, que só o gestor vê e abre a seção de usuários de Configurações; Monitoramento ThingSpeak; Configurações). No celular o menu fica embaixo, com Visão geral, Alertas, Sensores, Viagens e **Mais** (que abre o resto do menu e o botão Sair). No topo de cada tela há um indicador de conexão: "Conectando...", "Azure conectado" ou "Sem conexão com Azure", e a hora da última atualização recebida. Se aparecer "Sem conexão com Azure", os dados voltam na próxima atualização (20 s).
 
 ## Dashboard
 
