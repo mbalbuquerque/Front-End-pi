@@ -152,10 +152,20 @@ export class SensorUsb {
   }
 
 
-  // A placa testa a rede antes de gravar (até 15 s) e só então responde.
+  // A placa procura a rede (scan, até ~4 s), testa antes de gravar (até 25 s)
+  // e só então responde.
   configurar(comando) {
 
-    return this.enviar(comando, 25000);
+    return this.enviar(comando, 45000);
+
+  }
+
+
+  // Redes 2.4 GHz que a placa enxerga: { ok, redes: [{ ssid, rssi, canal, seguranca }] }.
+  // Firmware antigo responde { ok: false, erro: "comando_desconhecido" }.
+  redes() {
+
+    return this.enviar({ cmd: "redes" }, 15000);
 
   }
 

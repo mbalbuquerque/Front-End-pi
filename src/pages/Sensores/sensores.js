@@ -113,16 +113,62 @@ export const EXPLICACAO = {
 
 // Erro devolvido pela placa ao testar a rede. { texto, ajuda }: ajuda é o
 // item da seção "Como conectar um sensor" ligado no "Ver ajuda" (ou null).
-export function mensagemDeErro(codigo, ssid) {
+// detalhes é a resposta inteira da placa: rssi e canal do AP visto no scan e
+// o motivo numérico do driver Wi-Fi (vai entre parênteses, para o suporte).
+export function mensagemDeErro(codigo, ssid, detalhes = {}) {
 
   const rede = `“${ssid}”`;
 
-  return {
-    senha: { texto: `Senha errada para a rede ${rede}. Confira e tente de novo.`, ajuda: "senha" },
-    rede_nao_encontrada: { texto: `O sensor não achou a rede ${rede}. Confira o nome e se o hotspot está ligado em 2.4 GHz.`, ajuda: "rede" },
-    tempo: { texto: `O sensor não conseguiu entrar na rede ${rede} em 15 s. Confira o nome, a senha, se o hotspot está em 2.4 GHz e perto do sensor.`, ajuda: "rede" },
+  const base = {
+    senha: { texto: `Senha errada para a rede ${rede}. Confira maiúsculas e minúsculas e tente de novo.`, ajuda: "senha" },
+    rede_nao_encontrada: { texto: `O sensor não achou a rede ${rede}. Confira o nome exato. O sensor só enxerga redes de 2.4 GHz: rede só de 5 GHz não aparece para ele.`, ajuda: "rede" },
+    rede_corporativa: { texto: `A rede ${rede} pede login com usuário (WPA-Enterprise, comum em faculdade e empresa). O sensor só entra em rede com senha simples: use o hotspot do celular ou uma rede de visitantes.`, ajuda: "corporativa" },
+    seguranca_incompativel: { texto: `A rede ${rede} usa uma segurança que o sensor não aceita (WEP ou WPA antigo). Use uma rede WPA2 ou WPA3, ou o hotspot do celular.`, ajuda: "rede" },
+    sinal_fraco: { texto: `O sinal da rede ${rede} chega fraco no sensor e a conexão não fechou. Aproxime o sensor do roteador ou do hotspot e tente de novo.`, ajuda: "sinal" },
+    sem_ip: { texto: `O sensor entrou na rede ${rede}, mas o roteador não entregou um endereço (DHCP) a tempo. Acontece em rede cheia ou que exige cadastro do aparelho: tente de novo ou use o hotspot do celular.`, ajuda: "rede" },
+    tempo: { texto: `O sensor não conseguiu entrar na rede ${rede} a tempo. Confira o nome, a senha, se a rede é de 2.4 GHz e se está perto do sensor.`, ajuda: "rede" },
     rede_invalida: { texto: "O nome da rede aceita até 32 caracteres e a senha até 63.", ajuda: null }
   }[codigo] || { texto: `O sensor recusou a configuração (${codigo || "sem motivo"}). Tente de novo.`, ajuda: null };
+
+  const extras = [];
+
+  if (typeof detalhes.rssi === "number") {
+    const canal = typeof detalhes.canal === "number" ? `, canal ${detalhes.canal}` : "";
+    extras.push(`Sinal no sensor: ${descreverSinal(detalhes.rssi)}${canal}.`);
+  }
+
+  if (typeof detalhes.motivo === "number" && detalhes.motivo > 0) {
+    extras.push(`(motivo ${detalhes.motivo})`);
+  }
+
+  return extras.length ? { ...base, texto: `${base.texto} ${extras.join(" ")}` } : base;
+
+}
+
+
+const SEGURANCA = {
+  aberta: "Aberta",
+  owe: "Aberta (OWE)",
+  wep: "WEP",
+  wpa: "WPA",
+  wpa2: "WPA2",
+  wpa_wpa2: "WPA/WPA2",
+  wpa3: "WPA3",
+  wpa2_wpa3: "WPA2/WPA3",
+  enterprise: "Login (Enterprise)"
+};
+
+// Segurança que a placa não consegue usar (resposta do comando "redes").
+const SEM_SUPORTE = new Set(["enterprise", "wep", "wpa"]);
+
+
+// Uma linha da lista "Ver redes que o sensor enxerga": { seguranca, compativel }.
+export function descreverRede(rede) {
+
+  return {
+    seguranca: SEGURANCA[rede.seguranca] || "Outra",
+    compativel: !SEM_SUPORTE.has(rede.seguranca)
+  };
 
 }
 
