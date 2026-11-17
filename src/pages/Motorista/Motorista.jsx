@@ -14,6 +14,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Icone from "../../components/Icone.jsx";
+import PrevisaoSensor from "../../components/PrevisaoSensor.jsx";
 import ReguaFaixa from "../../components/ReguaFaixa.jsx";
 import { usePolling } from "../../hooks/usePolling.js";
 import { useSessao } from "../../hooks/useSessao.jsx";
@@ -228,6 +229,8 @@ export default function Motorista() {
 
               <p className="frase">{info.frase}</p>
             </section>
+
+            <PrevisaoSensor variante="motorista" />
 
             <dl className="detalhes">
               <div>

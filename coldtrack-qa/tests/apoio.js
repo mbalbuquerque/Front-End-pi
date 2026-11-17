@@ -149,6 +149,28 @@ export function predicao(params) {
 }
 
 
+// Resposta simulada de GET /predict/sensor (previsão 10 min): hoje a API recomenda
+// a persistência. `extra` sobrescreve campos. Valores de teste, não do modelo real.
+export function previsaoSensor(extra = {}) {
+
+  const ponto = (temperatura, status = "NORMAL") => ({ para: new Date(Date.now() + 600000).toISOString(), temperatura, status });
+
+  return {
+    deviceId: "esp32-teste-01",
+    horizonteMin: 10,
+    ultimaLeitura: { medidoEm: new Date().toISOString(), perfil: "demonstrativo", temperatura: 11.8, status: "NORMAL" },
+    previsao: ponto(12.4),
+    baseline: ponto(11.8),
+    recomendada: "baseline",
+    antecipaExcursao: false,
+    motivo: null,
+    modelo: { versao: "teste-v1", maeModelo: 0.342, maeBaseline: 0.3128, superaBaseline: false },
+    ...extra
+  };
+
+}
+
+
 // Resposta simulada de GET /motorista (tela do motorista): o veículo VAN-01,
 // com a leitura medida há `minutos`. Valores de teste.
 export function respostaMotorista(status = "NORMAL", minutos = 0) {
@@ -214,6 +236,7 @@ export async function simularApi(page) {
       case "/usuarios": return responder({ usuarios: Object.values(USUARIOS) });
       case "/leituras": return responder({ leituras: leituras(url.searchParams.get("deviceId")) });
       case "/predict": return responder(predicao(url.searchParams));
+      case "/predict/sensor": return responder(previsaoSensor());
       case "/motorista": return responder(respostaMotorista());
       default: return responder({ erros: ["Rota não simulada"] }, 404);
     }

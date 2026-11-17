@@ -6,6 +6,7 @@ import Estado, { SemVeiculo } from "../../components/Estado.jsx";
 import GraficoTemperatura from "../../components/GraficoTemperatura.jsx";
 import Icone from "../../components/Icone.jsx";
 import PainelLayout from "../../components/PainelLayout.jsx";
+import PrevisaoSensor from "../../components/PrevisaoSensor.jsx";
 import ReguaFaixa from "../../components/ReguaFaixa.jsx";
 import SeletorVeiculo from "../../components/SeletorVeiculo.jsx";
 import { usePolling } from "../../hooks/usePolling.js";
@@ -188,6 +189,8 @@ export default function Dashboard() {
           {veiculo && (
             <ReguaFaixa faixa={escolha.faixa} temperatura={ultima ? parseFloat(ultima.temperatura) : null} />
           )}
+
+          {veiculo && <PrevisaoSensor variante="painel" deviceId={veiculo.deviceId} />}
 
           <dl className="heroi-veiculo">
             <div>

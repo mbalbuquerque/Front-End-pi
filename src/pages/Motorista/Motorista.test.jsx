@@ -30,6 +30,7 @@ vi.mock("../../lib/api.js", () => api);
 vi.mock("../../lib/push.js", () => push);
 vi.mock("../../lib/conectividade.js", () => ({ useOnline: () => rede.online }));
 vi.mock("../../hooks/useTelaAcesa.js", () => ({ useTelaAcesa: () => tela.estado }));
+vi.mock("../../components/PrevisaoSensor.jsx", () => ({ default: ({ variante, deviceId }) => <div data-testid="previsao" data-variante={variante} data-device={String(deviceId)} /> }));
 vi.mock("./alerta.js", () => ({
   vibrar: alerta.vibrar,
   notificar: alerta.notificar,
@@ -125,6 +126,13 @@ describe("Motorista", () => {
     expect(screen.getByText("Use com o celular no suporte.")).toBeInTheDocument();
     expect(screen.queryByRole("textbox")).not.toBeInTheDocument();
     expect(alerta.vibrar).not.toHaveBeenCalled();
+  });
+
+  it("previsão em 10 min: variante motorista, sem deviceId", async () => {
+    await abrir();
+    const previsao = screen.getByTestId("previsao");
+    expect(previsao).toHaveAttribute("data-variante", "motorista");
+    expect(previsao).toHaveAttribute("data-device", "undefined");
   });
 
   it("os quatro estados aparecem com texto", async () => {

@@ -545,3 +545,54 @@ body.tela-sem-sinal { --tinta: var(--ct-offline-bg); --cor: var(--ct-offline); }
   font-size: 17px;
   font-weight: 800;
 }
+
+
+/* PREVISÃO EM 10 MIN: cartão branco abaixo do status, texto grande, sem movimento */
+
+.previsao--motorista {
+  display: grid;
+  gap: 8px;
+  padding: 12px 16px;
+
+  border: 1px solid var(--ct-border);
+  border-radius: var(--ct-radius-card);
+  background: var(--ct-surface);
+  color: var(--ct-text);
+
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.previsao--motorista .previsao-linha {
+  line-height: 1.4;
+}
+
+.previsao--motorista .previsao-valor {
+  font-size: 20px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.previsao--motorista .previsao-aviso {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+
+  padding: 12px 14px;
+
+  border-left: 8px solid var(--ct-atencao-borda);
+  border-radius: var(--ct-radius-control);
+  background: var(--ct-atencao-bg);
+  color: #5f4200;
+}
+
+.previsao--motorista .previsao-aviso--critico {
+  border-left-color: var(--ct-critico);
+  background: var(--ct-critico-bg);
+  color: #7d1515;
+}
+
+.previsao--motorista .previsao-aviso strong {
+  font-size: 20px;
+  font-weight: 800;
+}

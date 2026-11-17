@@ -1422,3 +1422,51 @@ a.botao {
     font-size: 30px;
   }
 }
+
+
+/* Previsão da temperatura em 10 min, dentro do cartão herói. */
+
+.previsao--painel {
+  display: grid;
+  gap: var(--ct-space-2);
+
+  margin-top: var(--ct-space-3);
+  padding: var(--ct-space-3);
+
+  border: 1px solid var(--ct-border);
+  border-radius: var(--ct-radius-control);
+  background: var(--ct-subtle);
+
+  font-size: var(--ct-text-body-sm);
+  font-weight: var(--ct-weight-label);
+}
+
+.previsao--painel .previsao-valor {
+  font-size: var(--ct-text-title);
+  font-weight: var(--ct-weight-strong);
+  font-variant-numeric: tabular-nums;
+}
+
+.previsao--painel .previsao-aviso {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--ct-space-2);
+
+  padding: var(--ct-space-2) var(--ct-space-3);
+
+  border-left: 4px solid var(--ct-atencao-borda);
+  border-radius: var(--ct-radius-control);
+  background: var(--ct-atencao-bg);
+  color: var(--ct-atencao);
+}
+
+.previsao--painel .previsao-aviso--critico {
+  border-left-color: var(--ct-critico);
+  background: var(--ct-critico-bg);
+  color: var(--ct-critico);
+}
+
+.previsao--painel .previsao-apoio {
+  color: var(--ct-muted);
+  font-size: var(--ct-text-label);
+}
