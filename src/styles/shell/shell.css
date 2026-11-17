@@ -1,0 +1,643 @@
+/* SHELL DO PAINEL (components/PainelLayout) ---------------------------------
+   Barra lateral com os grupos Operação e Gestão, barra superior e área de
+   conteúdo; no celular, a barra lateral vira a navegação inferior com
+   "Mais". O Vite prefixa tudo com .escopo-shell; "body" é a raiz do shell.
+   Só seletores de classe ct-*: o conteúdo da tela (família painel, usuarios,
+   ...) fica dentro do shell e não pode ser atingido por regra de elemento.
+   Valores só de src/styles/tokens.css. */
+
+body {
+  min-height: 100vh;
+
+  background: var(--ct-canvas);
+  color: var(--ct-text);
+
+  font-family: var(--ct-font-body);
+  font-size: var(--ct-text-body-sm);
+  font-weight: var(--ct-weight-body);
+  line-height: var(--ct-leading-body);
+}
+
+/* Só os elementos do shell: o conteúdo de cada família decide o próprio box-sizing. */
+.ct-sidebar,
+.ct-sidebar *,
+.ct-veu,
+.ct-area,
+.ct-topbar,
+.ct-topbar *,
+.ct-conteudo,
+.faixa-offline {
+  box-sizing: border-box;
+}
+
+.ct-icone {
+  flex: none;
+}
+
+
+/* BARRA LATERAL ------------------------------------------------------------- */
+
+.ct-sidebar {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 30;
+
+  width: 256px;
+  padding: var(--ct-space-3) 12px;
+
+  display: flex;
+  flex-direction: column;
+  gap: var(--ct-space-4);
+
+  overflow-y: auto;
+
+  background: var(--ct-navy-900);
+  color: var(--ct-on-navy);
+}
+
+.ct-marca {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  padding: var(--ct-space-2) 12px 0;
+
+  color: var(--ct-surface);
+  text-decoration: none;
+}
+
+.ct-marca-icone {
+  display: grid;
+  place-items: center;
+
+  color: var(--ct-cyan-500);
+}
+
+.ct-marca-texto {
+  display: flex;
+  flex-direction: column;
+}
+
+.ct-marca-texto strong {
+  font-family: var(--ct-font-display);
+  font-size: 24px;
+  font-weight: var(--ct-weight-strong);
+  line-height: var(--ct-leading-headline);
+}
+
+.ct-marca-texto span {
+  color: var(--ct-on-navy-muted);
+  font-size: var(--ct-text-caption);
+  font-weight: var(--ct-weight-label);
+  line-height: var(--ct-leading-label);
+}
+
+.ct-nav {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ct-space-3);
+}
+
+.ct-nav-grupo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ct-nav-titulo {
+  padding: 0 12px var(--ct-space-1);
+
+  color: var(--ct-on-navy-muted);
+  font-size: var(--ct-text-caption);
+  font-weight: var(--ct-weight-label);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.ct-nav-item,
+.ct-sair {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  min-height: var(--ct-touch);
+  padding: var(--ct-space-2) 12px;
+
+  border: 0;
+  border-radius: var(--ct-radius-control);
+  background: transparent;
+  color: var(--ct-on-navy);
+
+  font: inherit;
+  font-size: var(--ct-text-body-sm);
+  font-weight: var(--ct-weight-label);
+  line-height: var(--ct-leading-label);
+  text-align: left;
+  text-decoration: none;
+
+  cursor: pointer;
+
+  transition:
+    background-color var(--ct-dur-fast) var(--ct-ease-out),
+    color var(--ct-dur-fast) var(--ct-ease-out);
+}
+
+.ct-nav-item .ct-icone,
+.ct-sair .ct-icone {
+  color: var(--ct-on-navy-muted);
+}
+
+.ct-nav-item:hover,
+.ct-sair:hover {
+  background: var(--ct-navy-800);
+  color: var(--ct-surface);
+}
+
+.ct-nav-item.active {
+  background: var(--ct-blue-700);
+  color: var(--ct-surface);
+}
+
+.ct-nav-item.active .ct-icone {
+  color: var(--ct-surface);
+}
+
+.ct-nav-item:focus-visible,
+.ct-sair:focus-visible,
+.ct-marca:focus-visible,
+.ct-mais:focus-visible {
+  outline: var(--ct-focus-ring-on-navy);
+  outline-offset: var(--ct-focus-offset);
+}
+
+/* "Mais" só existe no celular. */
+.ct-mais {
+  display: none;
+}
+
+.ct-sidebar-rodape {
+  margin-top: auto;
+  padding-top: 12px;
+
+  display: flex;
+  flex-direction: column;
+  gap: var(--ct-space-1);
+
+  border-top: 1px solid var(--ct-navy-700);
+}
+
+.ct-usuario {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  padding: var(--ct-space-2) 12px;
+
+  color: var(--ct-on-navy-muted);
+}
+
+.ct-usuario-texto {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.ct-usuario-texto strong {
+  color: var(--ct-on-navy);
+  font-size: var(--ct-text-body-sm);
+  font-weight: var(--ct-weight-strong);
+}
+
+.ct-usuario-texto span {
+  font-size: var(--ct-text-caption);
+  font-weight: var(--ct-weight-label);
+  line-height: var(--ct-leading-label);
+}
+
+.ct-usuario-texto strong:empty,
+.ct-usuario-texto span:empty {
+  display: none;
+}
+
+/* Véu atrás do "Mais" aberto (só no celular). */
+.ct-veu {
+  display: none;
+}
+
+
+/* ÁREA DA TELA -------------------------------------------------------------- */
+
+/* A raiz da família (.escopo-painel, .escopo-usuarios...) herdou o antigo
+   <body>: aqui ela vira só a coluna de conteúdo ao lado da barra lateral. */
+.ct-area {
+  display: block;
+  min-height: 100vh;
+  margin-left: 256px;
+  padding: 0;
+
+  background: transparent;
+}
+
+.ct-topbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ct-space-3) var(--ct-space-4);
+
+  min-height: 64px;
+  padding: 12px var(--ct-space-5);
+
+  background: var(--ct-surface);
+  border-bottom: 1px solid var(--ct-border);
+}
+
+.ct-titulo {
+  min-width: 0;
+}
+
+.ct-titulo h1 {
+  margin: 0;
+
+  color: var(--ct-text);
+  font-family: var(--ct-font-display);
+  font-size: var(--ct-text-headline);
+  font-weight: var(--ct-weight-strong);
+  line-height: var(--ct-leading-headline);
+}
+
+.ct-titulo p {
+  margin: 2px 0 0;
+
+  color: var(--ct-muted);
+  font-size: var(--ct-text-body-sm);
+  font-weight: var(--ct-weight-body);
+}
+
+.ct-topbar-extra {
+  display: flex;
+  align-items: center;
+}
+
+.ct-conexao {
+  margin-left: auto;
+
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px var(--ct-space-3);
+}
+
+.ct-pilula {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ct-space-2);
+
+  padding: 6px 12px;
+
+  border: 1px solid currentColor;
+  border-radius: var(--ct-radius-pill);
+
+  font-size: var(--ct-text-label);
+  font-weight: var(--ct-weight-label);
+  line-height: var(--ct-leading-label);
+  white-space: nowrap;
+}
+
+.ct-pilula .online-dot {
+  width: 8px;
+  height: 8px;
+
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.ct-pilula--ok {
+  background: var(--ct-normal-bg);
+  color: var(--ct-normal);
+}
+
+.ct-pilula--aguardando {
+  background: var(--ct-offline-bg);
+  color: var(--ct-offline);
+}
+
+.ct-pilula--falha {
+  background: var(--ct-critico-bg);
+  color: var(--ct-critico);
+}
+
+.ct-atualizado {
+  color: var(--ct-muted);
+  font-size: var(--ct-text-label);
+  font-weight: var(--ct-weight-label);
+  white-space: nowrap;
+}
+
+.ct-conteudo {
+  display: block;
+  padding: var(--ct-space-5);
+}
+
+/* Telas de gestão trazem o próprio espaçamento (main-content, container...). */
+.ct-area:not(.escopo-painel) .ct-conteudo {
+  display: flow-root;
+  padding: 0;
+}
+
+
+/* FAIXA OFFLINE: navegador sem internet (sem animação; branco sobre #8f1d1d ≈ 8,9:1) */
+.faixa-offline {
+  position: sticky;
+  top: 0;
+  z-index: 25;
+
+  padding: 10px var(--ct-space-5);
+
+  background: var(--ct-faixa-offline);
+  color: var(--ct-surface);
+
+  font-size: var(--ct-text-body-sm);
+  font-weight: var(--ct-weight-label);
+  line-height: var(--ct-leading-label);
+}
+
+
+/* CELULAR: barra inferior ---------------------------------------------------- */
+
+@media (max-width: 720px) {
+
+  .ct-sidebar {
+    top: auto;
+    right: 0;
+    z-index: 40;
+
+    width: auto;
+    padding: 0 0 env(safe-area-inset-bottom);
+
+    flex-direction: row;
+    gap: 0;
+
+    overflow: visible;
+
+    background: var(--ct-surface);
+    border-top: 1px solid var(--ct-border);
+    color: var(--ct-muted);
+  }
+
+  .ct-marca,
+  .ct-nav-titulo,
+  .ct-sidebar-rodape,
+  .ct-nav-item:not(.ct-nav-item--celular) {
+    display: none;
+  }
+
+  .ct-nav {
+    flex: 4;
+
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0;
+  }
+
+  .ct-nav-grupo {
+    display: contents;
+  }
+
+  .ct-nav-item,
+  .ct-mais {
+    order: var(--ordem, 0);
+
+    min-height: 60px;
+    padding: 6px 2px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    color: var(--ct-muted);
+
+    font: inherit;
+    font-size: var(--ct-text-caption);
+    font-weight: var(--ct-weight-label);
+    line-height: 1.2;
+    text-align: center;
+
+    cursor: pointer;
+  }
+
+  .ct-mais {
+    flex: 1;
+  }
+
+  .ct-nav-item .ct-icone {
+    color: inherit;
+  }
+
+  .ct-nav-item:hover {
+    background: transparent;
+    color: var(--ct-text);
+  }
+
+  .ct-nav-item.active {
+    background: transparent;
+    color: var(--ct-blue-700);
+    box-shadow: inset 0 3px 0 var(--ct-blue-700);
+  }
+
+  .ct-nav-item.active .ct-icone {
+    color: var(--ct-blue-700);
+  }
+
+  .ct-nav-item:focus-visible,
+  .ct-mais:focus-visible,
+  .ct-sair:focus-visible {
+    outline: var(--ct-focus-ring);
+    outline-offset: -4px;
+  }
+
+  .ct-area {
+    margin-left: 0;
+    padding-bottom: calc(64px + env(safe-area-inset-bottom));
+  }
+
+  .ct-topbar {
+    padding: 12px var(--ct-space-3);
+  }
+
+  .ct-titulo h1 {
+    font-size: 28px;
+  }
+
+  .ct-conexao {
+    margin-left: 0;
+  }
+
+  .ct-conteudo {
+    padding: var(--ct-space-3);
+  }
+
+  .faixa-offline {
+    padding: 10px var(--ct-space-3);
+  }
+
+
+  /* "Mais" aberto: a barra sobe como gaveta com o menu inteiro. */
+
+  body.ct-shell--menu-aberto .ct-sidebar {
+    max-height: 85vh;
+    padding: var(--ct-space-3) var(--ct-space-3) calc(var(--ct-space-3) + env(safe-area-inset-bottom));
+
+    flex-direction: column;
+    gap: var(--ct-space-3);
+
+    overflow-y: auto;
+
+    border-top: 0;
+    border-radius: var(--ct-radius-card) var(--ct-radius-card) 0 0;
+    box-shadow: var(--ct-shadow-overlay);
+
+    animation: ct-gaveta-sobe var(--ct-dur-drawer) var(--ct-ease-drawer);
+  }
+
+  body.ct-shell--menu-aberto .ct-nav {
+    flex: none;
+
+    display: flex;
+    flex-direction: column;
+    gap: var(--ct-space-3);
+  }
+
+  body.ct-shell--menu-aberto .ct-nav-grupo {
+    display: flex;
+  }
+
+  body.ct-shell--menu-aberto .ct-nav-titulo {
+    display: block;
+    color: var(--ct-muted);
+  }
+
+  body.ct-shell--menu-aberto .ct-nav-item,
+  body.ct-shell--menu-aberto .ct-sair {
+    display: flex;
+    order: 0;
+
+    min-height: var(--ct-touch);
+    padding: var(--ct-space-2) 12px;
+
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 12px;
+
+    border-radius: var(--ct-radius-control);
+    color: var(--ct-text);
+
+    font-size: var(--ct-text-body-sm);
+    text-align: left;
+  }
+
+  body.ct-shell--menu-aberto .ct-nav-item .ct-icone,
+  body.ct-shell--menu-aberto .ct-sair .ct-icone {
+    color: var(--ct-muted);
+  }
+
+  body.ct-shell--menu-aberto .ct-nav-item.active {
+    background: var(--ct-blue-50);
+    color: var(--ct-blue-700);
+    box-shadow: none;
+  }
+
+  body.ct-shell--menu-aberto .ct-nav-item.active .ct-icone {
+    color: var(--ct-blue-700);
+  }
+
+  body.ct-shell--menu-aberto .ct-nav-item:hover,
+  body.ct-shell--menu-aberto .ct-sair:hover {
+    background: var(--ct-canvas);
+    color: var(--ct-text);
+  }
+
+  body.ct-shell--menu-aberto .ct-mais {
+    order: -1;
+    flex: none;
+    align-self: flex-end;
+
+    min-width: var(--ct-touch);
+    min-height: var(--ct-touch);
+    padding: 0 12px;
+
+    flex-direction: row;
+    gap: 6px;
+
+    border-radius: var(--ct-radius-control);
+    color: var(--ct-text);
+    font-size: var(--ct-text-body-sm);
+  }
+
+  body.ct-shell--menu-aberto .ct-sidebar-rodape {
+    display: flex;
+    margin-top: 0;
+    border-top-color: var(--ct-border);
+  }
+
+  body.ct-shell--menu-aberto .ct-usuario {
+    color: var(--ct-muted);
+  }
+
+  body.ct-shell--menu-aberto .ct-usuario-texto strong {
+    color: var(--ct-text);
+  }
+
+  /* O botão flutuante do assistente não fica por cima da gaveta. */
+  body.ct-shell--menu-aberto .assistente-botao {
+    visibility: hidden;
+  }
+
+  body.ct-shell--menu-aberto .ct-veu {
+    position: fixed;
+    inset: 0;
+    z-index: 35;
+
+    display: block;
+
+    border: 0;
+    background: var(--ct-scrim);
+
+    animation: ct-veu-entra var(--ct-dur-base) var(--ct-ease-out);
+  }
+
+}
+
+@keyframes ct-gaveta-sobe {
+  from {
+    transform: translateY(24px);
+    opacity: 0;
+  }
+}
+
+@keyframes ct-veu-entra {
+  from {
+    opacity: 0;
+  }
+}
+
+
+/* IMPRESSÃO: etiqueta QR de Veículos e páginas impressas sem a moldura. */
+@media print {
+
+  .ct-sidebar,
+  .ct-veu {
+    display: none !important;
+  }
+
+  .ct-area {
+    margin-left: 0;
+    padding-bottom: 0;
+  }
+}

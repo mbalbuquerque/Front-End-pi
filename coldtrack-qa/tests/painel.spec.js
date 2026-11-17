@@ -1,4 +1,4 @@
-import { entrarComo, errosDoConsole, expect, simularApi, simularSair, test } from "./apoio.js";
+import { abrirMenu, entrarComo, errosDoConsole, expect, simularApi, simularSair, test } from "./apoio.js";
 
 // Telas logadas com sessão de teste e API simulada (nada sai para o Azure).
 // Cada tela abre com o título certo e sem erro no console, para os dois perfis.
@@ -74,6 +74,7 @@ test("QA-PAINEL sair: botão Sair limpa a sessão e volta ao login", async ({ pa
   await expect(page.getByRole("heading", { level: 1, name: "Alertas" })).toBeVisible();
 
   // addInitScript grava a sessão de novo a cada documento; aqui a navegação é da SPA.
+  await abrirMenu(page);
   await page.locator("#botaoSair").click();
 
   await expect(page).toHaveURL(/\/login$/);
@@ -94,6 +95,7 @@ test("QA-SEG-01: Sair chama POST /sair com o Bearer e limpa a sessão", async ({
 
   const token = await page.evaluate(() => JSON.parse(localStorage.getItem("coldtrack.sessao")).token);
 
+  await abrirMenu(page);
   await page.locator("#botaoSair").click();
 
   await expect(page).toHaveURL(/\/login$/);
@@ -115,6 +117,7 @@ for (const status of [404, 500]) {
     await page.goto("/alertas");
     await expect(page.getByRole("heading", { level: 1, name: "Alertas" })).toBeVisible();
 
+    await abrirMenu(page);
     await page.locator("#botaoSair").click();
 
     await expect(page).toHaveURL(/\/login$/);
@@ -134,6 +137,7 @@ test("QA-SEG-02: Sair continua funcionando se /sair não responde (rede cai)", a
 
   await page.goto("/alertas");
   await expect(page.getByRole("heading", { level: 1, name: "Alertas" })).toBeVisible();
+  await abrirMenu(page);
   await page.locator("#botaoSair").click();
 
   await expect(page).toHaveURL(/\/login$/);

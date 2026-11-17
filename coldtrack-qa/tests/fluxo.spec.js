@@ -1,4 +1,4 @@
-import { expect, test } from "./apoio.js";
+import { abrirMenu, expect, test } from "./apoio.js";
 
 // Testes para as telas descritas no fluxo atual; falhas apontam regressões ou diferenças de implementação.
 test('QA-001: login abre com formulário', async ({ page }) => {
@@ -66,6 +66,7 @@ test('QA-008: pesquisa filtra usuários', async ({ page }) => {
 
 test('QA-009: link Auditoria abre a tela', async ({ page }) => {
   await page.goto('/usuarios');
+  await abrirMenu(page);
   await page.locator('a[href="/auditoria"]').click();
   await expect(page).toHaveURL(/\/auditoria(\?|$)/);
   await expect(page.locator('body')).toContainText(/Auditoria/i);

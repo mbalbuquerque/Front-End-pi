@@ -6,6 +6,9 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { renderizarNaRota } from "../../testes/apoio.jsx";
 import CadastroUsuario from "./CadastroUsuario.jsx";
 
+// A tela abre dentro da moldura do painel (PainelLayout), que lê a sessão.
+vi.mock("../../hooks/useSessao.jsx", () => ({ useSessao: () => ({ usuario: null, sair: () => {} }) }));
+
 afterEach(() => {
   vi.unstubAllGlobals();
 });

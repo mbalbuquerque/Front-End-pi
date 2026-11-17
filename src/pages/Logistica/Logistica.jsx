@@ -3,6 +3,7 @@
 
 import { useRef, useState } from "react";
 import { Link } from "react-router-dom";
+import PainelLayout from "../../components/PainelLayout.jsx";
 import { useTitulo } from "../../hooks/useTitulo.js";
 import "../../styles/logistica/logistica.css";
 import {
@@ -138,201 +139,182 @@ export default function Logistica() {
   ];
 
   return (
-    <div className="escopo-logistica raiz-pagina">
+    <PainelLayout familia="logistica">
 
-      <div className="layout">
-        <aside className="sidebar">
-          <h2>❄ ColdTrack</h2>
-          <p>CONTROL</p>
+      <div className="main">
 
-          <nav aria-label="Menu principal">
-            <Link to="/dashboard">Dashboard</Link>
-            <Link to="/logistica" className="active" aria-current="page">
-              Gestão Logística
-            </Link>
-            <Link to="/monitoramento">Monitoramento</Link>
-            <Link to="/usuarios">Usuários</Link>
-            <Link to="/auditoria">Auditoria</Link>
-            <Link to="/">Página inicial</Link>
-          </nav>
+        <header className="header">
+          <div>
+            <span className="eyebrow">CONTROLE OPERACIONAL</span>
+            <h1>Gestão Logística</h1>
+            <p>Gerenciamento de cargas, rotas e sensores.</p>
+          </div>
+          <button id="btnNovaCarga" className="btn-primary" onClick={novaCarga}>
+            + Nova carga
+          </button>
+        </header>
 
-          <small>Projeto Integrador · 2026</small>
-        </aside>
+        <div className="notice">
+          Ambiente demonstrativo. Os dados não são enviados à API
+          e não representam operações reais.
+        </div>
 
-        <main className="main">
-          <header className="header">
-            <div>
-              <span className="eyebrow">CONTROLE OPERACIONAL</span>
-              <h1>Gestão Logística</h1>
-              <p>Gerenciamento de cargas, rotas e sensores.</p>
+        <section className="metrics" aria-label="Indicadores">
+          <article className="metric">
+            <span>Total de cargas</span>
+            <strong id="totalCargas">{indicadores.total}</strong>
+          </article>
+          <article className="metric">
+            <span>Em transporte</span>
+            <strong id="cargasTransporte">{indicadores.transporte}</strong>
+          </article>
+          <article className="metric">
+            <span>Em atenção</span>
+            <strong id="cargasAtencao">{indicadores.atencao}</strong>
+          </article>
+          <article className="metric">
+            <span>Sensores vinculados</span>
+            <strong id="totalSensores">{indicadores.sensores}</strong>
+          </article>
+        </section>
+
+        <section className="panel">
+          <div className="panel-heading">
+            <h2>Cargas cadastradas</h2>
+            <div className="filters">
+              <input id="pesquisaCarga" type="search"
+                placeholder="Pesquisar carga, produto ou rota"
+                aria-label="Pesquisar cargas"
+                value={pesquisa} onChange={e => setPesquisa(e.target.value)} />
+
+              <select id="filtroStatus" aria-label="Filtrar por status"
+                value={filtro} onChange={e => setFiltro(e.target.value)}>
+                <option value="">Todos os status</option>
+                <option value="Em transporte">Em transporte</option>
+                <option value="Atenção">Atenção</option>
+                <option value="Entregue">Entregue</option>
+                <option value="Cancelada">Cancelada</option>
+              </select>
             </div>
-            <button id="btnNovaCarga" className="btn-primary" onClick={novaCarga}>
-              + Nova carga
-            </button>
-          </header>
-
-          <div className="notice">
-            Ambiente demonstrativo. Os dados não são enviados à API
-            e não representam operações reais.
           </div>
 
-          <section className="metrics" aria-label="Indicadores">
-            <article className="metric">
-              <span>Total de cargas</span>
-              <strong id="totalCargas">{indicadores.total}</strong>
-            </article>
-            <article className="metric">
-              <span>Em transporte</span>
-              <strong id="cargasTransporte">{indicadores.transporte}</strong>
-            </article>
-            <article className="metric">
-              <span>Em atenção</span>
-              <strong id="cargasAtencao">{indicadores.atencao}</strong>
-            </article>
-            <article className="metric">
-              <span>Sensores vinculados</span>
-              <strong id="totalSensores">{indicadores.sensores}</strong>
-            </article>
-          </section>
-
-          <section className="panel">
-            <div className="panel-heading">
-              <h2>Cargas cadastradas</h2>
-              <div className="filters">
-                <input id="pesquisaCarga" type="search"
-                  placeholder="Pesquisar carga, produto ou rota"
-                  aria-label="Pesquisar cargas"
-                  value={pesquisa} onChange={e => setPesquisa(e.target.value)} />
-
-                <select id="filtroStatus" aria-label="Filtrar por status"
-                  value={filtro} onChange={e => setFiltro(e.target.value)}>
-                  <option value="">Todos os status</option>
-                  <option value="Em transporte">Em transporte</option>
-                  <option value="Atenção">Atenção</option>
-                  <option value="Entregue">Entregue</option>
-                  <option value="Cancelada">Cancelada</option>
-                </select>
-              </div>
-            </div>
-
-            <div className="table-wrapper">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Carga</th>
-                    <th>Produto</th>
-                    <th>Origem / Destino</th>
-                    <th>Sensor</th>
-                    <th>Temperatura</th>
-                    <th>Status</th>
-                    <th>Ações</th>
+          <div className="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>Carga</th>
+                  <th>Produto</th>
+                  <th>Origem / Destino</th>
+                  <th>Sensor</th>
+                  <th>Temperatura</th>
+                  <th>Status</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody id="tabelaCargas">
+                {filtradas.map(carga => (
+                  <tr key={carga.id}>
+                    <td>{carga.id}</td>
+                    <td>{carga.produto}</td>
+                    <td>{`${carga.origem} → ${carga.destino}`}</td>
+                    <td>{carga.sensor}</td>
+                    <td>{formatarTemperatura(carga.temperatura)}</td>
+                    <td><span className={`status ${classeStatus(carga.status)}`}>{carga.status}</span></td>
+                    <td><button type="button" onClick={() => abrirDetalhes(carga)}>Detalhes</button></td>
                   </tr>
-                </thead>
-                <tbody id="tabelaCargas">
-                  {filtradas.map(carga => (
-                    <tr key={carga.id}>
-                      <td>{carga.id}</td>
-                      <td>{carga.produto}</td>
-                      <td>{`${carga.origem} → ${carga.destino}`}</td>
-                      <td>{carga.sensor}</td>
-                      <td>{formatarTemperatura(carga.temperatura)}</td>
-                      <td><span className={`status ${classeStatus(carga.status)}`}>{carga.status}</span></td>
-                      <td><button type="button" onClick={() => abrirDetalhes(carga)}>Detalhes</button></td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                ))}
+              </tbody>
+            </table>
+          </div>
 
-            <p id="semResultados" className="empty" hidden={filtradas.length > 0}>
-              Nenhuma carga encontrada.
-            </p>
-          </section>
+          <p id="semResultados" className="empty" hidden={filtradas.length > 0}>
+            Nenhuma carga encontrada.
+          </p>
+        </section>
 
-          <dialog id="modalCarga" ref={modalCarga}>
-            <form id="formCarga" onSubmit={salvarCarga}>
-              <div className="modal-heading">
-                <h2 id="tituloModalCarga">{idEmEdicao !== null ? `Editar carga ${idEmEdicao}` : "Nova carga"}</h2>
-                <button type="button" id="fecharModal" className="btn-secondary" onClick={fecharModalCarga}>Fechar</button>
-              </div>
-
-              <label htmlFor="produto">Produto</label>
-              <input {...campo("produto")} required maxLength={80} />
-
-              <label htmlFor="origem">Origem</label>
-              <input {...campo("origem")} required maxLength={100} />
-
-              <label htmlFor="destino">Destino</label>
-              <input {...campo("destino")} required maxLength={100} />
-
-              <label htmlFor="sensor">Identificação do sensor</label>
-              <input {...campo("sensor")} required maxLength={50} />
-
-              <div className="form-grid">
-                <div>
-                  <label htmlFor="tempMin">Temperatura mínima (°C)</label>
-                  <input {...campo("tempMin")} type="number" step="0.1" required />
-                </div>
-                <div>
-                  <label htmlFor="tempMax">Temperatura máxima (°C)</label>
-                  <input {...campo("tempMax")} type="number" step="0.1" required />
-                </div>
-              </div>
-
-              <p id="mensagemForm" role="status">{mensagemForm}</p>
-
-              <button type="submit" id="salvarCarga" className="btn-primary">
-                {idEmEdicao !== null ? "Salvar alterações" : "Cadastrar carga demonstrativa"}
-              </button>
-            </form>
-          </dialog>
-
-          <dialog id="modalDetalhes" ref={modalDetalhes}>
+        <dialog id="modalCarga" ref={modalCarga}>
+          <form id="formCarga" onSubmit={salvarCarga}>
             <div className="modal-heading">
-              <h2>Detalhes da carga</h2>
-              <button type="button" id="fecharDetalhes" className="btn-secondary"
-                onClick={() => modalDetalhes.current.close()}>Fechar</button>
+              <h2 id="tituloModalCarga">{idEmEdicao !== null ? `Editar carga ${idEmEdicao}` : "Nova carga"}</h2>
+              <button type="button" id="fecharModal" className="btn-secondary" onClick={fecharModalCarga}>Fechar</button>
             </div>
-            <div id="conteudoDetalhes">
-              {camposDetalhe && camposDetalhe.map(([titulo, valor]) => (
-                <p key={titulo}><strong>{`${titulo}: `}</strong>{valor}</p>
-              ))}
-            </div>
-            <div id="acoesDetalhes" className="detail-actions">
-              {detalhe && STATUS_EDITAVEIS.includes(detalhe.status) && (
-                <>
-                  <button type="button" className="btn-secondary" onClick={() => abrirEdicao(detalhe)}>Editar</button>
-                  <button type="button" className="btn-primary" onClick={() => pedirConfirmacao(detalhe, "Entregue")}>Concluir entrega</button>
-                  <button type="button" className="btn-danger" onClick={() => pedirConfirmacao(detalhe, "Cancelada")}>Cancelar carga</button>
-                </>
-              )}
-            </div>
-          </dialog>
 
-          <dialog id="modalConfirmacao" ref={modalConfirmacao} aria-labelledby="tituloConfirmacao"
-            onClose={() => setPendente(null)}>
-            <h2 id="tituloConfirmacao">
-              {pendente?.novoStatus === "Cancelada" ? "Cancelar carga" : "Concluir entrega"}
-            </h2>
-            <p id="textoConfirmacao">
-              {pendente && alvoPendente
-                ? `Confirma alterar a carga ${alvoPendente.id} para ${pendente.novoStatus}? Nesta demonstração, a ação não poderá ser desfeita sem recarregar a página.`
-                : ""}
-            </p>
-            <div className="detail-actions">
-              <button type="button" id="cancelarConfirmacao" className="btn-secondary"
-                onClick={() => modalConfirmacao.current.close()}>Voltar</button>
-              <button type="button" id="confirmarOperacao" className="btn-primary" onClick={confirmarOperacao}>
-                {pendente?.novoStatus === "Cancelada" ? "Confirmar cancelamento" : "Confirmar entrega"}
-              </button>
-            </div>
-          </dialog>
+            <label htmlFor="produto">Produto</label>
+            <input {...campo("produto")} required maxLength={80} />
 
-          <p id="feedbackOperacao" className="feedback" role="status" aria-live="polite">{feedback}</p>
-        </main>
+            <label htmlFor="origem">Origem</label>
+            <input {...campo("origem")} required maxLength={100} />
+
+            <label htmlFor="destino">Destino</label>
+            <input {...campo("destino")} required maxLength={100} />
+
+            <label htmlFor="sensor">Identificação do sensor</label>
+            <input {...campo("sensor")} required maxLength={50} />
+
+            <div className="form-grid">
+              <div>
+                <label htmlFor="tempMin">Temperatura mínima (°C)</label>
+                <input {...campo("tempMin")} type="number" step="0.1" required />
+              </div>
+              <div>
+                <label htmlFor="tempMax">Temperatura máxima (°C)</label>
+                <input {...campo("tempMax")} type="number" step="0.1" required />
+              </div>
+            </div>
+
+            <p id="mensagemForm" role="status">{mensagemForm}</p>
+
+            <button type="submit" id="salvarCarga" className="btn-primary">
+              {idEmEdicao !== null ? "Salvar alterações" : "Cadastrar carga demonstrativa"}
+            </button>
+          </form>
+        </dialog>
+
+        <dialog id="modalDetalhes" ref={modalDetalhes}>
+          <div className="modal-heading">
+            <h2>Detalhes da carga</h2>
+            <button type="button" id="fecharDetalhes" className="btn-secondary"
+              onClick={() => modalDetalhes.current.close()}>Fechar</button>
+          </div>
+          <div id="conteudoDetalhes">
+            {camposDetalhe && camposDetalhe.map(([titulo, valor]) => (
+              <p key={titulo}><strong>{`${titulo}: `}</strong>{valor}</p>
+            ))}
+          </div>
+          <div id="acoesDetalhes" className="detail-actions">
+            {detalhe && STATUS_EDITAVEIS.includes(detalhe.status) && (
+              <>
+                <button type="button" className="btn-secondary" onClick={() => abrirEdicao(detalhe)}>Editar</button>
+                <button type="button" className="btn-primary" onClick={() => pedirConfirmacao(detalhe, "Entregue")}>Concluir entrega</button>
+                <button type="button" className="btn-danger" onClick={() => pedirConfirmacao(detalhe, "Cancelada")}>Cancelar carga</button>
+              </>
+            )}
+          </div>
+        </dialog>
+
+        <dialog id="modalConfirmacao" ref={modalConfirmacao} aria-labelledby="tituloConfirmacao"
+          onClose={() => setPendente(null)}>
+          <h2 id="tituloConfirmacao">
+            {pendente?.novoStatus === "Cancelada" ? "Cancelar carga" : "Concluir entrega"}
+          </h2>
+          <p id="textoConfirmacao">
+            {pendente && alvoPendente
+              ? `Confirma alterar a carga ${alvoPendente.id} para ${pendente.novoStatus}? Nesta demonstração, a ação não poderá ser desfeita sem recarregar a página.`
+              : ""}
+          </p>
+          <div className="detail-actions">
+            <button type="button" id="cancelarConfirmacao" className="btn-secondary"
+              onClick={() => modalConfirmacao.current.close()}>Voltar</button>
+            <button type="button" id="confirmarOperacao" className="btn-primary" onClick={confirmarOperacao}>
+              {pendente?.novoStatus === "Cancelada" ? "Confirmar cancelamento" : "Confirmar entrega"}
+            </button>
+          </div>
+        </dialog>
+
+        <p id="feedbackOperacao" className="feedback" role="status" aria-live="polite">{feedback}</p>
       </div>
 
-    </div>
+    </PainelLayout>
   );
 
 }

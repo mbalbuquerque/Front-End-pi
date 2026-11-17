@@ -166,8 +166,7 @@
 }
 
 .filtro button:focus-visible,
-.botao:focus-visible,
-nav a:focus-visible {
+.botao:focus-visible {
   outline: var(--ct-focus-ring);
   outline-offset: 2px;
 }
@@ -527,8 +526,7 @@ details.panel[open] summary {
 }
 
 .botao.secundario:focus-visible,
-.botao.perigo:focus-visible,
-.sair:focus-visible {
+.botao.perigo:focus-visible {
   outline: var(--ct-focus-ring);
   outline-offset: 2px;
 }
@@ -544,44 +542,6 @@ a.botao {
   display: inline-flex;
   align-items: center;
   text-decoration: none;
-}
-
-
-/* USUÁRIO NO MENU ---------------------------------------- */
-
-.sidebar-footer {
-  flex-direction: column;
-  align-items: stretch;
-  gap: 10px;
-}
-
-.usuario-menu strong {
-  display: block;
-  color: white;
-  font-size: 14px;
-  font-weight: 600;
-}
-
-.usuario-menu span {
-  display: block;
-  color: var(--ct-on-navy-muted);
-  font-size: 12px;
-  font-weight: 600;
-}
-
-.sair {
-  font: inherit;
-  font-size: 13px;
-  font-weight: 600;
-
-  color: white;
-  background: var(--ct-navy-800);
-
-  border: 0;
-  border-radius: var(--ct-radius-control);
-  padding: 8px 12px;
-
-  cursor: pointer;
 }
 
 
@@ -652,49 +612,9 @@ a.botao {
 
 @media (max-width: 720px) {
 
-  /* No celular a sidebar vira uma faixa de navegação no topo. */
-  .sidebar {
-    display: flex;
-
-    position: static;
-    width: 100%;
-    min-height: 0;
-
-    padding: 14px 16px;
-  }
-
+  /* /cadastro: a marca fica mais perto do formulário. */
   .brand {
     margin-bottom: 12px;
-  }
-
-  .sidebar {
-    min-width: 0;
-    max-width: 100%;
-  }
-
-  .sidebar nav {
-    flex-direction: row;
-    overflow-x: auto;
-    gap: 6px;
-
-    min-width: 0;
-    max-width: 100%;
-  }
-
-  .main {
-    min-width: 0;
-  }
-
-  .sidebar nav a {
-    white-space: nowrap;
-    padding: 9px 12px;
-  }
-
-  .sidebar-footer {
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-    margin-top: 12px;
   }
 
   body {
@@ -712,7 +632,6 @@ a.botao {
 
 @media (prefers-reduced-motion: reduce) {
 
-  nav a,
   .tabela tbody tr {
     transition: none;
   }
@@ -1167,24 +1086,6 @@ a.botao {
   font-weight: 700;
 }
 
-
-/* FAIXA OFFLINE: navegador sem internet (sem animação; contraste branco sobre #8f1d1d ≈ 8:1) */
-
-.faixa-offline {
-  position: sticky;
-  top: 0;
-  z-index: 50;
-
-  padding: 10px 20px;
-  margin-bottom: 14px;
-
-  background: var(--ct-faixa-offline);
-  color: var(--ct-surface);
-
-  font-size: 15px;
-  font-weight: 600;
-  line-height: 1.4;
-}
 
 /* Alertas no celular (Configurações): o texto da ação fica no piso de 15px/600,
    e o botão ocupado ("Ativando…") mantém contraste de 5.4:1. */

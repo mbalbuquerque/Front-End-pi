@@ -18,70 +18,6 @@ body {
   color: var(--text);
 }
 
-.app-layout {
-  display: flex;
-  min-height: 100vh;
-}
-
-.sidebar {
-  width: 250px;
-  flex-shrink: 0;
-  background: var(--navy);
-  color: white;
-  padding: 30px 20px;
-  display: flex;
-  flex-direction: column;
-}
-
-.brand {
-  color: white;
-  font-size: 24px;
-  font-weight: 800;
-  text-decoration: none;
-}
-
-.brand span { color: var(--cyan); }
-
-.sidebar-label {
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 2px;
-  color: var(--ct-on-navy-muted);
-  margin: 45px 10px 15px;
-}
-
-.sidebar nav {
-  display: grid;
-  gap: 8px;
-}
-
-.sidebar nav a {
-  color: var(--ct-on-navy-muted);
-  text-decoration: none;
-  padding: 14px;
-  border-radius: 10px;
-  font-size: 14px;
-  font-weight: 600;
-}
-
-.sidebar nav a:hover,
-.sidebar nav a.active {
-  color: white;
-  background: var(--navy-light);
-}
-
-.sidebar-footer {
-  margin-top: auto;
-  display: grid;
-  gap: 6px;
-  color: var(--ct-on-navy-muted);
-  font-size: 12px;
-  font-weight: 600;
-  padding: 20px 10px 0;
-}
-
-.sidebar-footer small { color: var(--ct-on-navy-muted); }
-
 .main-content {
   flex: 1;
   min-width: 0;
@@ -296,17 +232,14 @@ dialog::backdrop {
 }
 
 @media (max-width: 900px) {
-  .sidebar { width: 205px; }
+
   .main-content { padding: 25px; }
   .filters { grid-template-columns: 1fr 1fr; }
   .filters label:first-child { grid-column: 1 / -1; }
 }
 
 @media (max-width: 680px) {
-  .app-layout { display: block; }
-  .sidebar { width: 100%; padding: 18px; }
-  .sidebar nav { display: flex; flex-wrap: wrap; }
-  .sidebar-label, .sidebar-footer { display: none; }
+
   .main-content { padding: 20px 15px; }
   .page-header { align-items: flex-start; flex-direction: column; }
   .stats { gap: 8px; }
@@ -317,11 +250,6 @@ dialog::backdrop {
   .filters { grid-template-columns: 1fr; }
   .filters label:first-child { grid-column: auto; }
 }
-
-/* Navegação: foco visível e rolagem horizontal no mobile */
- .sidebar nav a:focus-visible { outline: 3px solid var(--ct-cyan-500); outline-offset: 2px; }
-@media (max-width: 680px) { .sidebar nav { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 8px; } .sidebar nav a { flex: 0 0 auto; white-space: nowrap; } }
-
 
 /* TIPOGRAFIA DO DESIGN SYSTEM (src/styles/tokens.css): títulos em Barlow Condensed 700. */
 
@@ -344,4 +272,17 @@ input,
 select,
 textarea {
   font: inherit;
+}
+
+/* Aviso de dados de exemplo (antes ficava no rodapé do menu próprio da tela). */
+.aviso-demo {
+  margin: 0 0 20px;
+  padding: 12px 16px;
+
+  background: var(--ct-atencao-bg);
+  color: var(--ct-atencao);
+  border-radius: var(--ct-radius-control);
+
+  font-size: 15px;
+  font-weight: 600;
 }
