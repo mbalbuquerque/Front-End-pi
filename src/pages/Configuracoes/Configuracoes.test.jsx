@@ -271,8 +271,12 @@ describe("Configurações: motorista vinculado a um veículo", () => {
     await screen.findByText("você");
     const form = document.getElementById("formUsuario");
     expect(within(form).queryByLabelText("Veículo do motorista")).not.toBeInTheDocument();
+    expect(document.getElementById("dicaMotorista")).toBeNull();
+    expect(document.getElementById("painelUsuarios")).toHaveTextContent("/motorista");
 
     await userEvent.selectOptions(within(form).getByLabelText("Perfil"), "motorista");
+    // Dica de acesso: mesmo /login, cai direto em /motorista.
+    expect(document.getElementById("dicaMotorista")).toHaveTextContent(/\/login.*\/motorista/);
     const veiculo = within(form).getByLabelText("Veículo do motorista");
     expect([...veiculo.options].map(o => o.value)).toEqual(["", "CT-001", "CT-002"]);
     expect(veiculo).toBeRequired();
