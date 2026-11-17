@@ -1,4 +1,4 @@
-// Service worker (public/sw.js): eventos "push" e "notificationclick".
+// Service worker (public/sw.js): eventos "push", "notificationclick", "activate" e "fetch".
 // O arquivo roda num escopo falso de service worker; nada de rede ou cache real.
 
 import { readFileSync } from "node:fs";
@@ -11,7 +11,7 @@ const ORIGEM = "https://painel.exemplo.test";
 let escopo;
 let ouvintes;
 
-function carregarSw({ janelas = [] } = {}) {
+function carregarSw({ janelas = [], cachesFalso = {}, fetchFalso = vi.fn() } = {}) {
 
   ouvintes = {};
   escopo = {
@@ -26,7 +26,7 @@ function carregarSw({ janelas = [] } = {}) {
     }
   };
 
-  new Function("self", "caches", "fetch", CODIGO)(escopo, {}, vi.fn());
+  new Function("self", "caches", "fetch", CODIGO)(escopo, cachesFalso, fetchFalso);
 
 }
 
@@ -167,7 +167,82 @@ describe("clique na notificação", () => {
 describe("cache", () => {
 
   it("a versão do cache subiu com os handlers de push", () => {
-    expect(CODIGO).toMatch(/const CACHE_NAME = "coldtrack-v14";/);
+    expect(CODIGO).toMatch(/const CACHE_NAME = "coldtrack-v15";/);
+  });
+
+  it("activate apaga os caches das versões anteriores e assume as abas abertas", async () => {
+    const cachesFalso = {
+      keys: vi.fn().mockResolvedValue(["coldtrack-v14", "coldtrack-v15", "coldtrack-v9"]),
+      delete: vi.fn().mockResolvedValue(true)
+    };
+    carregarSw({ cachesFalso });
+    await disparar("activate", {});
+    expect(cachesFalso.delete.mock.calls).toEqual([["coldtrack-v14"], ["coldtrack-v9"]]);
+    expect(escopo.clients.claim).toHaveBeenCalled();
+  });
+
+  it("install assume na hora (skipWaiting)", () => {
+    const cachesFalso = { open: vi.fn().mockReturnValue(new Promise(() => {})) };
+    carregarSw({ cachesFalso });
+    disparar("install", {});
+    expect(escopo.skipWaiting).toHaveBeenCalled();
+  });
+
+});
+
+
+describe("fetch", () => {
+
+  function pedir(url, { mode = "no-cors", method = "GET" } = {}) {
+    let resposta;
+    ouvintes.fetch({ request: { url, mode, method }, respondWith: promessa => { resposta = promessa; } });
+    return resposta;
+  }
+
+  function cachesCom(guardada) {
+    const cache = { put: vi.fn() };
+    return { cache, falso: { open: vi.fn().mockResolvedValue(cache), match: vi.fn().mockResolvedValue(guardada) } };
+  }
+
+  it("navegação vai à rede primeiro e guarda a resposta nova", async () => {
+    const nova = { ok: true, clone: () => "copia" };
+    const { cache, falso } = cachesCom(undefined);
+    const fetchFalso = vi.fn().mockResolvedValue(nova);
+    carregarSw({ cachesFalso: falso, fetchFalso });
+    await expect(pedir(`${ORIGEM}/viagens`, { mode: "navigate" })).resolves.toBe(nova);
+    expect(fetchFalso).toHaveBeenCalled();
+    await vi.waitFor(() => expect(cache.put).toHaveBeenCalledWith(expect.objectContaining({ url: `${ORIGEM}/viagens` }), "copia"));
+  });
+
+  it("pedaço com hash que sumiu (404) sai da cópia guardada", async () => {
+    const guardada = { origem: "cache" };
+    const { falso } = cachesCom(guardada);
+    carregarSw({ cachesFalso: falso, fetchFalso: vi.fn().mockResolvedValue({ ok: false, status: 404 }) });
+    await expect(pedir(`${ORIGEM}/assets/Viagens-abc.js`)).resolves.toBe(guardada);
+  });
+
+  it("404 sem cópia guardada, ou fora de /assets, volta como veio", async () => {
+    const naoEncontrado = { ok: false, status: 404 };
+    carregarSw({ cachesFalso: cachesCom(undefined).falso, fetchFalso: vi.fn().mockResolvedValue(naoEncontrado) });
+    await expect(pedir(`${ORIGEM}/assets/Viagens-abc.js`)).resolves.toBe(naoEncontrado);
+    const cacheCheio = cachesCom({ origem: "cache" });
+    carregarSw({ cachesFalso: cacheCheio.falso, fetchFalso: vi.fn().mockResolvedValue(naoEncontrado) });
+    await expect(pedir(`${ORIGEM}/manifest.json`)).resolves.toBe(naoEncontrado);
+    expect(cacheCheio.falso.match).not.toHaveBeenCalled();
+  });
+
+  it("sem rede: cópia guardada, ou o index.html na navegação", async () => {
+    const indice = { origem: "index" };
+    const falso = { match: vi.fn(async (pedido) => (pedido === "/index.html" ? indice : undefined)) };
+    carregarSw({ cachesFalso: falso, fetchFalso: vi.fn().mockRejectedValue(new TypeError("offline")) });
+    await expect(pedir(`${ORIGEM}/viagens`, { mode: "navigate" })).resolves.toBe(indice);
+  });
+
+  it("API, outra origem e POST passam direto", () => {
+    carregarSw();
+    expect(pedir("https://func-coldtrack-7319.azurewebsites.net/api/leituras")).toBeUndefined();
+    expect(pedir("https://outro.test/x.js")).toBeUndefined();
+    expect(pedir(`${ORIGEM}/x`, { method: "POST" })).toBeUndefined();
   });
 
 });
