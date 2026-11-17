@@ -545,62 +545,6 @@ a.botao {
 }
 
 
-/* LOGIN -------------------------------------------------- */
-
-.pagina-login {
-  display: grid;
-  place-items: center;
-  padding: 24px 16px;
-}
-
-.login {
-  width: 100%;
-  max-width: 400px;
-}
-
-.login-marca {
-  justify-content: center;
-  margin-bottom: 24px;
-}
-
-.login-marca .brand-icon {
-  color: white;
-}
-
-.login-marca strong {
-  color: var(--navy);
-}
-
-.login-marca span {
-  color: var(--muted);
-}
-
-.login-cartao {
-  display: grid;
-  gap: 16px;
-
-  background: white;
-  border: 1px solid var(--border);
-  border-radius: var(--ct-radius-card);
-
-  padding: 28px 24px;
-}
-
-.login-cartao h1 {
-  font-size: 22px;
-}
-
-.login-cartao > p:not(.erro-form) {
-  color: var(--muted);
-  margin-top: -10px;
-}
-
-.login-ajuda {
-  font-size: 13px;
-  font-weight: 600;
-}
-
-
 /* RESPONSIVO --------------------------------------------- */
 
 @media (max-width: 1050px) {
@@ -611,15 +555,6 @@ a.botao {
 }
 
 @media (max-width: 720px) {
-
-  /* /cadastro: a marca fica mais perto do formulário. */
-  .brand {
-    margin-bottom: 12px;
-  }
-
-  body {
-    flex-direction: column;
-  }
 
   .resumo {
     grid-template-columns: 1fr;

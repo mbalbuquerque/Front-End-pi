@@ -54,8 +54,8 @@ ficam dentro de `<Route element={<RequireAuth />}>`. Para criar uma tela nova, s
 | Rota | Arquivo | Família | Login |
 |---|---|---|---|
 | `/` | `pages/Home/Home.jsx` | home (+ chat) | não |
-| `/login` | `pages/Login/Login.jsx` | login | não |
-| `/cadastro` | `pages/Cadastro/Cadastro.jsx` | painel | não |
+| `/login` | `pages/Login/Login.jsx` | login (`AcessoLayout`) | não |
+| `/cadastro` | `pages/Cadastro/Cadastro.jsx` | login (`AcessoLayout`) | não |
 | `/dashboard` | `pages/Dashboard/Dashboard.jsx` | painel | sim |
 | `/alertas` | `pages/Alertas/Alertas.jsx` | painel | sim |
 | `/relatorios` | `pages/Relatorios/Relatorios.jsx` | painel | sim |
@@ -113,8 +113,9 @@ Regras:
   `src/styles/tokens.css` (sem escopo, valem em todo o app); cor, fonte, raio, sombra e
   movimento novos usam o token direto, nunca um valor solto. Não use portal para fora do escopo.
 - Seletor antigo que dependia do `<body>` ou do HTML fixo pode ser ajustado no CSS da família
-  (registre no commit). Já ajustado: `.pagina-login { flex: 1 }` em `painel/index.css`.
-- `/cadastro` usa a família painel: `<div className="escopo-painel raiz-pagina"><div className="pagina-login"><main className="login">…`.
+  (registre no commit).
+- `/login` e `/cadastro` usam a família login pela moldura `<AcessoLayout>`
+  (`components/AcessoLayout.jsx`): painel navy com a marca e a régua de faixa, formulário num cartão.
 - Telas internas (as do painel e as de gestão: Usuários, Novo usuário, Auditoria, Logística,
   Monitoramento) ficam dentro do shell: `<div class="escopo-shell">` com a barra lateral e, ao
   lado, `<div class="escopo-<familia> ct-area">` com a barra superior e o `<main>`. O shell só usa

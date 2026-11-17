@@ -3,11 +3,11 @@
 
 import { useRef, useState } from "react";
 import { Link, Navigate, useNavigate } from "react-router-dom";
+import AcessoLayout from "../../components/AcessoLayout.jsx";
 import { useSessao } from "../../hooks/useSessao.jsx";
 import { useTitulo } from "../../hooks/useTitulo.js";
 import { postPublico } from "../../lib/api.js";
 import { lerSessao } from "../../lib/sessao.js";
-import "../../styles/painel/index.css";
 
 
 export default function Cadastro() {
@@ -69,56 +69,50 @@ export default function Cadastro() {
   }
 
   return (
-    <div className="escopo-painel raiz-pagina">
-      <div className="pagina-login">
-        <main className="login">
+    <AcessoLayout>
 
-          <div className="brand login-marca">
-            <div className="brand-icon">❄</div>
-            <div>
-              <strong>ColdTrack</strong>
-              <span>CONTROL</span>
-            </div>
-          </div>
+      <h1>Cadastrar empresa</h1>
+      <p className="acesso-intro">Crie o acesso da sua transportadora. Você entra como gestor e depois registra sensores, veículos e a equipe.</p>
 
-          <form className="login-cartao" id="formCadastro" noValidate onSubmit={enviar}>
+      <form className="acesso-form" id="formCadastro" noValidate onSubmit={enviar}>
 
-            <h1>Cadastrar empresa</h1>
-            <p>Crie o acesso da sua transportadora. Você entra como gestor e depois registra sensores, veículos e a equipe.</p>
+        <label className="campo">
+          <span>Nome da empresa</span>
+          <input name="empresa" autoComplete="organization" required />
+        </label>
 
-            <label className="campo">
-              <span>Nome da empresa</span>
-              <input name="empresa" autoComplete="organization" required />
-            </label>
+        <label className="campo">
+          <span>Seu nome</span>
+          <input name="nome" autoComplete="name" required />
+        </label>
 
-            <label className="campo">
-              <span>Seu nome</span>
-              <input name="nome" autoComplete="name" required />
-            </label>
+        <label className="campo">
+          <span>E-mail</span>
+          <input type="email" name="email" autoComplete="username" required />
+        </label>
 
-            <label className="campo">
-              <span>E-mail</span>
-              <input type="email" name="email" autoComplete="username" required />
-            </label>
+        <label className="campo">
+          <span>Senha (mínimo 8 caracteres)</span>
+          <input type="password" name="senha" autoComplete="new-password" minLength={8} required />
+        </label>
 
-            <label className="campo">
-              <span>Senha (mínimo 8 caracteres)</span>
-              <input type="password" name="senha" autoComplete="new-password" minLength={8} required />
-            </label>
+        <button type="submit" className="botao-primario" id="botaoCadastrar" disabled={cadastrando}>
+          {cadastrando ? "Cadastrando…" : "Cadastrar empresa"}
+        </button>
 
-            <button type="submit" className="botao botao-cheio" id="botaoCadastrar" disabled={cadastrando}>
-              {cadastrando ? "Cadastrando…" : "Cadastrar empresa"}
-            </button>
+        <p className="aviso" id="erroCadastro" role="alert" hidden={!erro}>{erro}</p>
 
-            <p className="erro-form" id="erroCadastro" role="alert" hidden={!erro}>{erro}</p>
+        <p className="acesso-secundario">Já tem acesso? <Link to="/login" className="link">Entrar</Link></p>
 
-            <p className="login-ajuda">Já tem acesso? <Link to="/login">Entrar</Link>.</p>
+      </form>
 
-          </form>
-
-        </main>
+      <div className="acesso-rodape">
+        <Link to="/" className="voltar">
+          <span aria-hidden="true">←</span> Voltar ao início
+        </Link>
       </div>
-    </div>
+
+    </AcessoLayout>
   );
 
 }

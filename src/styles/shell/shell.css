@@ -340,6 +340,13 @@ body {
   padding: var(--ct-space-5);
 }
 
+/* Família painel tem o botão flutuante do assistente: folga embaixo para ele
+   não cobrir o fim da página. Seletor mais forte que o padding acima e o do
+   celular, sem depender da ordem dos arquivos no bundle. */
+.ct-area.escopo-painel .ct-conteudo {
+  padding-bottom: 104px;
+}
+
 /* Telas de gestão trazem o próprio espaçamento (main-content, container...). */
 .ct-area:not(.escopo-painel) .ct-conteudo {
   display: flow-root;
@@ -481,6 +488,10 @@ body {
 
   .ct-conteudo {
     padding: var(--ct-space-3);
+  }
+
+  .ct-area.escopo-painel .ct-conteudo {
+    padding-bottom: 92px;
   }
 
   .faixa-offline {

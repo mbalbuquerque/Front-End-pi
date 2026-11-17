@@ -144,6 +144,14 @@ título e botão nunca peso 300/400; `letter-spacing` negativo só acima de 24 p
 - "atualizado às HH:MM" (hora real da última resposta da API) no lugar de "atualizado há N s".
 - Telas de gestão entram no shell com o cabeçalho próprio (sem barra superior) até a fase delas.
 
+### Telas de acesso implementadas (`components/AcessoLayout.jsx`, `styles/login/login.css`)
+
+- `/login` e `/cadastro` dividem a mesma moldura: painel navy (45%) com a marca e a régua de faixa
+  (segura, atenção, crítica) e o formulário num cartão. No celular a marca vira faixa curta no topo.
+- Frase do painel: a da equipe ("Inteligência e segurança para a cadeia fria."), não a do protótipo.
+- Mensagem da tela em caixa com ícone: vermelha para erro (texto da API), azul para orientação
+  ("Esqueceu a senha?"). O aviso de sessão de 8 horas continua abaixo do formulário.
+
 ## 8. Acessibilidade
 
 - Contraste ≥ 4,5:1 em todo texto.

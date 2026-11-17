@@ -9,10 +9,8 @@
   color: var(--text);
 }
 
-/* O botão flutuante não cobre o fim da página: o conteúdo ganha folga embaixo. */
-.ct-conteudo {
-  padding-bottom: 104px;
-}
+/* A folga embaixo do conteúdo, para o botão flutuante não cobrir o fim da
+   página, fica no shell (styles/shell/shell.css), que sabe quando há assistente. */
 
 .assistente-botao {
   position: fixed;
@@ -297,10 +295,6 @@
 
 /* Celular: botão menor no canto e conversa na largura toda, como folha. */
 @media (max-width: 720px) {
-
-  .ct-conteudo {
-    padding-bottom: 92px;
-  }
 
   /* Acima da navegação inferior do celular (styles/shell). */
   .assistente-botao {
