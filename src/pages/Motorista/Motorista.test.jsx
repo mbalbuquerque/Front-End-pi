@@ -101,6 +101,7 @@ describe("Motorista", () => {
     renderizarNaRota(<Motorista />, "/motorista");
     expect(screen.getByText("Carregando a leitura do veículo…")).toBeInTheDocument();
     expect(document.getElementById("veiculoMotorista")).toHaveTextContent("CT-001");
+    expect(document.querySelector(".escopo-motorista")).toHaveClass("tela-neutra");
     expect(document.title).toBe("Motorista · ColdTrack Control");
   });
 
@@ -110,6 +111,9 @@ describe("Motorista", () => {
     expect(document.getElementById("tempMotorista")).toHaveTextContent("11.8 °C");
     expect(document.getElementById("statusMotorista")).toHaveTextContent("NORMAL");
     expect(document.getElementById("blocoStatus")).toHaveClass("normal");
+    expect(document.querySelector(".escopo-motorista")).toHaveClass("tela-normal");
+    expect(document.querySelectorAll("#reguaMotorista .zona")).toHaveLength(5);
+    expect(document.querySelector("#reguaMotorista .regua-marcador")).not.toBeNull();
     expect(document.getElementById("faixaCarga")).toHaveTextContent("Manga: de 10 a 13 °C");
     expect(document.getElementById("ultimaLeitura")).toHaveTextContent(/^às \d{2}:\d{2} · há 1 min$/);
     expect(screen.getByText("Petrolina → Suape")).toBeInTheDocument();
@@ -146,9 +150,17 @@ describe("Motorista", () => {
     await abrir();
     expect(document.getElementById("statusMotorista")).toHaveTextContent("SEM SINAL");
     expect(document.getElementById("tempMotorista")).toHaveTextContent("--");
+    expect(document.querySelector("#reguaMotorista .regua-marcador")).toBeNull();
     expect(document.getElementById("ultimaLeitura")).toHaveTextContent("nenhuma ainda");
     expect(screen.getByText("Nenhuma viagem em curso.")).toBeInTheDocument();
     expect(screen.getByText("--", { selector: "dd" })).toBeInTheDocument();
+  });
+
+  it("API sem faixa da carga: sem régua, resto da tela igual", async () => {
+    api.api.mockResolvedValue({ ...resposta(), faixa: null });
+    await abrir();
+    expect(document.getElementById("reguaMotorista")).toBeNull();
+    expect(document.getElementById("tempMotorista")).toHaveTextContent("11.8 °C");
   });
 
   it("normal -> crítico -> normal: alerta ao piorar, aviso fica até voltar", async () => {
@@ -157,6 +169,7 @@ describe("Motorista", () => {
     expect(alerta.som.ativar).toHaveBeenCalled();
     expect(alerta.pedirPermissaoDeNotificacao).toHaveBeenCalled();
     expect(screen.queryByRole("button", { name: "Ativar alertas (som e notificação)" })).not.toBeInTheDocument();
+    expect(document.getElementById("alertasLigados")).toHaveTextContent("Alertas com som ligados nesta tela.");
 
     api.api.mockResolvedValue(resposta("CRITICO"));
     await atualizar();
