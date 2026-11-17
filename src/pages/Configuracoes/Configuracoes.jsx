@@ -1,4 +1,5 @@
-// Tela de configurações: minha conta (troca de senha), alertas no celular, faixas das cargas,
+// Tela de configurações (design system, fase 8: seções com título à esquerda e
+// conteúdo à direita): minha conta (troca de senha), alertas no celular, faixas das cargas,
 // sensores, fonte de dados e, para o gestor, os usuários da empresa.
 // Porte do site antigo: configuracoes.html + js/configuracoes.js.
 
@@ -13,6 +14,7 @@ import { carregarPerfis, descreverCritico, descreverNormal, faixaDoPerfil } from
 import { ehGestor, nomeDoPerfil } from "../../lib/sessao.js";
 import AlertasCelular from "./AlertasCelular.jsx";
 import ExcluirEmpresa from "./ExcluirEmpresa.jsx";
+import Secao from "./Secao.jsx";
 
 
 export default function Configuracoes() {
@@ -85,7 +87,7 @@ export default function Configuracoes() {
         )}
       </>}
     >
-      <div id="conteudo" className="page-grid">
+      <div id="conteudo" className="page-grid tela-config">
         {!dados ? <Carregando /> : (
           <>
             <MinhaConta usuario={usuario} />
@@ -142,18 +144,15 @@ function MinhaConta({ usuario }) {
   }
 
   return (
-    <article className="panel">
-      <h2>Minha conta</h2>
-      <p>{usuario?.nome} · {usuario?.id} · {usuario?.empresa}</p>
-
-      <form id="formSenha" className="form-grade" noValidate onSubmit={trocarSenha}>
+    <Secao titulo="Minha conta" apoio={<p>{usuario?.nome} · {usuario?.id} · {usuario?.empresa}</p>}>
+      <form id="formSenha" className="config-form" noValidate onSubmit={trocarSenha}>
         <label className="campo"><span>Senha atual</span><input name="atual" type="password" autoComplete="current-password" required /></label>
         <label className="campo"><span>Nova senha (mín. 8)</span><input name="nova" type="password" autoComplete="new-password" minLength={8} required /></label>
-        <button type="submit" className="botao">Trocar senha</button>
+        <div><button type="submit" className="botao">Trocar senha</button></div>
       </form>
       <p className="erro-form" id="erroSenha" role="alert" hidden={erro === null}>{erro}</p>
       <p className="aviso-ok" id="okSenha" role="status" hidden={!ok}>Senha trocada. Os outros aparelhos conectados saem da conta.</p>
-    </article>
+    </Secao>
   );
 
 }
@@ -162,12 +161,13 @@ function MinhaConta({ usuario }) {
 function FaixasTemperatura({ perfis, conectado }) {
 
   return (
-    <article className="panel">
-      <h2>Faixas de temperatura</h2>
-      <p>Cada veículo usa a faixa do perfil da carga. A mesma regra vale no sensor (LED), na nuvem e no painel: o sensor recebe a faixa do veículo a cada envio.</p>
-
+    <Secao
+      larga
+      titulo="Faixas de temperatura"
+      apoio={<p>Cada veículo usa a faixa do perfil da carga. A mesma regra vale no sensor (LED), na nuvem e no painel: o sensor recebe a faixa do veículo a cada envio.</p>}
+    >
       {conectado ? (
-        <div className="tabela-wrap">
+        <div className="tabela-wrap config-tabela" tabIndex={0} role="region" aria-label="Faixas por perfil de carga">
           <table className="tabela">
             <thead>
               <tr>
@@ -183,9 +183,9 @@ function FaixasTemperatura({ perfis, conectado }) {
                 return (
                   <tr key={p.id ?? p.nome}>
                     <td><strong>{p.nome}</strong></td>
-                    <td>{descreverNormal(faixa)}</td>
-                    <td>até {faixa.margem} °C fora da faixa</td>
-                    <td>{descreverCritico(faixa)}</td>
+                    <td><span className="faixa-pilula normal">{descreverNormal(faixa)}</span></td>
+                    <td><span className="faixa-pilula atencao">até {faixa.margem} °C fora da faixa</span></td>
+                    <td><span className="faixa-pilula critico">{descreverCritico(faixa)}</span></td>
                   </tr>
                 );
               })}
@@ -199,7 +199,7 @@ function FaixasTemperatura({ perfis, conectado }) {
         Frio demais também conta: abaixo da faixa a fruta sofre dano por frio.{" "}
         <strong>O DHT11 não mede abaixo de 0 °C</strong>: para uva, usar DHT22 ou sonda DS18B20.
       </div>
-    </article>
+    </Secao>
   );
 
 }
@@ -208,11 +208,8 @@ function FaixasTemperatura({ perfis, conectado }) {
 function SensoresComunicacao({ dispositivos, conectado }) {
 
   return (
-    <article className="panel">
-      <h2>Sensores e comunicação</h2>
-      <p>Sensores instalados nos compartimentos de carga.</p>
-
-      <div className="campos section-gap">
+    <Secao titulo="Sensores e comunicação" apoio={<p>Sensores instalados nos compartimentos de carga.</p>}>
+      <div className="config-lista">
         <div>
           <span>Sensores registrados</span>
           <strong>{conectado ? dispositivos.length : "sem conexão"} · <Link to="/sensores">ver sensores</Link></strong>
@@ -230,7 +227,7 @@ function SensoresComunicacao({ dispositivos, conectado }) {
           <strong>Sim, até 500 na memória do sensor</strong>
         </div>
       </div>
-    </article>
+    </Secao>
   );
 
 }
@@ -239,11 +236,8 @@ function SensoresComunicacao({ dispositivos, conectado }) {
 function FonteDados() {
 
   return (
-    <article className="panel">
-      <h2>Fonte de dados</h2>
-      <p>De onde o painel lê a telemetria.</p>
-
-      <div className="campos section-gap">
+    <Secao titulo="Fonte de dados" apoio={<p>De onde o painel lê a telemetria.</p>}>
+      <div className="config-lista">
         <div>
           <span>Fonte</span>
           <strong>Azure (Function + Cosmos DB)</strong>
@@ -261,7 +255,7 @@ function FonteDados() {
           <strong>Login com perfis; cada empresa vê só os próprios dados</strong>
         </div>
       </div>
-    </article>
+    </Secao>
   );
 
 }
@@ -345,37 +339,37 @@ function PainelUsuarios({ eu, aoRedefinir, aoTrocarVeiculo }) {
 
   if (estado.tipo === "carregando") {
     return (
-      <article className="panel" id="painelUsuarios">
-        <h2>Usuários</h2>
-        <p>Carregando…</p>
-      </article>
+      <Secao larga id="painelUsuarios" titulo="Usuários">
+        <p className="config-estado">Carregando…</p>
+      </Secao>
     );
   }
 
   if (estado.tipo === "erro") {
     return (
-      <article className="panel" id="painelUsuarios">
-        <h2>Usuários</h2>
+      <Secao larga id="painelUsuarios" titulo="Usuários">
         <p className="erro-form">{estado.mensagem}</p>
-      </article>
+      </Secao>
     );
   }
 
   return (
-    <article className="panel" id="painelUsuarios">
-      <h2>Usuários</h2>
-      <p>Quem acessa o painel. Operador acompanha a carga; gestor também cadastra sensores, veículos, viagens e usuários. Motorista só vê, no celular, a temperatura do veículo vinculado a ele.</p>
-
-      <div className="tabela-wrap">
-        <table className="tabela">
-          <thead><tr><th>Nome</th><th>E-mail</th><th>Perfil</th><th></th></tr></thead>
+    <Secao
+      larga
+      id="painelUsuarios"
+      titulo="Usuários"
+      apoio={<p>Quem acessa o painel. Operador acompanha a carga; gestor também cadastra sensores, veículos, viagens e usuários. Motorista só vê, no celular, a temperatura do veículo vinculado a ele.</p>}
+    >
+      <div className="tabela-wrap config-tabela">
+        <table className="tabela tabela-usuarios">
+          <thead><tr><th>Nome</th><th>E-mail</th><th>Perfil</th><th><span className="so-leitor">Ações</span></th></tr></thead>
           <tbody>
             {estado.usuarios.map(u => (
               <tr key={u.id}>
-                <td><strong>{u.nome}</strong></td>
-                <td>{u.id}</td>
-                <td>{nomeDoPerfil(u.perfil)}{u.perfil === "motorista" && ` · ${u.veiculo || "sem veículo"}`}</td>
-                <td className="acoes-tabela">{u.id === eu ? "você" : (
+                <td data-rotulo="Nome"><strong>{u.nome}</strong></td>
+                <td data-rotulo="E-mail">{u.id}</td>
+                <td data-rotulo="Perfil">{nomeDoPerfil(u.perfil)}{u.perfil === "motorista" && ` · ${u.veiculo || "sem veículo"}`}</td>
+                <td className="acoes-tabela">{u.id === eu ? <span className="selo-voce">você</span> : (
                   <>
                     {u.perfil === "motorista" && (
                       <button
@@ -395,7 +389,8 @@ function PainelUsuarios({ eu, aoRedefinir, aoTrocarVeiculo }) {
         </table>
       </div>
 
-      <form id="formUsuario" className="form-grade" noValidate onSubmit={criarUsuario}>
+      <h3 className="config-subtitulo">Novo usuário</h3>
+      <form id="formUsuario" className="form-grade config-novo" noValidate onSubmit={criarUsuario}>
         <label className="campo"><span>Nome</span><input name="nome" required /></label>
         <label className="campo"><span>E-mail</span><input name="email" type="email" required /></label>
         <label className="campo"><span>Perfil</span>
@@ -414,7 +409,7 @@ function PainelUsuarios({ eu, aoRedefinir, aoTrocarVeiculo }) {
         <button type="submit" className="botao">Criar usuário</button>
       </form>
       <p className="erro-form" id="erroUsuario" role="alert" hidden={erroForm === null}>{erroForm}</p>
-    </article>
+    </Secao>
   );
 
 }
@@ -450,9 +445,9 @@ function DialogoRedefinir({ id, aoFechar }) {
   }
 
   return (
-    <dialog id="redefinir" className="etiqueta" ref={dialogo} onClose={aoFechar}>
+    <dialog id="redefinir" className="etiqueta config-dialogo" ref={dialogo} aria-labelledby="tituloRedefinir" onClose={aoFechar}>
       <form className="dialogo-form" noValidate onSubmit={redefinir}>
-        <h2>Redefinir senha</h2>
+        <h2 id="tituloRedefinir">Redefinir senha</h2>
         <p>{id} sai de todos os aparelhos e entra com a senha nova.</p>
         <label className="campo"><span>Nova senha (mín. 8)</span><input name="senha" type="password" autoComplete="new-password" minLength={8} required /></label>
         <p className="erro-form" role="alert" hidden={erro === null}>{erro}</p>
@@ -508,9 +503,9 @@ function DialogoVeiculo({ id, atual, veiculos, aoTrocar, aoFechar }) {
   }
 
   return (
-    <dialog id="trocarVeiculo" className="etiqueta" ref={dialogo} onClose={aoFechar}>
+    <dialog id="trocarVeiculo" className="etiqueta config-dialogo" ref={dialogo} aria-labelledby="tituloTrocarVeiculo" onClose={aoFechar}>
       <form className="dialogo-form" noValidate onSubmit={trocar}>
-        <h2>Trocar veículo</h2>
+        <h2 id="tituloTrocarVeiculo">Trocar veículo</h2>
         <p>{id} passa a ver, no celular, a temperatura do veículo escolhido.</p>
         <label className="campo"><span>Veículo</span><SeletorFrota veiculos={veiculos} atual={atual || ""} /></label>
         <p className="erro-form" role="alert" hidden={erro === null}>{erro}</p>

@@ -66,3 +66,15 @@ export function baixarCsv(logs) {
   a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
+
+// Linha do tempo: agrupa por dia (dd/mm/aaaa) mantendo a ordem da lista.
+export function agruparPorDia(logs) {
+  const grupos = [];
+  for (const log of logs) {
+    const dia = dataFormatada(log.data).slice(0, 10);
+    const ultimo = grupos[grupos.length - 1];
+    if (ultimo && ultimo.dia === dia) ultimo.logs.push(log);
+    else grupos.push({ dia, logs: [log] });
+  }
+  return grupos;
+}

@@ -2,7 +2,9 @@
 // deste aparelho (hook useAlertasPush). A notificação chega quando um sensor da
 // empresa passa para atenção ou crítico, mesmo com o painel fechado.
 
+import Icone from "../../components/Icone.jsx";
 import { useAlertasPush } from "../../hooks/useAlertasPush.js";
+import Secao from "./Secao.jsx";
 
 
 export default function AlertasCelular() {
@@ -10,10 +12,12 @@ export default function AlertasCelular() {
   const { estado, ocupado, erro, ativar, desativar } = useAlertasPush();
 
   return (
-    <article className="panel alertas-celular" id="alertasCelular">
-      <h2>Alertas no celular</h2>
-      <p>Receba uma notificação quando um sensor da empresa sair da faixa normal (atenção ou crítico), mesmo com o painel fechado. Vale só para este aparelho.</p>
-
+    <Secao
+      id="alertasCelular"
+      className="alertas-celular"
+      titulo="Alertas no celular"
+      apoio={<p>Receba uma notificação quando um sensor da empresa sair da faixa normal (atenção ou crítico), mesmo com o painel fechado. Vale só para este aparelho.</p>}
+    >
       {estado === "verificando" && <p>Verificando este aparelho…</p>}
 
       {estado === "sem-suporte" && (
@@ -25,7 +29,8 @@ export default function AlertasCelular() {
       )}
 
       {estado === "negado" && (
-        <div className="nota" id="pushNegado">
+        <div className="nota nota-icone" id="pushNegado">
+          <Icone nome="cadeado" tamanho={20} />
           As notificações estão bloqueadas para este site. Para liberar, toque no cadeado ao lado do
           endereço (ou em Configurações do navegador → Notificações), permita o ColdTrack e recarregue
           a página.
@@ -35,6 +40,7 @@ export default function AlertasCelular() {
       {estado === "inativo" && (
         <button type="button" className="botao" id="ativarPush" disabled={ocupado !== null}
           onClick={ativar}>
+          <Icone nome="sino" tamanho={20} />
           {ocupado === "ativando" ? "Ativando…" : "Ativar alertas no celular"}
         </button>
       )}
@@ -50,7 +56,7 @@ export default function AlertasCelular() {
       )}
 
       <p className="erro-form" id="erroPush" role="alert" hidden={erro === null}>{erro}</p>
-    </article>
+    </Secao>
   );
 
 }

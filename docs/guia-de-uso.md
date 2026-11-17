@@ -270,7 +270,7 @@ Tocar na notificação abre a tela **Alertas** do veículo daquele sensor. Notif
 **Fonte de dados.** De onde o painel lê a telemetria, a frequência de atualização (a cada 20 s) e o aviso de que cada empresa vê só os próprios dados.
 
 **Usuários (somente gestor).** Lista nome, e-mail e perfil de quem acessa a empresa.
-- **Criar usuário**: preencha **Nome**, **E-mail**, **Perfil** (**Operador logístico**, **Gestor** ou **Motorista**) e **Senha inicial (mín. 8)** e clique em **Criar usuário**. No perfil **Motorista** aparece o campo **Veículo do motorista**, obrigatório: escolha o veículo da frota que ele vai acompanhar.
+- **Criar usuário**: no bloco **Novo usuário**, logo abaixo da lista, preencha **Nome**, **E-mail**, **Perfil** (**Operador logístico**, **Gestor** ou **Motorista**) e **Senha inicial (mín. 8)** e clique em **Criar usuário**. No perfil **Motorista** aparece o campo **Veículo do motorista**, obrigatório: escolha o veículo da frota que ele vai acompanhar.
 - **Trocar veículo** (só na linha de um motorista): abre uma janela para escolher outro veículo da frota. A senha e as sessões do motorista continuam as mesmas. Na lista, o perfil aparece como "Motorista · CT-001".
 - **Redefinir senha**: abre uma janela para definir uma **Nova senha (mín. 8)**. A pessoa sai de todos os aparelhos e entra com a senha nova. Use quando alguém esquecer a senha.
 - **Remover**: retira o acesso da pessoa, após confirmação.

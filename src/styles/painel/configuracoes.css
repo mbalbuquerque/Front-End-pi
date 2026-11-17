@@ -1,0 +1,467 @@
+/* ==========================================================
+   CONFIGURAÇÕES (redesign, fase 8): seções com título e
+   explicação à esquerda e o conteúdo à direita; tabelas
+   (faixas, usuários) ocupam a largura toda. Inclui o card
+   "Alertas no celular" e a zona de exclusão da empresa.
+   Só tokens de src/styles/tokens.css (docs/design-system.md).
+   ========================================================== */
+
+
+.tela-config {
+  gap: var(--ct-space-4);
+}
+
+
+/* SEÇÃO ------------------------------------------------------ */
+
+.config-secao {
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) minmax(0, 2fr);
+  gap: var(--ct-space-3) var(--ct-space-5);
+
+  padding: var(--ct-space-5);
+}
+
+.config-secao--larga {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.config-cabeca h2 {
+  margin: 0;
+  font-size: var(--ct-text-title);
+  line-height: var(--ct-leading-title);
+}
+
+/* Texto de leitura no piso de 15 px (o .panel p antigo usava 13 px). */
+.config-secao .config-cabeca p,
+.config-secao .config-corpo > p {
+  margin: 6px 0 0;
+
+  color: var(--ct-muted);
+  font-size: var(--ct-text-body-sm);
+  font-weight: var(--ct-weight-body);
+  line-height: var(--ct-leading-label);
+}
+
+.config-secao .config-cabeca h2 + p {
+  margin-bottom: 0;
+}
+
+.config-corpo {
+  display: grid;
+  align-content: start;
+  gap: var(--ct-space-3);
+  min-width: 0;
+}
+
+.config-corpo > * {
+  margin-top: 0;
+}
+
+.config-estado {
+  margin: 0;
+}
+
+
+/* CAMPOS E BOTÕES -------------------------------------------- */
+
+.config-form {
+  display: grid;
+  gap: var(--ct-space-3);
+  max-width: 480px;
+}
+
+.tela-config .campo span {
+  font-size: var(--ct-text-label);
+  font-weight: var(--ct-weight-label);
+}
+
+.tela-config .campo input,
+.tela-config .campo select {
+  border-color: var(--ct-border-strong);
+}
+
+.tela-config .botao,
+.config-dialogo .botao {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--ct-space-2);
+
+  min-height: var(--ct-touch);
+  padding: 0 20px;
+
+  font-size: var(--ct-text-body-sm);
+  font-weight: var(--ct-weight-label);
+  line-height: 1.2;
+
+  transition: background-color var(--ct-dur-fast) var(--ct-ease-out);
+}
+
+.tela-config .botao:not(.secundario):not(.perigo):not(.botao-destrutivo):not(:disabled):hover,
+.config-dialogo .botao:not(.secundario):not(.perigo):not(.botao-destrutivo):not(:disabled):hover {
+  background: var(--ct-navy-900);
+}
+
+.tela-config .botao.secundario,
+.config-dialogo .botao.secundario {
+  border-color: var(--ct-border-strong);
+}
+
+.tela-config .botao.secundario:hover,
+.config-dialogo .botao.secundario:hover {
+  background: var(--ct-canvas);
+}
+
+.tela-config .botao.perigo {
+  padding: 0 12px;
+}
+
+.tela-config .botao.perigo:hover {
+  background: var(--ct-critico-bg);
+}
+
+.tela-config .erro-form,
+.tela-config .aviso-ok,
+.config-dialogo .erro-form,
+.config-dialogo .aviso-ok {
+  margin: 0;
+  font-size: var(--ct-text-body-sm);
+  font-weight: var(--ct-weight-label);
+  line-height: var(--ct-leading-label);
+}
+
+.tela-config .nota {
+  margin: 0;
+  font-size: var(--ct-text-body-sm);
+  line-height: var(--ct-leading-label);
+}
+
+/* Nota com ícone à esquerda (notificações bloqueadas). */
+.nota-icone {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 12px;
+  align-items: start;
+}
+
+.nota-icone .ct-icone {
+  color: var(--ct-muted);
+}
+
+
+/* ALERTAS NO CELULAR ----------------------------------------- */
+
+.alertas-celular .config-corpo .botao {
+  justify-self: start;
+  margin-top: 0;
+}
+
+.alertas-celular .config-corpo .botao:not(.secundario) {
+  background: var(--ct-surface);
+  border: 1px solid var(--ct-border-strong);
+  color: var(--ct-blue-700);
+}
+
+.alertas-celular .config-corpo .botao:not(.secundario):not(:disabled):hover {
+  background: var(--ct-blue-50);
+}
+
+.alertas-celular .config-corpo .botao:disabled {
+  background: var(--ct-muted);
+  border-color: var(--ct-muted);
+  color: var(--ct-surface);
+}
+
+
+/* TABELAS (faixas e usuários) -------------------------------- */
+
+.config-tabela {
+  border: 1px solid var(--ct-border);
+  border-radius: var(--ct-radius-card);
+}
+
+.config-tabela .tabela th {
+  height: 48px;
+  padding: 0 var(--ct-space-3);
+
+  background: var(--ct-subtle);
+
+  font-size: var(--ct-text-label);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.config-tabela .tabela td {
+  height: 56px;
+  padding: 8px var(--ct-space-3);
+  font-size: var(--ct-text-body-sm);
+}
+
+.config-tabela .tabela tbody tr {
+  border: 0;
+}
+
+.config-tabela .tabela tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.faixa-pilula {
+  display: inline-block;
+
+  padding: 4px 12px;
+  border-radius: var(--ct-radius-pill);
+
+  font-size: var(--ct-text-label);
+  font-weight: var(--ct-weight-strong);
+  white-space: nowrap;
+}
+
+.faixa-pilula.normal {
+  background: var(--ct-normal-bg);
+  color: var(--ct-normal);
+}
+
+.faixa-pilula.atencao {
+  background: var(--ct-atencao-bg);
+  color: var(--ct-atencao);
+}
+
+.faixa-pilula.critico {
+  background: var(--ct-critico-bg);
+  color: var(--ct-critico);
+}
+
+.tabela-usuarios .acoes-tabela {
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.selo-voce {
+  padding: 4px 12px;
+
+  background: var(--ct-blue-50);
+  border-radius: var(--ct-radius-pill);
+
+  color: var(--ct-blue-700);
+  font-size: var(--ct-text-label);
+  font-weight: var(--ct-weight-strong);
+}
+
+/* NOVO USUÁRIO (abaixo da lista) ----------------------------- */
+
+.config-subtitulo {
+  margin: var(--ct-space-2) 0 0;
+
+  font-family: var(--ct-font-display);
+  font-size: 20px;
+  font-weight: var(--ct-weight-strong);
+  line-height: var(--ct-leading-title);
+}
+
+.tela-config .config-novo {
+  margin-top: 0;
+  padding: var(--ct-space-4);
+
+  background: var(--ct-subtle);
+  border: 1px solid var(--ct-border);
+  border-radius: var(--ct-radius-card);
+}
+
+
+/* LISTA DE VALORES (sensores, fonte de dados) ---------------- */
+
+.config-lista {
+  display: grid;
+}
+
+.config-lista > div {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--ct-space-1) var(--ct-space-3);
+
+  padding: 14px 0;
+  border-bottom: 1px solid var(--ct-border);
+}
+
+.config-lista > div:first-child {
+  padding-top: 0;
+}
+
+.config-lista > div:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.config-lista span {
+  color: var(--ct-muted);
+  font-size: var(--ct-text-body-sm);
+  font-weight: var(--ct-weight-body);
+}
+
+.config-lista strong {
+  font-size: var(--ct-text-body-sm);
+  font-weight: var(--ct-weight-strong);
+  text-align: right;
+}
+
+.config-lista a {
+  color: var(--ct-blue-700);
+}
+
+
+/* ZONA DE PERIGO (excluir empresa) --------------------------- */
+
+.zona-perigo {
+  border-color: var(--ct-critico-borda);
+}
+
+.zona-perigo .config-cabeca h2 {
+  color: var(--ct-critico);
+}
+
+.botao.botao-destrutivo {
+  background: var(--ct-critico);
+  color: var(--ct-surface);
+}
+
+.botao.botao-destrutivo:not(:disabled):hover {
+  background: var(--ct-faixa-offline);
+}
+
+.botao.botao-destrutivo:disabled {
+  background: var(--ct-disabled);
+  color: var(--ct-navy-900);
+}
+
+.botao.botao-destrutivo:focus-visible {
+  outline: var(--ct-focus-ring);
+  outline-offset: var(--ct-focus-offset);
+}
+
+
+/* DIÁLOGOS (redefinir senha, trocar veículo, excluir empresa) */
+
+.config-dialogo {
+  width: min(480px, calc(100vw - 32px));
+  padding: var(--ct-space-4);
+  box-shadow: var(--ct-shadow-overlay);
+}
+
+.config-dialogo[open] {
+  animation: config-dialogo-entra var(--ct-dur-base) var(--ct-ease-out);
+}
+
+.config-dialogo::backdrop {
+  background: var(--ct-scrim);
+}
+
+@keyframes config-dialogo-entra {
+  from {
+    opacity: 0;
+    transform: scale(var(--ct-enter-scale));
+  }
+}
+
+.config-dialogo .dialogo-form {
+  gap: var(--ct-space-3);
+  width: 100%;
+}
+
+.config-dialogo .dialogo-form p {
+  color: var(--ct-text);
+  font-size: var(--ct-text-body-sm);
+  font-weight: var(--ct-weight-body);
+  line-height: var(--ct-leading-label);
+}
+
+.config-dialogo .acoes-item {
+  flex-direction: row-reverse;
+  justify-content: flex-start;
+  gap: 12px;
+  margin-top: var(--ct-space-2);
+}
+
+
+/* RESPONSIVO ------------------------------------------------- */
+
+@media (max-width: 900px) {
+
+  .config-secao {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+}
+
+@media (max-width: 720px) {
+
+  .config-secao {
+    padding: 20px var(--ct-space-3);
+  }
+
+  .config-lista strong {
+    text-align: left;
+  }
+
+  /* Usuários em cartões empilhados: sem rolagem lateral. */
+  .tabela-usuarios thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+
+  .tabela-usuarios,
+  .tabela-usuarios tbody,
+  .tabela-usuarios tr,
+  .tabela-usuarios td {
+    display: block;
+  }
+
+  .config-tabela .tabela-usuarios tbody tr {
+    display: grid;
+    gap: 6px;
+    padding: var(--ct-space-3);
+    border-bottom: 1px solid var(--ct-border);
+  }
+
+  .config-tabela .tabela-usuarios tbody tr:last-child {
+    border-bottom: 0;
+  }
+
+  .config-tabela .tabela-usuarios td,
+  .config-tabela .tabela-usuarios tbody tr:last-child td {
+    height: auto;
+    padding: 0;
+    border: 0;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  .tabela-usuarios td[data-rotulo="Nome"] strong {
+    font-size: 17px;
+  }
+
+  .tabela-usuarios td[data-rotulo="E-mail"] {
+    color: var(--ct-muted);
+  }
+
+  .tabela-usuarios .acoes-tabela {
+    display: flex;
+    justify-content: flex-start;
+    margin-top: var(--ct-space-2);
+  }
+
+  .config-dialogo .acoes-item .botao {
+    flex: 1;
+  }
+
+}
+
+.config-tabela:focus-visible {
+  outline: var(--ct-focus-ring);
+  outline-offset: var(--ct-focus-offset);
+}

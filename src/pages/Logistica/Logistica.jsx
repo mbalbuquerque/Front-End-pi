@@ -1,23 +1,24 @@
-// Gestão logística (demonstrativa, dados de exemplo em memória).
+// Gestão logística (demonstrativa, dados de exemplo em memória): quadro de
+// cargas por situação (design system, seção 7).
 // Porte do site antigo: logistica.html + js/logistica.js.
 
 import { useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import Icone from "../../components/Icone.jsx";
 import PainelLayout from "../../components/PainelLayout.jsx";
-import { useTitulo } from "../../hooks/useTitulo.js";
-import "../../styles/logistica/logistica.css";
+import "../../styles/gestao/gestao.css";
 import {
-  CARGAS_INICIAIS, STATUS_EDITAVEIS, classeStatus, filtrarCargas,
+  CARGAS_INICIAIS, COLUNAS, STATUS_EDITAVEIS, classeStatus, filtrarCargas,
   formatarTemperatura, proximoId, resumir, validarCarga
 } from "./logistica.js";
 
+
+// Cor da pílula de status (o texto da situação sempre aparece junto).
+const PILULA_STATUS = { transporte: "normal", atencao: "atencao", entregue: "info", cancelada: "offline" };
 
 const FORM_VAZIO = { produto: "", origem: "", destino: "", sensor: "", tempMin: "", tempMax: "" };
 
 
 export default function Logistica() {
-
-  useTitulo("Gestão Logística | ColdTrack Control");
 
   const [cargas, setCargas] = useState(CARGAS_INICIAIS);
   const [pesquisa, setPesquisa] = useState("");
@@ -127,6 +128,9 @@ export default function Logistica() {
 
   }
 
+  // Quadro por situação: uma coluna por status, já com a pesquisa e o filtro aplicados.
+  const colunas = COLUNAS.map(coluna => ({ ...coluna, cargas: filtradas.filter(c => c.status === coluna.status) }));
+
   const camposDetalhe = detalhe && [
     ["Identificação", detalhe.id],
     ["Produto", detalhe.produto],
@@ -139,180 +143,216 @@ export default function Logistica() {
   ];
 
   return (
-    <PainelLayout familia="logistica">
+    <PainelLayout
+      titulo="Gestão Logística"
+      subtitulo="Cargas, rotas e sensores por situação"
+      familia="gestao"
+    >
 
-      <div className="main">
+      <div className="gestao">
 
-        <header className="header">
-          <div>
-            <span className="eyebrow">CONTROLE OPERACIONAL</span>
-            <h1>Gestão Logística</h1>
-            <p>Gerenciamento de cargas, rotas e sensores.</p>
+        <p className="aviso-demo" role="note">
+          <Icone nome="info" />
+          <span>
+            Ambiente demonstrativo. Os dados não são enviados à API
+            e não representam operações reais.
+          </span>
+        </p>
+
+        <section className="cartao filtros" aria-label="Pesquisa e filtro">
+          <div className="busca-sozinha">
+            <Icone nome="busca" tamanho={20} />
+            <input id="pesquisaCarga" type="search"
+              placeholder="Pesquisar carga, produto ou rota"
+              aria-label="Pesquisar cargas"
+              value={pesquisa} onChange={e => setPesquisa(e.target.value)} />
           </div>
-          <button id="btnNovaCarga" className="btn-primary" onClick={novaCarga}>
-            + Nova carga
-          </button>
-        </header>
 
-        <div className="notice">
-          Ambiente demonstrativo. Os dados não são enviados à API
-          e não representam operações reais.
-        </div>
+          <select id="filtroStatus" aria-label="Filtrar por status"
+            value={filtro} onChange={e => setFiltro(e.target.value)}>
+            <option value="">Todos os status</option>
+            <option value="Em transporte">Em transporte</option>
+            <option value="Atenção">Atenção</option>
+            <option value="Entregue">Entregue</option>
+            <option value="Cancelada">Cancelada</option>
+          </select>
 
-        <section className="metrics" aria-label="Indicadores">
-          <article className="metric">
-            <span>Total de cargas</span>
-            <strong id="totalCargas">{indicadores.total}</strong>
+          <div className="filtros-acoes">
+            <button type="button" id="btnNovaCarga" className="botao-g primario" onClick={novaCarga}>
+              <Icone nome="adicionar" tamanho={20} />
+              Nova carga
+            </button>
+          </div>
+        </section>
+
+        <section className="kpis" aria-label="Indicadores">
+          <article className="kpi">
+            <div><span className="kpi-rotulo">Total de cargas</span><strong id="totalCargas">{indicadores.total}</strong></div>
+            <span className="kpi-icone"><Icone nome="logistica" /></span>
           </article>
-          <article className="metric">
-            <span>Em transporte</span>
-            <strong id="cargasTransporte">{indicadores.transporte}</strong>
+          <article className="kpi normal">
+            <div><span className="kpi-rotulo">Em transporte</span><strong id="cargasTransporte">{indicadores.transporte}</strong></div>
+            <span className="kpi-icone"><Icone nome="veiculo" /></span>
           </article>
-          <article className="metric">
-            <span>Em atenção</span>
-            <strong id="cargasAtencao">{indicadores.atencao}</strong>
+          <article className={indicadores.atencao > 0 ? "kpi atencao" : "kpi"}>
+            <div><span className="kpi-rotulo">Em atenção</span><strong id="cargasAtencao">{indicadores.atencao}</strong></div>
+            <span className="kpi-icone"><Icone nome="alerta" /></span>
           </article>
-          <article className="metric">
-            <span>Sensores vinculados</span>
-            <strong id="totalSensores">{indicadores.sensores}</strong>
+          <article className="kpi">
+            <div><span className="kpi-rotulo">Sensores vinculados</span><strong id="totalSensores">{indicadores.sensores}</strong></div>
+            <span className="kpi-icone"><Icone nome="sensor" /></span>
           </article>
         </section>
 
-        <section className="panel">
-          <div className="panel-heading">
-            <h2>Cargas cadastradas</h2>
-            <div className="filters">
-              <input id="pesquisaCarga" type="search"
-                placeholder="Pesquisar carga, produto ou rota"
-                aria-label="Pesquisar cargas"
-                value={pesquisa} onChange={e => setPesquisa(e.target.value)} />
-
-              <select id="filtroStatus" aria-label="Filtrar por status"
-                value={filtro} onChange={e => setFiltro(e.target.value)}>
-                <option value="">Todos os status</option>
-                <option value="Em transporte">Em transporte</option>
-                <option value="Atenção">Atenção</option>
-                <option value="Entregue">Entregue</option>
-                <option value="Cancelada">Cancelada</option>
-              </select>
+        <section id="tabelaCargas" className="quadro" aria-label="Cargas por situação">
+          {colunas.map(coluna => (
+            <div key={coluna.status} className={`coluna ${classeStatus(coluna.status)}`}>
+              <div className="coluna-topo">
+                <span className="coluna-ponto" aria-hidden="true" />
+                <h2>{coluna.titulo}</h2>
+                <span className="coluna-contagem">
+                  {coluna.cargas.length}
+                  <span className="so-leitor"> {coluna.cargas.length === 1 ? "carga" : "cargas"}</span>
+                </span>
+              </div>
+              {coluna.cargas.length ? (
+                <ul className="coluna-lista">
+                  {coluna.cargas.map(carga => (
+                    <li key={carga.id} className={`carga ${classeStatus(carga.status)}`}>
+                      <div className="carga-topo">
+                        <h3>{carga.id}</h3>
+                        <span className="pilula info sem-ponto">{carga.produto}</span>
+                      </div>
+                      <p className="carga-rota">
+                        <Icone nome="viagem" tamanho={18} />
+                        <span>{`${carga.origem} → ${carga.destino}`}</span>
+                      </p>
+                      <div className="carga-sensor">
+                        <span><Icone nome="sensor" tamanho={18} />{carga.sensor}</span>
+                        <span className="carga-temp">{formatarTemperatura(carga.temperatura)}</span>
+                      </div>
+                      <div className="carga-topo">
+                        <span className={`pilula ${PILULA_STATUS[classeStatus(carga.status)]}`}>{carga.status}</span>
+                        <button type="button" className="botao-g texto" onClick={() => abrirDetalhes(carga)}>Detalhes</button>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="coluna-vazia">Nenhuma carga nesta situação.</p>
+              )}
             </div>
-          </div>
-
-          <div className="table-wrapper">
-            <table>
-              <thead>
-                <tr>
-                  <th>Carga</th>
-                  <th>Produto</th>
-                  <th>Origem / Destino</th>
-                  <th>Sensor</th>
-                  <th>Temperatura</th>
-                  <th>Status</th>
-                  <th>Ações</th>
-                </tr>
-              </thead>
-              <tbody id="tabelaCargas">
-                {filtradas.map(carga => (
-                  <tr key={carga.id}>
-                    <td>{carga.id}</td>
-                    <td>{carga.produto}</td>
-                    <td>{`${carga.origem} → ${carga.destino}`}</td>
-                    <td>{carga.sensor}</td>
-                    <td>{formatarTemperatura(carga.temperatura)}</td>
-                    <td><span className={`status ${classeStatus(carga.status)}`}>{carga.status}</span></td>
-                    <td><button type="button" onClick={() => abrirDetalhes(carga)}>Detalhes</button></td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          <p id="semResultados" className="empty" hidden={filtradas.length > 0}>
-            Nenhuma carga encontrada.
-          </p>
+          ))}
         </section>
 
-        <dialog id="modalCarga" ref={modalCarga}>
-          <form id="formCarga" onSubmit={salvarCarga}>
-            <div className="modal-heading">
-              <h2 id="tituloModalCarga">{idEmEdicao !== null ? `Editar carga ${idEmEdicao}` : "Nova carga"}</h2>
-              <button type="button" id="fecharModal" className="btn-secondary" onClick={fecharModalCarga}>Fechar</button>
+        <p id="semResultados" className="vazio" hidden={filtradas.length > 0}>
+          Nenhuma carga encontrada. Limpe a pesquisa ou escolha outro status.
+        </p>
+
+        <p id="feedbackOperacao" className="retorno" role="status" aria-live="polite">{feedback}</p>
+      </div>
+
+      <dialog id="modalCarga" className="dialogo" ref={modalCarga} aria-labelledby="tituloModalCarga">
+        <form id="formCarga" onSubmit={salvarCarga}>
+          <div className="dialogo-topo">
+            <h2 id="tituloModalCarga">{idEmEdicao !== null ? `Editar carga ${idEmEdicao}` : "Nova carga"}</h2>
+            <button type="button" id="fecharModal" className="dialogo-fechar" aria-label="Fechar" onClick={fecharModalCarga}>
+              <Icone nome="fechar" />
+            </button>
+          </div>
+
+          <div className="dialogo-corpo">
+            <div className="form-campo">
+              <label htmlFor="produto">Produto</label>
+              <input {...campo("produto")} required maxLength={80} />
             </div>
 
-            <label htmlFor="produto">Produto</label>
-            <input {...campo("produto")} required maxLength={80} />
+            <div className="form-duplo">
+              <div className="form-campo">
+                <label htmlFor="origem">Origem</label>
+                <input {...campo("origem")} required maxLength={100} />
+              </div>
+              <div className="form-campo">
+                <label htmlFor="destino">Destino</label>
+                <input {...campo("destino")} required maxLength={100} />
+              </div>
+            </div>
 
-            <label htmlFor="origem">Origem</label>
-            <input {...campo("origem")} required maxLength={100} />
+            <div className="form-campo">
+              <label htmlFor="sensor">Identificação do sensor</label>
+              <input {...campo("sensor")} required maxLength={50} />
+            </div>
 
-            <label htmlFor="destino">Destino</label>
-            <input {...campo("destino")} required maxLength={100} />
-
-            <label htmlFor="sensor">Identificação do sensor</label>
-            <input {...campo("sensor")} required maxLength={50} />
-
-            <div className="form-grid">
-              <div>
+            <div className="form-duplo">
+              <div className="form-campo">
                 <label htmlFor="tempMin">Temperatura mínima (°C)</label>
                 <input {...campo("tempMin")} type="number" step="0.1" required />
               </div>
-              <div>
+              <div className="form-campo">
                 <label htmlFor="tempMax">Temperatura máxima (°C)</label>
                 <input {...campo("tempMax")} type="number" step="0.1" required />
               </div>
             </div>
 
-            <p id="mensagemForm" role="status">{mensagemForm}</p>
+            <p id="mensagemForm" className="mensagem-form" role="status">{mensagemForm}</p>
+          </div>
 
-            <button type="submit" id="salvarCarga" className="btn-primary">
+          <div className="dialogo-rodape">
+            <button type="submit" id="salvarCarga" className="botao-g primario">
               {idEmEdicao !== null ? "Salvar alterações" : "Cadastrar carga demonstrativa"}
             </button>
-          </form>
-        </dialog>
-
-        <dialog id="modalDetalhes" ref={modalDetalhes}>
-          <div className="modal-heading">
-            <h2>Detalhes da carga</h2>
-            <button type="button" id="fecharDetalhes" className="btn-secondary"
-              onClick={() => modalDetalhes.current.close()}>Fechar</button>
           </div>
-          <div id="conteudoDetalhes">
+        </form>
+      </dialog>
+
+      <dialog id="modalDetalhes" className="dialogo" ref={modalDetalhes} aria-labelledby="tituloDetalhesCarga">
+        <div className="dialogo-topo">
+          <h2 id="tituloDetalhesCarga">Detalhes da carga</h2>
+          <button type="button" id="fecharDetalhes" className="dialogo-fechar" aria-label="Fechar"
+            onClick={() => modalDetalhes.current.close()}><Icone nome="fechar" /></button>
+        </div>
+        <div className="dialogo-corpo">
+          <dl id="conteudoDetalhes" className="detalhes">
             {camposDetalhe && camposDetalhe.map(([titulo, valor]) => (
-              <p key={titulo}><strong>{`${titulo}: `}</strong>{valor}</p>
+              <div key={titulo}><dt>{titulo}</dt><dd>{valor}</dd></div>
             ))}
-          </div>
-          <div id="acoesDetalhes" className="detail-actions">
-            {detalhe && STATUS_EDITAVEIS.includes(detalhe.status) && (
-              <>
-                <button type="button" className="btn-secondary" onClick={() => abrirEdicao(detalhe)}>Editar</button>
-                <button type="button" className="btn-primary" onClick={() => pedirConfirmacao(detalhe, "Entregue")}>Concluir entrega</button>
-                <button type="button" className="btn-danger" onClick={() => pedirConfirmacao(detalhe, "Cancelada")}>Cancelar carga</button>
-              </>
-            )}
-          </div>
-        </dialog>
+          </dl>
+        </div>
+        <div id="acoesDetalhes" className="dialogo-rodape">
+          {detalhe && STATUS_EDITAVEIS.includes(detalhe.status) && (
+            <>
+              <button type="button" className="botao-g perigo" onClick={() => pedirConfirmacao(detalhe, "Cancelada")}>Cancelar carga</button>
+              <button type="button" className="botao-g secundario" onClick={() => abrirEdicao(detalhe)}>Editar</button>
+              <button type="button" className="botao-g primario" onClick={() => pedirConfirmacao(detalhe, "Entregue")}>Concluir entrega</button>
+            </>
+          )}
+        </div>
+      </dialog>
 
-        <dialog id="modalConfirmacao" ref={modalConfirmacao} aria-labelledby="tituloConfirmacao"
-          onClose={() => setPendente(null)}>
+      <dialog id="modalConfirmacao" className="dialogo" ref={modalConfirmacao} aria-labelledby="tituloConfirmacao"
+        onClose={() => setPendente(null)}>
+        <div className="dialogo-topo">
           <h2 id="tituloConfirmacao">
             {pendente?.novoStatus === "Cancelada" ? "Cancelar carga" : "Concluir entrega"}
           </h2>
+        </div>
+        <div className="dialogo-corpo">
           <p id="textoConfirmacao">
             {pendente && alvoPendente
               ? `Confirma alterar a carga ${alvoPendente.id} para ${pendente.novoStatus}? Nesta demonstração, a ação não poderá ser desfeita sem recarregar a página.`
               : ""}
           </p>
-          <div className="detail-actions">
-            <button type="button" id="cancelarConfirmacao" className="btn-secondary"
-              onClick={() => modalConfirmacao.current.close()}>Voltar</button>
-            <button type="button" id="confirmarOperacao" className="btn-primary" onClick={confirmarOperacao}>
-              {pendente?.novoStatus === "Cancelada" ? "Confirmar cancelamento" : "Confirmar entrega"}
-            </button>
-          </div>
-        </dialog>
-
-        <p id="feedbackOperacao" className="feedback" role="status" aria-live="polite">{feedback}</p>
-      </div>
+        </div>
+        <div className="dialogo-rodape">
+          <button type="button" id="cancelarConfirmacao" className="botao-g secundario"
+            onClick={() => modalConfirmacao.current.close()}>Voltar</button>
+          <button type="button" id="confirmarOperacao"
+            className={pendente?.novoStatus === "Cancelada" ? "botao-g perigo" : "botao-g primario"}
+            onClick={confirmarOperacao}>
+            {pendente?.novoStatus === "Cancelada" ? "Confirmar cancelamento" : "Confirmar entrega"}
+          </button>
+        </div>
+      </dialog>
 
     </PainelLayout>
   );
