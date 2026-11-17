@@ -3,7 +3,8 @@
 // - `test` (no lugar do @playwright/test) já intercepta a API do ColdTrack
 //   (Azure Function), a Open-Meteo, o ThingSpeak e as fontes do Google.
 //   Sem `simularApi`, a API responde 503 (como se estivesse fora do ar).
-// - `simularApi(page)` liga a API simulada com uma empresa de exemplo.
+// - `simularApi(page)` liga a API simulada com uma empresa de exemplo
+//   (inclui GET /predict, o modelo de risco térmico, com valores de teste).
 //   O chat (POST /chat) continua 503 nos dois casos: o campo livre do chat
 //   cai no FAQ local e os testes do FAQ ficam determinísticos.
 // - `simularChat(page, responder)` simula a rota /chat (Azure OpenAI) e
@@ -48,8 +49,8 @@ const PERFIS = [
 ];
 
 const DISPOSITIVOS = [
-  { id: "esp32-teste-01", descricao: "Baú da van" },
-  { id: "esp32-teste-02", descricao: "Reserva" }
+  { id: "esp32-teste-01", descricao: "Baú da van", online: true, ultimoContato: "2026-11-16T19:40:12+00:00" },
+  { id: "esp32-teste-02", descricao: "Reserva", online: false, ultimoContato: null }
 ];
 
 const VEICULOS = [
@@ -115,6 +116,36 @@ function previsao() {
 }
 
 
+// Resposta simulada de GET /predict (modelo de risco térmico): à tarde
+// (12h a 17h) risco alto, no resto do dia baixo. Valores de teste, não do modelo real.
+export function predicao(params) {
+
+  const mes = Number(params.get("mes"));
+  const hora = Number(params.get("hora"));
+  const tarde = hora >= 12 && hora <= 17;
+
+  return {
+    mes,
+    hora,
+    limiarC: 30,
+    probabilidade: tarde ? 0.9 : 0.02,
+    nivel: tarde ? "alto" : "baixo",
+    horasDeHistorico: 62,
+    baseline: { probabilidade: 0.21, nivel: "moderado" },
+    modelo: {
+      versao: "teste-v1",
+      fonte: "dados de teste",
+      anosTreino: [2019, 2020, 2021, 2022],
+      anosTeste: [2023, 2024, 2025],
+      brierModelo: 0.09,
+      brierBaseline: 0.2,
+      usaLeiturasDoSensor: false
+    }
+  };
+
+}
+
+
 // ---------------------------------------------------------
 // API SIMULADA
 // ---------------------------------------------------------
@@ -157,6 +188,7 @@ export async function simularApi(page) {
       case "/viagens": return responder({ viagens: viagens() });
       case "/usuarios": return responder({ usuarios: Object.values(USUARIOS) });
       case "/leituras": return responder({ leituras: leituras(url.searchParams.get("deviceId")) });
+      case "/predict": return responder(predicao(url.searchParams));
       default: return responder({ erros: ["Rota não simulada"] }, 404);
     }
 

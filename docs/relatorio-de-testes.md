@@ -15,7 +15,7 @@
 | Suíte | Comando | Resultado |
 |---|---|---|
 | Lint | `npm run lint` | sem avisos |
-| Unitários | `npm test` | 158 passaram, 0 falharam (reexecutado em 08/11/2026 depois da revisão da documentação) |
+| Unitários | `npm test` | 158 passaram, 0 falharam (reexecutado em 08/11/2026 depois da revisão da documentação). Em 16/11/2026, com os testes de componente: 391 passaram (veja "Cobertura dos testes unitários") |
 | Build | `npm run build` | ok |
 | E2E simulado (API simulada, build local) | `npm run test:e2e` | 206 passaram, 0 falharam, 18 pulados (os casos de 390 px e de impressão rodam só no projeto desktop, de propósito). Na execução completa, QA-ASSIST-10 (390 px) falhou uma vez, com a máquina sob carga, e passou ao ser repetido sozinho |
 | E2E real (site publicado + API de produção) | `npm run test:e2e:real` | 57 passaram, 0 falharam, 0 pulados (site publicado no commit `4d51edd`, chat com Azure OpenAI incluído) |
@@ -178,6 +178,52 @@ Auditoria de dependências (`npm audit`): a produção tem 2 avisos moderados, e
 `react-router-dom` (6.30.6 é a última 6.x; a correção exige React Router 7, migração fora do
 escopo). Os demais são só de desenvolvimento (`vite`, `esbuild`, `vitest`, `tinypool`, `vite-node`,
 `@vitest/mocker`) e exigem salto de versão maior; não entram no site publicado.
+
+## Cobertura dos testes unitários
+
+Medida com `npm run test:cobertura` (Vitest 2.1.9 com `@vitest/coverage-v8`; testes de componente
+com `@testing-library/react` e jsdom), em 16/11/2026, sobre todo o código de `src/` (exceto
+arquivos de teste e `main.jsx`). 391 testes unitários passaram.
+
+| Métrica | Antes (29,72%) | Medido agora | Piso no CI |
+|---|---|---|---|
+| Linhas | 29,72% | 81,70% | 81% |
+| Instruções | 29,72% | 81,70% | 81% |
+| Ramos | 91,72% | 93,87% | 93% |
+| Funções | 84,91% | 97,75% | 97% |
+
+Antes desta etapa, as telas Dashboard, Sensores, Veículos, Viagens, Relatórios, Auditoria,
+Usuários, Logística, Monitoramento e Cadastro de usuário, o gráfico, a moldura do painel
+(`PainelLayout`), o assistente, a guarda de rota, a sessão e a tabela de rotas estavam em 0% de
+linhas. Todos passaram a ter teste de componente com a API, a sessão e a rede simuladas: cada
+teste renderiza a tela, interage (digitar, filtrar, enviar formulário, confirmar, fechar diálogo)
+e confere o resultado na tela e nas chamadas à API.
+
+Sem teste de componente restam `Home` (página inicial pública) e `ChatWidget` (chat público),
+que juntos somam cerca de 1.100 linhas e continuam cobertos só pelo e2e; as telas do motorista
+são de outro integrante e não entram nesta medição.
+
+Apoio nos testes (`src/testes/setup.js`): o jsdom não tem `<dialog>.showModal()`, `PointerEvent`
+nem `AbortSignal.any`, então o arquivo de preparação simula o essencial de cada um (atributo
+`open` e evento `close`; `clientX` nos eventos de ponteiro; combinação de sinais de cancelamento).
+
+O piso fica em `test.coverage.thresholds` de `vite.config.js` e o workflow `testes.yml` roda
+`npm run test:cobertura`, então o CI falha se a cobertura cair abaixo dele. O piso foi fixado logo
+abaixo do valor medido (não é meta). A meta de 60% de linhas da issue foi superada.
+
+## Estado offline (issue #13)
+
+| Camada | Caso | Resultado |
+|---|---|---|
+| Unitário `conectividade.test.js` | hora da última recepção, `useOnline` com eventos `online`/`offline` | 4 casos |
+| Unitário `FaixaOffline.test.jsx` | online sem faixa; offline com hora; offline sem dado (não inventa hora); some ao voltar | 4 casos |
+| Unitário `api.test.js` | `api()` registra a recepção só quando a resposta chega | 2 casos |
+| E2E `offline.spec.js`, QA-OFFLINE | `context.setOffline(true)`: faixa com `HH:MM`, indicador "Sem internet", texto >= 15 px, peso >= 600, some ao voltar; faixa presente nas 7 telas logadas | 9 casos, 18 execuções (2 projetos) |
+
+Verificação manual do service worker (build servido por `vite preview`, Chromium, `setOffline`):
+depois da primeira visita o cache `coldtrack-v13` guarda 36 arquivos (shell, JS/CSS e pedaços de tela)
+e as rotas `/login` e `/cadastro` abrem sem internet. O e2e automático roda com o service worker
+bloqueado (`serviceWorkers: "block"`, para a API simulada funcionar), então esta parte não está no CI.
 
 ## Defeito encontrado e corrigido
 

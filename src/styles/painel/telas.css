@@ -747,6 +747,115 @@ a.botao {
   margin-top: 20px;
 }
 
+
+/* RISCO TÉRMICO DA SAÍDA (dashboard, rota /api/predict) --- */
+/* Dado novo não anima (painel visto o dia todo). */
+
+.risco-saida {
+  margin-top: 20px;
+}
+
+.risco-saida-topo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px 20px;
+}
+
+.risco-saida-hora {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.risco-saida-hora select {
+  height: 44px;
+  min-width: 110px;
+  padding: 0 12px;
+
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: white;
+
+  color: var(--text);
+  font: inherit;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.risco-saida-hora select:focus-visible {
+  outline: 3px solid var(--blue);
+  outline-offset: 1px;
+}
+
+.risco-saida-valor {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 16px;
+
+  margin-top: 14px;
+}
+
+.risco-saida-valor strong {
+  color: var(--text);
+  font-size: 29px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.risco-saida-valor .status {
+  margin: 0;
+}
+
+.panel .risco-saida-texto,
+.panel .risco-saida-msg {
+  margin-top: 12px;
+
+  color: var(--text);
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.panel .risco-saida-texto strong {
+  font-weight: 700;
+}
+
+.panel .risco-saida-modelo {
+  margin-top: 10px;
+
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.panel .risco-saida-msg.indisponivel {
+  padding: 14px 16px;
+
+  background: #f8fafc;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+
+  font-weight: 600;
+}
+
+.panel .risco-saida-msg.erro {
+  padding: 14px 16px;
+
+  background: #fff4f4;
+  border-radius: 10px;
+
+  color: #a82424;
+  font-weight: 600;
+}
+
 .faixa-horas {
   display: grid;
   grid-template-columns: repeat(24, minmax(0, 1fr));
@@ -842,6 +951,25 @@ a.botao {
 
 .chave-nova {
   border: 2px solid var(--blue-text);
+}
+
+/* Selo Online/Offline vindo da API: texto sempre escrito, contraste >= 4.5:1. */
+.selo-conexao {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.selo-conexao.online {
+  color: #065f38;
+  background: #dff7eb;
+}
+
+.selo-conexao.offline {
+  color: #3f4a54;
+  background: #e6ebef;
 }
 
 /* Texto de apoio embaixo do selo, na mesma célula. */
@@ -1027,4 +1155,23 @@ a.botao {
 .panel p a {
   color: var(--blue-text);
   font-weight: 700;
+}
+
+
+/* FAIXA OFFLINE: navegador sem internet (sem animação; contraste branco sobre #8f1d1d ≈ 8:1) */
+
+.faixa-offline {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+
+  padding: 10px 20px;
+  margin-bottom: 14px;
+
+  background: #8f1d1d;
+  color: #ffffff;
+
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.4;
 }

@@ -27,6 +27,42 @@ export function situacaoDoSensor(ultima, agora = Date.now()) {
 }
 
 
+// Selo Online/Offline com o que a API informa em GET /dispositivos (`online`: leitura
+// há até 120 s). API antiga não manda o campo: devolve null e a tela cai no cálculo local.
+export function seloConexao(dispositivo) {
+
+  if (!dispositivo || typeof dispositivo.online !== "boolean") {
+    return null;
+  }
+
+  return dispositivo.online
+    ? { classe: "online", texto: "Online" }
+    : { classe: "offline", texto: "Offline" };
+
+}
+
+
+// "Último contato: 16/11 19:40" (horário local) ou "Sem contato". null = API sem o campo.
+export function textoUltimoContato(dispositivo) {
+
+  if (!dispositivo || dispositivo.ultimoContato === undefined) {
+    return null;
+  }
+
+  const data = dispositivo.ultimoContato ? new Date(dispositivo.ultimoContato) : null;
+
+  if (!data || Number.isNaN(data.getTime())) {
+    return "Sem contato";
+  }
+
+  const dia = data.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
+  const hora = data.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit", hour12: false });
+
+  return `Último contato: ${dia} ${hora}`;
+
+}
+
+
 // Mesma escala do dashboard (app.js).
 export function descreverSinal(rssi) {
 

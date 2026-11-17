@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { api, definirAoExpirar, getPublico, postPublico, sairNoServidor } from "./api.js";
+import { esquecerRecepcao, lerUltimaRecepcao } from "./conectividade.js";
 import { API_URL } from "./config.js";
 import { CHAVE_SESSAO } from "./sessao.js";
 
@@ -35,6 +36,20 @@ afterEach(() => {
 
 
 describe("api()", () => {
+
+  it("registra a hora da resposta recebida (usada pela faixa offline)", async () => {
+    esquecerRecepcao();
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(resposta(200, { ok: 1 })));
+    await api("/leituras");
+    expect(lerUltimaRecepcao()).toBeInstanceOf(Date);
+  });
+
+  it("não registra recepção quando a chamada falha", async () => {
+    esquecerRecepcao();
+    vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new TypeError("Failed to fetch")));
+    await expect(api("/leituras")).rejects.toThrow();
+    expect(lerUltimaRecepcao()).toBeNull();
+  });
 
   it("manda o token e o corpo em JSON", async () => {
     const fetch = vi.fn().mockResolvedValue(resposta(200, { ok: 1 }));

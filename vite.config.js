@@ -124,6 +124,16 @@ export default defineConfig({
   },
   test: {
     environment: "jsdom",
-    include: ["src/**/*.test.{js,jsx}"]
+    include: ["src/**/*.test.{js,jsx}"],
+    setupFiles: ["./src/testes/setup.js"],
+    coverage: {
+      provider: "v8",
+      include: ["src/**/*.{js,jsx}"],
+      exclude: ["src/**/*.test.{js,jsx}", "src/testes/**", "src/main.jsx"],
+      reporter: ["text-summary", "text", "json-summary"],
+      // Piso do CI: logo abaixo do valor medido (81,70% de linhas, 93,87% de ramos,
+      // 97,75% de funções em 16/11/2026). Meta de 60% de linhas atingida; Home e ChatWidget ainda sem teste de componente.
+      thresholds: { lines: 81, statements: 81, branches: 93, functions: 97 }
+    }
   }
 });

@@ -14,9 +14,11 @@
 // de impressão é ".escopo-painel:has(.etiqueta[open]) > *:not(.etiqueta)".
 
 import { NavLink } from "react-router-dom";
+import { useOnline } from "../lib/conectividade.js";
 import { useSessao } from "../hooks/useSessao.jsx";
 import { useTitulo } from "../hooks/useTitulo.js";
 import { PAGINAS_PAINEL } from "../rotas.js";
+import FaixaOffline from "./FaixaOffline.jsx";
 import AssistentePainel from "./AssistentePainel/AssistentePainel.jsx";
 import "../styles/painel/index.css";
 
@@ -24,11 +26,14 @@ import "../styles/painel/index.css";
 // conexao: null = "Conectando...", true = Azure respondeu, false = falhou.
 export function IndicadorConexao({ conexao }) {
 
+  const online = useOnline();
+  const falhou = conexao === false || !online;
+
   return (
     <div className="connection">
-      <span className="online-dot" style={conexao === false ? { background: "var(--red)" } : undefined} />
+      <span className="online-dot" style={falhou ? { background: "var(--red)" } : undefined} />
       <span id="fonteDados">
-        {conexao === null ? "Conectando..." : conexao ? "Azure conectado" : "Sem conexão com Azure"}
+        {!online ? "Sem internet" : conexao === null ? "Conectando..." : conexao ? "Azure conectado" : "Sem conexão com Azure"}
       </span>
     </div>
   );
@@ -83,6 +88,8 @@ export default function PainelLayout({
       </aside>
 
       <main className="main">
+
+        <FaixaOffline />
 
         <header className="topbar">
           <div>

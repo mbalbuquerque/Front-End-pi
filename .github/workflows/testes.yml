@@ -23,7 +23,8 @@ jobs:
 
       - run: npm ci
       - run: npm run lint
-      - run: npm test
+      # Unitários com cobertura; falha se ficar abaixo do piso de vite.config.js.
+      - run: npm run test:cobertura
       - run: npm run build
 
       - name: Conferir páginas antigas no build (etiquetas QR e links salvos)

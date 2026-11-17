@@ -22,6 +22,8 @@ import {
   mensagemDeErro,
   situacaoDaPlaca,
   situacaoDoSensor,
+  seloConexao,
+  textoUltimoContato,
   trechoSecrets
 } from "./sensores.js";
 
@@ -567,6 +569,8 @@ function TabelaSensores({ dispositivos, veiculos, ultimas, agora, gestor, aoGera
             const veiculo = veiculos.find(v => v.deviceId === d.id);
             const ultima = ultimas[i];
             const situacao = situacaoDoSensor(ultima, agora);
+            const selo = seloConexao(d);
+            const contato = textoUltimoContato(d);
 
             return (
               <tr key={d.id}>
@@ -574,8 +578,12 @@ function TabelaSensores({ dispositivos, veiculos, ultimas, agora, gestor, aoGera
                 <td>{d.descricao || "--"}</td>
                 <td>{veiculo ? veiculo.id : "nenhum"}</td>
                 <td>
-                  <span className={`status ${situacao.classe}`}>{situacao.texto}</span>
-                  {ultima && <small className="linha-apoio">último envio {formatarDataHora(horarioDe(ultima))}</small>}
+                  {selo
+                    ? <span className={`selo-conexao ${selo.classe}`} data-conexao={selo.classe}>{selo.texto}</span>
+                    : <span className={`status ${situacao.classe}`}>{situacao.texto}</span>}
+                  {contato
+                    ? <small className="linha-apoio" data-ultimo-contato>{contato}</small>
+                    : ultima && <small className="linha-apoio">último envio {formatarDataHora(horarioDe(ultima))}</small>}
                 </td>
                 <td>{ultima ? descreverSinal(ultima.rssi) : "--"}</td>
                 <td>{ultima ? formatarTemp(ultima.temperatura) : "--"}</td>

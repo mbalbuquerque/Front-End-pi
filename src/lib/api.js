@@ -1,6 +1,7 @@
 // Toda chamada autenticada à API do ColdTrack passa por api():
 // leva o token, trata sessão vencida (401) e junta as mensagens de erro.
 
+import { registrarRecepcao } from "./conectividade.js";
 import { API_URL } from "./config.js";
 import { lerSessao, limparSessao } from "./sessao.js";
 
@@ -51,6 +52,8 @@ export async function api(caminho, { metodo = "GET", corpo, signal } = {}) {
     erro.status = response.status;
     throw erro;
   }
+
+  registrarRecepcao();
 
   return dados;
 
