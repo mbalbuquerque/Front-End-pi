@@ -13,7 +13,9 @@
 //   /assistente (assistente do painel) e devolve a lista dos pedidos
 //   ({ corpo, autorizacao }). Sem ela, /assistente responde 503 (o assistente
 //   mostra o aviso de indisponível), com ou sem simularApi.
-// - `entrarComo(page, "gestor" | "operador")` grava uma sessão falsa no
+// - `respostaMotorista(status, minutos)` monta o GET /motorista simulado
+//   (veículo VAN-01); simularApi já responde com ele em NORMAL.
+// - `entrarComo(page, "gestor" | "operador" | "motorista")` grava uma sessão falsa no
 //   localStorage (chave coldtrack.sessao) antes de a página abrir.
 // - `errosDoConsole(page)` junta console.error e exceções da página.
 //
@@ -40,7 +42,8 @@ const HORA = 3600 * 1000;
 
 export const USUARIOS = {
   gestor: { id: "u-gestor", nome: "Gestora Teste", email: "gestora@teste.com", perfil: "gestor" },
-  operador: { id: "u-operador", nome: "Operador Teste", email: "operador@teste.com", perfil: "operador" }
+  operador: { id: "u-operador", nome: "Operador Teste", email: "operador@teste.com", perfil: "operador" },
+  motorista: { id: "u-motorista", nome: "Motorista Teste", email: "motorista@teste.com", perfil: "motorista", veiculo: "VAN-01" }
 };
 
 const PERFIS = [
@@ -146,6 +149,24 @@ export function predicao(params) {
 }
 
 
+// Resposta simulada de GET /motorista (tela do motorista): o veículo VAN-01,
+// com a leitura medida há `minutos`. Valores de teste.
+export function respostaMotorista(status = "NORMAL", minutos = 0) {
+
+  const temperatura = { NORMAL: 11.8, ATENCAO: 14.2, CRITICO: 17.5 }[status] ?? 11.8;
+
+  return {
+    veiculo: { id: "VAN-01", tipo: "Van refrigerada", perfil: "frutas" },
+    faixa: { nome: "Frutas", min: 10, max: 13, margem: 3 },
+    leitura: { temperatura, umidade: 85, status, medidoEm: new Date(Date.now() - minutos * 60000).toISOString() },
+    status,
+    minutosSemLeitura: minutos,
+    viagem: viagens()[0]
+  };
+
+}
+
+
 // ---------------------------------------------------------
 // API SIMULADA
 // ---------------------------------------------------------
@@ -189,6 +210,7 @@ export async function simularApi(page) {
       case "/usuarios": return responder({ usuarios: Object.values(USUARIOS) });
       case "/leituras": return responder({ leituras: leituras(url.searchParams.get("deviceId")) });
       case "/predict": return responder(predicao(url.searchParams));
+      case "/motorista": return responder(respostaMotorista());
       default: return responder({ erros: ["Rota não simulada"] }, 404);
     }
 
