@@ -5,6 +5,9 @@ import { defineConfig, devices } from "@playwright/test";
 // Rode `npm run build` antes de `npm run test:e2e`.
 // Nenhum teste fala com a API real: apoio.js intercepta a API, a Open-Meteo,
 // o ThingSpeak e as fontes.
+// Porta do vite preview; PORTA_E2E troca quando a 5500 já está em uso.
+const PORTA = process.env.PORTA_E2E || "5500";
+
 export default defineConfig({
   testDir: "./coldtrack-qa/tests",
 
@@ -25,7 +28,7 @@ export default defineConfig({
   ],
 
   use: {
-    baseURL: "http://127.0.0.1:5500",
+    baseURL: `http://127.0.0.1:${PORTA}`,
     headless: true,
     trace: "retain-on-failure",
     screenshot: "only-on-failure",
@@ -48,8 +51,8 @@ export default defineConfig({
   ],
 
   webServer: {
-    command: "npm run preview -- --host 127.0.0.1 --port 5500 --strictPort",
-    url: "http://127.0.0.1:5500",
+    command: `npm run preview -- --host 127.0.0.1 --port ${PORTA} --strictPort`,
+    url: `http://127.0.0.1:${PORTA}`,
     reuseExistingServer: !process.env.CI,
     timeout: 30000
   }
