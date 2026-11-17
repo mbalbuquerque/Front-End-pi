@@ -1,10 +1,4 @@
-/* Família painel: telas logadas (menu lateral) e /cadastro. */
+/* Família painel: conteúdo das telas logadas (dentro do shell, styles/shell). */
 @import "./style.css";
 @import "./telas.css";
 @import "./assistente.css";
-
-/* Ajuste da migração: em /cadastro o .pagina-login é filho da raiz do escopo
-   (que herda o display:flex do antigo body), então ocupa a largura toda. */
-.pagina-login {
-  flex: 1;
-}

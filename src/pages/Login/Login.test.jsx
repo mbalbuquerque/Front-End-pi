@@ -117,6 +117,19 @@ describe("Login", () => {
     abrir();
     await userEvent.click(screen.getByText("Esqueceu a senha?"));
     expect(screen.getByRole("status")).toHaveTextContent("Peça ao gestor");
+    // Orientação sai em azul; erro de validação volta ao vermelho.
+    expect(screen.getByRole("status")).toHaveClass("aviso", "aviso-info");
+    await userEvent.click(screen.getByRole("button", { name: /Entrar/ }));
+    expect(screen.getByRole("status")).toHaveTextContent("Informe um e-mail válido.");
+    expect(screen.getByRole("status")).not.toHaveClass("aviso-info");
+  });
+
+  it("tela dividida: marca com a régua de faixa e o formulário no cartão", () => {
+    abrir();
+    expect(screen.getByRole("heading", { level: 1, name: "Entrar" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "ColdTrack Control, página inicial" })).toHaveAttribute("href", "/");
+    expect(screen.getByText("Faixa segura")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Cadastrar empresa" })).toHaveAttribute("href", "/cadastro");
   });
 
   it("já logado: vai direto ao dashboard", () => {
