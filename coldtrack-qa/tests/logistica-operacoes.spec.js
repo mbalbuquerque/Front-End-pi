@@ -8,7 +8,7 @@ test.describe('QA - Operações da Gestão Logística', () => {
   });
 
   async function detalhesDaCarga(page, id) {
-    const linha = page.locator('#tabelaCargas tr').filter({ hasText: id });
+    const linha = page.locator('#tabelaCargas li').filter({ hasText: id });
     await linha.getByRole('button', { name: 'Detalhes' }).click();
     await expect(page.locator('#modalDetalhes')).toBeVisible();
   }
@@ -25,7 +25,7 @@ test.describe('QA - Operações da Gestão Logística', () => {
 
     await expect(page.locator('#modalCarga')).not.toBeVisible();
     await expect(
-      page.locator('#tabelaCargas tr').filter({ hasText: 'CT-001' })
+      page.locator('#tabelaCargas li').filter({ hasText: 'CT-001' })
     ).toContainText('Uva premium');
   });
 
@@ -40,7 +40,7 @@ test.describe('QA - Operações da Gestão Logística', () => {
     await page.getByRole('button', { name: 'Confirmar entrega' }).click();
 
     await expect(
-      page.locator('#tabelaCargas tr').filter({ hasText: 'CT-001' })
+      page.locator('#tabelaCargas li').filter({ hasText: 'CT-001' })
     ).toContainText('Entregue');
 
     await expect(page.locator('#cargasTransporte')).toHaveText('1');
@@ -57,7 +57,7 @@ test.describe('QA - Operações da Gestão Logística', () => {
     await page.getByRole('button', { name: 'Confirmar cancelamento' }).click();
 
     await expect(
-      page.locator('#tabelaCargas tr').filter({ hasText: 'CT-002' })
+      page.locator('#tabelaCargas li').filter({ hasText: 'CT-002' })
     ).toContainText('Cancelada');
 
     await expect(page.locator('#cargasAtencao')).toHaveText('0');

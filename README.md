@@ -88,7 +88,7 @@ demonstrativo de reserva (Normal até 15 °C, Atenção até 20 °C).
 ## 3. Estrutura
 
 ```text
-index.html                 casca única (fonte Inter, manifest, ícones)
+index.html                 casca única (manifest, ícones; fontes servidas pelo próprio site)
 vite.config.js             React, escopo de CSS, cópias das páginas .html antigas
 playwright.config.js       e2e contra o build (vite preview na porta 5500)
 eslint.config.js
@@ -96,7 +96,7 @@ public/                    copiado para dist/ como está: sw.js, manifest.json, 
 src/
   main.jsx                 BrowserRouter > AuthProvider > App; registra o sw.js no build
   App.jsx                  rotas (cada tela carregada sob demanda com React.lazy)
-  rotas.js                 ROTAS_LEGADAS (nome.html -> rota) e menu do painel
+  rotas.js                 ROTAS_LEGADAS (nome.html -> rota) e navegação do painel (Operação, Gestão)
   lib/                     API, sessão, leituras, faixas, formatação, veículo (sem React)
   hooks/                   useSessao, usePolling, useVeiculoEscolhido, useTitulo, useMovimentoReduzido
   components/              PainelLayout, RequireAuth, GraficoTemperatura, ChatWidget/, AssistentePainel/...
@@ -108,6 +108,7 @@ scripts/enviar-site.sh     envio de dist/ para o Azure (usado pelo CI e pelo pub
 publicar.sh                publicação manual pela máquina local
 docs/ARQUITETURA.md        contrato técnico: estrutura, CSS, lib, hooks, regras
 docs/guia-de-uso.md        guia do usuário final, tela por tela (base do assistente do painel)
+docs/design-system.md      design system do redesign: tokens, tipografia, movimento, componentes
 ```
 
 ## 4. Como rodar

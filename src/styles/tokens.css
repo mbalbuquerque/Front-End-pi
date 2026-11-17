@@ -1,0 +1,124 @@
+/* Tokens do design system (docs/design-system.md). Fonte única de cor,
+   tipografia, espaçamento, raio, elevação e movimento do painel.
+
+   Fica fora de src/styles/<familia>/ de propósito: não recebe o prefixo de
+   escopo do vite.config.js, então vale para todas as telas. Os nomes levam o
+   prefixo --ct- para não colidir com as variáveis antigas das famílias
+   (--navy, --muted, --border...), que agora apontam para estes valores. */
+
+:root {
+
+  /* Cor — marca e superfícies */
+  --ct-navy-900: #0b1f3a;
+  --ct-navy-800: #132c4d;      /* item da barra lateral sob o ponteiro */
+  --ct-navy-700: #1d3a5f;      /* divisória sobre navy */
+  --ct-blue-700: #0b5cad;
+  --ct-blue-50: #e8f1fb;       /* fundo de destaque azul (selo, item ativo claro) */
+  --ct-cyan-500: #0ea5e9;      /* marca, anel de foco, "ao vivo"; nunca texto sobre branco */
+  --ct-surface: #ffffff;
+  --ct-canvas: #f4f7fa;
+  --ct-subtle: #f8fafc;        /* bloco dentro de cartão */
+  --ct-border: #dce3ea;
+  --ct-border-strong: #c3ced9; /* borda de campo (contraste de controle) */
+
+  /* Cor — texto */
+  --ct-text: #0b1f3a;
+  --ct-muted: #475569;         /* 7,5:1 sobre branco, 7,0:1 sobre canvas */
+  --ct-on-navy: #e2e8f0;
+  --ct-on-navy-muted: #a9b8c9; /* 8,1:1 sobre navy-900 */
+
+  /* Cor — status (texto sobre fundo) */
+  --ct-normal: #0f7a4a;
+  --ct-normal-bg: #e3f6ec;
+  --ct-atencao: #8a5a00;
+  --ct-atencao-bg: #fff4d6;
+  --ct-atencao-borda: #e5a500; /* só forma (barra, ponto), nunca texto */
+  --ct-critico: #b42318;
+  --ct-critico-bg: #fde7e6;
+  --ct-critico-borda: #f3caca;
+  --ct-offline: #3f4a54;
+  --ct-offline-bg: #e6ebef;
+  --ct-disabled: #9aa6b1;      /* fundo de botão desabilitado (fora da regra de contraste) */
+  --ct-faixa-offline: #8f1d1d; /* faixa "sem conexão", texto branco ~8:1 */
+
+  /* Tipografia */
+  --ct-font-display: "Barlow Condensed", "Arial Narrow", Arial, sans-serif;
+  --ct-font-body: Inter, "Segoe UI", Arial, sans-serif;
+  --ct-font-mono: ui-monospace, "Cascadia Mono", Consolas, monospace;
+
+  --ct-text-display: 56px;
+  --ct-text-headline: 32px;
+  --ct-text-title: 22px;
+  --ct-text-body: 16px;
+  --ct-text-body-sm: 15px;     /* piso do corpo */
+  --ct-text-label: 13px;
+  --ct-text-caption: 12px;     /* piso do texto pequeno, sempre peso >= 600 */
+
+  --ct-weight-body: 500;
+  --ct-weight-label: 600;
+  --ct-weight-strong: 700;
+
+  --ct-leading-display: 1.05;
+  --ct-leading-headline: 1.15;
+  --ct-leading-title: 1.2;
+  --ct-leading-body: 1.5;
+  --ct-leading-label: 1.4;
+
+  /* Espaçamento */
+  --ct-space-1: 4px;
+  --ct-space-2: 8px;
+  --ct-space-3: 16px;
+  --ct-space-4: 24px;
+  --ct-space-5: 32px;
+  --ct-space-6: 48px;
+
+  /* Raio */
+  --ct-radius-control: 8px;
+  --ct-radius-card: 12px;
+  --ct-radius-pill: 9999px;
+
+  /* Elevação: cartão é plano com borda; um nível de sombra, só em sobreposição */
+  --ct-shadow-overlay: 0 12px 32px rgb(11 31 58 / 18%), 0 2px 6px rgb(11 31 58 / 10%);
+  --ct-scrim: rgb(11 31 58 / 48%);
+
+  /* Movimento (ease-in proibido; nada passa de 300 ms) */
+  --ct-ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ct-ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+  --ct-dur-fast: 150ms;
+  --ct-dur-base: 200ms;
+  --ct-dur-slow: 250ms;
+  --ct-dur-drawer: 280ms;
+  --ct-enter-scale: 0.96;
+
+  /* Foco: azul sobre claro (cyan sobre branco dá 2,8:1, abaixo dos 3:1 de
+     WCAG 1.4.11); cyan só sobre navy (6,0:1). */
+  --ct-focus-ring: 2px solid var(--ct-blue-700);
+  --ct-focus-ring-on-navy: 2px solid var(--ct-cyan-500);
+  --ct-focus-offset: 2px;
+
+  /* Alvo de toque */
+  --ct-touch: 44px;
+
+}
+
+
+/* Movimento reduzido: desliga junto com a animação, não depois. */
+@media (prefers-reduced-motion: reduce) {
+
+  :root {
+    --ct-dur-fast: 0ms;
+    --ct-dur-base: 0ms;
+    --ct-dur-slow: 0ms;
+    --ct-dur-drawer: 0ms;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+}

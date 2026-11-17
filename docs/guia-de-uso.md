@@ -8,9 +8,9 @@ Como usar este guia: procure a seção da tela que você está usando (Dashboard
 
 O painel atualiza as telas sozinho a cada 20 segundos. Não é preciso recarregar a página.
 
-## Perfis: gestor e operador
+## Perfis: gestor, operador e motorista
 
-Existem dois perfis. O perfil aparece no menu lateral, abaixo do seu nome: **Gestor** ou **Operador logístico**.
+Existem três perfis. No painel, o perfil aparece no menu lateral, abaixo do seu nome: **Gestor** ou **Operador logístico**. O **Motorista** não usa o painel: ele tem uma tela própria no celular (veja a seção Tela do motorista).
 
 **Operador logístico** acompanha a carga. Pode:
 - ver Dashboard, Veículos, Sensores, Viagens, Alertas, Relatórios e Configurações;
@@ -22,7 +22,9 @@ Existem dois perfis. O perfil aparece no menu lateral, abaixo do seu nome: **Ges
 - **Veículos**: cadastrar (**Cadastrar veículo**) e remover (**Remover veículo**).
 - **Sensores**: conectar sensor pelo cabo USB (**Conectar sensor pelo cabo**), **Registrar sem cabo**, **Gerar nova chave** e **Remover**.
 - **Viagens**: **Registrar viagem**, **Encerrar viagem** e **Remover**.
-- **Configurações**: painel **Usuários** (criar usuário, **Redefinir senha**, **Remover**).
+- **Configurações**: painel **Usuários** (criar usuário, **Redefinir senha**, **Trocar veículo** do motorista, **Remover**) e **Excluir empresa**.
+
+**Motorista** só vê, no celular, a carga do veículo vinculado à conta dele. Não cadastra nada e não entra nas outras telas: qualquer endereço do painel o leva de volta à tela do motorista.
 
 Para o operador, esses controles simplesmente não aparecem. Se algo estiver faltando na sua tela, peça ao gestor da sua empresa.
 
@@ -33,7 +35,7 @@ Para o operador, esses controles simplesmente não aparecem. Se algo estiver fal
 **Entrar.**
 1. Abra a tela de login.
 2. Digite o **E-mail** e a **Senha**. O botão **Mostrar** exibe a senha digitada; **Ocultar** volta a esconder.
-3. Clique em **Entrar**. Você chega ao Dashboard.
+3. Clique em **Entrar**. Você chega ao Dashboard (o motorista chega à tela do motorista).
 
 Mensagens possíveis: "Informe um e-mail válido.", "Informe sua senha." e "Sem conexão com o servidor. Confira a internet e tente de novo."
 
@@ -47,9 +49,9 @@ Mensagens possíveis: "Informe um e-mail válido.", "Informe sua senha." e "Sem 
 
 Depois do cadastro você é levado direto à tela Sensores para conectar o primeiro sensor. Se faltar algum campo, aparece "Preencha todos os campos."
 
-**Duração da sessão.** O login vale por 8 horas. Quando a sessão vence, o painel volta sozinho para a tela de login e você entra de novo. Para encerrar manualmente, use o botão **Sair** no rodapé do menu lateral.
+**Duração da sessão.** O login vale por 8 horas. Quando a sessão vence, o painel volta sozinho para a tela de login e você entra de novo. Para encerrar manualmente, use o botão **Sair** no rodapé do menu lateral (no celular, dentro de **Mais**).
 
-**Menu lateral.** Dashboard, Veículos, Sensores, Viagens, Alertas, Relatórios e Configurações. No topo de cada tela há um indicador de conexão: "Conectando...", "Azure conectado" ou "Sem conexão com Azure". Se aparecer "Sem conexão com Azure", os dados voltam na próxima atualização (20 s).
+**Menu lateral.** Um menu só, em dois grupos: **Operação** (Visão geral, Veículos, Sensores, Viagens, Alertas, Relatórios) e **Gestão** (Logística, Usuários, Auditoria, Monitoramento ThingSpeak, Configurações). No celular o menu fica embaixo, com Visão geral, Alertas, Sensores, Viagens e **Mais** (que abre o resto do menu e o botão Sair). No topo de cada tela há um indicador de conexão: "Conectando...", "Azure conectado" ou "Sem conexão com Azure", e a hora da última atualização recebida. Se aparecer "Sem conexão com Azure", os dados voltam na próxima atualização (20 s).
 
 ## Dashboard
 
@@ -91,12 +93,14 @@ Botões do cartão: **Ver no painel**, **Etiqueta QR** e, só para o gestor, **R
 
 Antes de cadastrar, o sensor precisa estar registrado em Sensores. Se não houver sensor livre, a tela avisa: "Nenhum sensor livre para um veículo novo."
 
-1. Abra o painel **Cadastrar veículo**.
+1. Clique em **Cadastrar veículo**, no topo da lista. O formulário abre numa gaveta à direita.
 2. Preencha **Código** (exemplo: CT-002) e **Tipo** (exemplo: Caminhão baú refrigerado).
 3. Em **Sensor**, escolha um dos sensores que ainda não têm veículo.
 4. Opcional: **Dispositivo** (exemplo: ESP32-C3 + DHT11).
 5. Em **Perfil da carga**, escolha o perfil. Cada opção mostra a faixa normal, por exemplo "(normal de 10 a 13 °C)".
-6. Clique em **Cadastrar**.
+6. Clique em **Cadastrar**. A gaveta fecha e o veículo entra na lista. **Cancelar**, o **X** ou a tecla Esc fecham sem salvar.
+
+Enquanto a gaveta está aberta a lista não se atualiza, para não apagar o que foi digitado.
 
 O perfil define as faixas de temperatura do veículo (veja a seção Faixas por carga).
 
@@ -138,6 +142,7 @@ Requisitos:
 Passo a passo:
 1. Ligue o sensor no computador pelo cabo USB.
 2. Clique em **Conectar sensor pelo cabo** e escolha a porta do sensor na janela que o navegador abre.
+   Abrir a porta pode reiniciar o sensor: o painel mostra "Esperando o sensor ficar pronto..." e só manda a rede depois que o sensor avisa que terminou de iniciar (até 20 s). Não precisa clicar de novo nesse meio tempo.
 3. O painel mostra **SENSOR RECONHECIDO** com o ID e o firmware, e explica o que vai acontecer:
    - sensor novo: "será registrado na sua empresa com este ID" (há o campo opcional **Descrição**);
    - sensor já da empresa e configurado: "continua com a mesma chave. Informe só a rede nova.";
@@ -154,7 +159,8 @@ Se der errado, o painel mostra mensagens como:
 - "Senha errada para a rede ...": confira maiúsculas e minúsculas. Nada é gravado quando a rede falha; o sensor continua na rede anterior.
 - "O sensor não achou a rede ...": confira o nome exato e se o hotspot está ligado em 2.4 GHz.
 - "O sensor não conseguiu entrar na rede ... em 15 s": confira nome, senha, banda 2.4 GHz e deixe o celular perto do sensor.
-- "O sensor não respondeu. Confira se ele está com o firmware ColdTrack atualizado.": use um cabo de dados, feche a Arduino IDE e outras abas que usem o sensor, e confirme que o firmware ColdTrack está gravado (com "USB CDC On Boot" ligado na Arduino IDE).
+- "O sensor não respondeu em 20 s. Confira se ele está com o firmware ColdTrack atualizado.": use um cabo de dados, feche a Arduino IDE e outras abas que usem o sensor, e confirme que o firmware ColdTrack está gravado (com "USB CDC On Boot" ligado na Arduino IDE).
+- "O sensor não conseguiu procurar redes (scan_falhou)": o rádio do sensor estava ocupado; o painel já tentou duas vezes. Clique de novo em **Ver redes que o sensor enxerga**. Com o firmware 2026.11.16.3 ou mais novo isso não deve mais aparecer só porque o sensor estava conectando.
 - "O cabo foi desconectado...": ligue o sensor de novo e clique em **Conectar sensor pelo cabo**.
 - "O sensor ... está registrado em outra empresa.": peça para essa empresa remover o sensor antes.
 - "O sensor entrou na rede, mas nenhuma leitura chegou em 2 min.": confira se a rede tem internet (o hotspot precisa de dados móveis). Se o sensor foi removido ou ganhou chave nova, conecte pelo cabo de novo.
@@ -195,10 +201,10 @@ A rota real no mapa está marcada como **PLANEJADO**: chega com o módulo 4G com
 ### Registrar viagem (gestor)
 
 É preciso ter ao menos um veículo cadastrado ("Cadastre um veículo antes de registrar viagens.").
-1. Abra o painel **Registrar viagem**.
+1. Clique em **Registrar viagem**, no topo da lista. O formulário abre numa gaveta à direita.
 2. Escolha o **Veículo**.
 3. Preencha **Origem** (exemplo: Petrolina/PE), **Destino**, **Carga** (exemplo: Manga Tommy Atkins) e **Início** (já vem com a data e hora atuais).
-4. Clique em **Registrar**.
+4. Clique em **Registrar**. A gaveta fecha e a viagem entra na lista. **Cancelar**, o **X** ou a tecla Esc fecham sem salvar.
 
 ### Encerrar e remover (gestor)
 
@@ -264,10 +270,20 @@ Tocar na notificação abre a tela **Alertas** do veículo daquele sensor. Notif
 **Fonte de dados.** De onde o painel lê a telemetria, a frequência de atualização (a cada 20 s) e o aviso de que cada empresa vê só os próprios dados.
 
 **Usuários (somente gestor).** Lista nome, e-mail e perfil de quem acessa a empresa.
-- **Criar usuário**: preencha **Nome**, **E-mail**, **Perfil** (**Operador logístico** ou **Gestor**) e **Senha inicial (mín. 8)** e clique em **Criar usuário**.
+- **Criar usuário**: no bloco **Novo usuário**, logo abaixo da lista, preencha **Nome**, **E-mail**, **Perfil** (**Operador logístico**, **Gestor** ou **Motorista**) e **Senha inicial (mín. 8)** e clique em **Criar usuário**. No perfil **Motorista** aparece o campo **Veículo do motorista**, obrigatório: escolha o veículo da frota que ele vai acompanhar.
+- **Trocar veículo** (só na linha de um motorista): abre uma janela para escolher outro veículo da frota. A senha e as sessões do motorista continuam as mesmas. Na lista, o perfil aparece como "Motorista · CT-001".
 - **Redefinir senha**: abre uma janela para definir uma **Nova senha (mín. 8)**. A pessoa sai de todos os aparelhos e entra com a senha nova. Use quando alguém esquecer a senha.
 - **Remover**: retira o acesso da pessoa, após confirmação.
 - Na sua própria linha aparece "você", sem botões.
+
+**Excluir empresa (somente gestor).** Painel no fim da tela. Apaga a empresa e tudo o que é dela: usuários, veículos, sensores, viagens e leituras. **Não há como desfazer** (direito de eliminação da LGPD).
+1. Clique em **Excluir empresa**. A janela repete o que será apagado.
+2. Digite o nome da empresa, como foi cadastrado (maiúsculas e espaços nas pontas não importam), e a sua **senha atual**.
+3. O botão **Excluir empresa para sempre** só habilita com os dois preenchidos. Clique nele.
+4. Com muitos dados a exclusão pode levar alguns minutos: a janela mostra "Excluindo… pedido N" e repete o pedido sozinha até terminar. Não feche a janela.
+5. Ao terminar, a sessão é encerrada e a tela de login mostra "Empresa excluída. Todos os dados dela foram apagados.". Os outros usuários saem do painel assim que a exclusão começa.
+
+Se a senha estiver errada ou o nome não conferir, a janela mostra a mensagem da API, mantém o nome digitado e limpa a senha. Depois de vários pedidos errados (limite de 5 por hora) a API responde que é preciso tentar de novo em 1 hora.
 
 ## Faixas por carga: Normal, Atenção e Crítico
 
@@ -316,6 +332,32 @@ O que fazer, em ordem:
 6. Aguarde até 20 s para a primeira leitura aparecer depois de ligar.
 
 Boa notícia: enquanto o sensor está sem sinal, ele guarda as leituras na memória (até 500) e as envia quando a conexão volta. Por isso o gráfico e os relatórios usam o horário em que a leitura foi medida, e não o de chegada.
+
+## Tela do motorista
+
+Tela do celular para quem está dirigindo, feita para bater o olho com o celular no suporte. Somente leitura: não tem campo para digitar e nada precisa de toque enquanto o caminhão anda.
+
+**Como abrir.**
+1. O gestor cria o usuário com perfil **Motorista** e escolhe o veículo (veja Configurações → Usuários).
+2. O motorista entra com o e-mail e a senha dele, no navegador do celular. Depois do login ele vai direto para a tela do motorista (endereço `/motorista`).
+3. Para abrir mais rápido, adicione o ColdTrack à tela de início do celular. Com o ícone instalado, segurar o dedo nele mostra o atalho **Motorista**.
+
+**O que a tela mostra.**
+- O status da carga em texto e em cor: **NORMAL** (verde), **ATENÇÃO** (amarelo), **CRÍTICO** (vermelho) ou **SEM SINAL** (cinza), com uma frase do que fazer.
+- A temperatura atual em número grande.
+- A faixa da carga (por exemplo, "Manga: de 10 a 13 °C"), a hora da última leitura ("às 21:30 · há 1 min") e a umidade.
+- A viagem em curso (origem → destino e carga), ou "Nenhuma viagem em curso.".
+- No rodapé, o aviso fixo "Use com o celular no suporte." e se a tela está sendo mantida acesa.
+
+A tela atualiza sozinha a cada 20 s e fica acesa enquanto está aberta (nos navegadores que permitem). Sem leitura há mais de 5 min, o status vira **SEM SINAL** e o último valor ganha o selo **LEITURA ANTIGA**.
+
+**Alertas.** Antes de sair, toque uma vez em **Ativar alertas (som e notificação)** e permita as notificações: o navegador só deixa tocar som depois de um toque na página. Quando a carga piora (de Normal para Atenção, ou para Crítico), o celular vibra, toca um bipe curto e mostra uma notificação. Um aviso fica no topo da tela até a carga voltar ao Normal; se o sensor ficar sem sinal nesse meio-tempo, o aviso continua. O alerta não se repete a cada atualização enquanto a carga segue fora da faixa. Esses alertas funcionam com a tela do motorista aberta (mesmo com outro aplicativo, como o mapa, na frente).
+
+**Alertas com a tela fechada.** No bloco **Alertas com a tela fechada**, toque em **Ativar alertas no celular** e permita as notificações. A partir daí o celular recebe a notificação mesmo com o navegador fechado ou a tela bloqueada, **só do veículo vinculado a você**: o sensor de outro veículo da empresa não avisa. Se o gestor trocar o seu veículo, os alertas passam a ser do veículo novo sem precisar ativar de novo. Tocar na notificação abre a tela do motorista. **Desativar** para de receber neste celular; sair da conta também apaga a inscrição. No iPhone (iOS 16.4 ou mais novo), o ColdTrack precisa estar adicionado à tela de início (Compartilhar → Adicionar à Tela de Início) e o botão é tocado por lá. O alerta local (vibração e bipe) continua valendo com a tela aberta; os dois podem ficar ligados ao mesmo tempo.
+
+**Sem internet.** Aparece a faixa vermelha "Sem conexão — última leitura às HH:MM" e o último valor continua na tela, com o selo **LEITURA ANTIGA**. Se a internet funciona mas o servidor não responde, a faixa diz "Sem resposta do servidor". Tudo volta sozinho quando a conexão volta.
+
+**Nenhum veículo vinculado.** Se a tela disser "Nenhum veículo vinculado a você.", peça ao gestor para escolher o seu veículo em Configurações → Usuários.
 
 ## Assistente do painel
 

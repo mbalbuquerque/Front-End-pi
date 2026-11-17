@@ -1,7 +1,7 @@
 // Protocolo do cabo USB (SensorUsb) com uma porta serial falsa.
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { SensorUsb, serialDisponivel } from "./serial.js";
+import { PRONTO_MS, SensorUsb, serialDisponivel } from "./serial.js";
 
 
 // Porta falsa: guarda o que o painel escreveu e deixa o teste mandar bytes "da placa".
@@ -36,6 +36,11 @@ function criarPorta(responder = () => null) {
     },
     async close() {
       porta.fechada = true;
+    },
+    // Sinais pedidos pelo painel, na ordem.
+    sinais: [],
+    async setSignals(sinais) {
+      porta.sinais.push(sinais);
     },
     // Bytes vindos da placa.
     placa(texto) {
@@ -180,6 +185,49 @@ describe("SensorUsb", () => {
   });
 
 
+  it("configurar espera até 50 s (scan repetido + teste de até 25 s na placa)", async () => {
+
+    vi.useFakeTimers();
+    const porta = criarPorta();
+    instalarSerial(porta);
+
+    const usb = new SensorUsb();
+    await usb.conectar();
+
+    let resposta = "pendente";
+    usb.configurar({ cmd: "wifi", ssid: "Campus", senha: "12345678" }).then(r => { resposta = r; });
+
+    await vi.advanceTimersByTimeAsync(49000);
+    expect(resposta).toBe("pendente");
+    await vi.advanceTimersByTimeAsync(1500);
+    expect(resposta).toBeNull();
+
+    vi.useRealTimers();
+    await usb.fechar();
+
+  });
+
+
+  it("redes pede a lista à placa e devolve a resposta", async () => {
+
+    const porta = criarPorta(linha => linha.includes('"redes"')
+      ? 'log comum\nCT>{"ok":true,"redes":[{"ssid":"Campus","rssi":-61,"canal":6,"seguranca":"wpa2"}]}\n'
+      : null);
+    instalarSerial(porta);
+
+    const usb = new SensorUsb();
+    await usb.conectar();
+
+    const resposta = await usb.redes();
+
+    expect(porta.escrito).toEqual(['CT<{"cmd":"redes"}\n']);
+    expect(resposta).toEqual({ ok: true, redes: [{ ssid: "Campus", rssi: -61, canal: 6, seguranca: "wpa2" }] });
+
+    await usb.fechar();
+
+  });
+
+
   it("cabo tirado: quem esperava resposta recebe null", async () => {
 
     const porta = criarPorta();
@@ -218,14 +266,163 @@ describe("SensorUsb", () => {
   });
 
 
-  it("info tenta 6 vezes e desiste com null", async () => {
+  it("info pergunta a cada 2 s e desiste com null depois de 20 s", async () => {
+
+    vi.useFakeTimers();
+    const usb = new SensorUsb();
+    usb.enviar = vi.fn(async (comando, tempoMs) => {
+      await new Promise(r => setTimeout(r, tempoMs));
+      return null;
+    });
+
+    let info = "pendente";
+    usb.info().then(r => { info = r; });
+
+    await vi.advanceTimersByTimeAsync(PRONTO_MS - 100);
+    expect(info).toBe("pendente");
+    await vi.advanceTimersByTimeAsync(200);
+
+    expect(info).toBeNull();
+    expect(PRONTO_MS).toBe(20000);
+    expect(usb.enviar).toHaveBeenCalledTimes(10);
+    expect(usb.enviar).toHaveBeenCalledWith({ cmd: "info" }, 2000);
+    vi.useRealTimers();
+
+  });
+
+
+  it("solta RTS antes de DTR, em duas chamadas, logo depois de abrir", async () => {
+
+    const porta = criarPorta();
+    instalarSerial(porta);
 
     const usb = new SensorUsb();
-    usb.enviar = vi.fn(async () => null);
+    await usb.conectar();
 
-    expect(await usb.info()).toBeNull();
-    expect(usb.enviar).toHaveBeenCalledTimes(6);
-    expect(usb.enviar).toHaveBeenCalledWith({ cmd: "info" }, 2000);
+    // RTS ativo com DTR inativo reinicia o ESP32-C3: a ordem evita esse estado.
+    expect(porta.sinais).toEqual([{ requestToSend: false }, { dataTerminalReady: false }]);
+    expect(porta.escrito).toEqual([]);
+
+    await usb.fechar();
+
+  });
+
+
+  it("porta sem setSignals, ou que recusa, segue funcionando", async () => {
+
+    for (const setSignals of [undefined, async () => { throw new Error("NotSupported"); }]) {
+
+      const porta = criarPorta(linha => linha.includes('"info"') ? 'CT>{"id":"x"}\n' : null);
+      porta.setSignals = setSignals;
+      instalarSerial(porta);
+
+      const usb = new SensorUsb();
+      await usb.conectar();
+      expect(await usb.info()).toEqual({ id: "x" });
+      await usb.fechar();
+
+    }
+
+  });
+
+
+  it("placa que reiniciou ao abrir: espera o boot e a linha de prontidão antes de seguir", async () => {
+
+    vi.useFakeTimers();
+
+    // Durante o boot a placa não lê a serial: o info se perde. Ao fim do setup ela
+    // manda a linha de prontidão e passa a responder.
+    let pronta = false;
+    const porta = criarPorta(linha => pronta && linha.includes('"info"')
+      ? 'CT>{"id":"coldtrack-ab12","fw":"2026.11.16.3"}\n'
+      : null);
+    instalarSerial(porta);
+
+    const usb = new SensorUsb();
+    await usb.conectar();
+
+    let info = "pendente";
+    usb.info().then(r => { info = r; });
+
+    porta.placa("ESP-ROM:esp32c3-api1-20210207\r\nrst:0x15 (USB_UART_CHIP_RESET)\r\n");
+    await vi.advanceTimersByTimeAsync(3000);
+    porta.placa("Conectando ao Wi-Fi Campus..........\r\n");
+    await vi.advanceTimersByTimeAsync(6500);
+    expect(info).toBe("pendente");
+
+    pronta = true;
+    porta.placa('Sistema iniciado.\r\nCT>{"pronto":true,"fw":"2026.11.16.3"}\r\n');
+    await vi.advanceTimersByTimeAsync(50);
+
+    // A linha de prontidão corta a espera: o info sai de novo na hora, sem esperar os 2 s.
+    expect(info).toEqual({ id: "coldtrack-ab12", fw: "2026.11.16.3" });
+    expect(usb.pronta).toBe(true);
+    expect(porta.escrito.every(l => l === 'CT<{"cmd":"info"}\n')).toBe(true);
+
+    vi.useRealTimers();
+    await usb.fechar();
+
+  });
+
+
+  it("linha de prontidão no meio de um comando não vira resposta dele", async () => {
+
+    const porta = criarPorta();
+    instalarSerial(porta);
+
+    const usb = new SensorUsb();
+    await usb.conectar();
+
+    const pendente = usb.enviar({ cmd: "redes" }, 5000);
+    porta.placa('CT>{"pronto":true,"fw":"2026.11.16.3"}\n');
+
+    // Placa reiniciou: o comando se perdeu, quem esperava recebe null.
+    expect(await pendente).toBeNull();
+
+    await usb.fechar();
+
+  });
+
+
+  it("redes repete uma vez quando o scan foi recusado", async () => {
+
+    let pedidos = 0;
+    const porta = criarPorta(linha => {
+      if (!linha.includes('"redes"')) {
+        return null;
+      }
+      pedidos += 1;
+      return pedidos === 1
+        ? 'CT>{"ok":false,"erro":"scan_falhou"}\n'
+        : 'CT>{"ok":true,"redes":[{"ssid":"Campus","rssi":-61,"canal":6,"seguranca":"wpa2"}]}\n';
+    });
+    instalarSerial(porta);
+
+    const usb = new SensorUsb();
+    await usb.conectar();
+
+    const resposta = await usb.redes();
+
+    expect(porta.escrito).toEqual(['CT<{"cmd":"redes"}\n', 'CT<{"cmd":"redes"}\n']);
+    expect(resposta.ok).toBe(true);
+
+    await usb.fechar();
+
+  });
+
+
+  it("redes não repete mais de uma vez nem repete outro erro", async () => {
+
+    const usb = new SensorUsb();
+
+    usb.enviar = vi.fn(async () => ({ ok: false, erro: "scan_falhou" }));
+    expect(await usb.redes()).toEqual({ ok: false, erro: "scan_falhou" });
+    expect(usb.enviar).toHaveBeenCalledTimes(2);
+    expect(usb.enviar).toHaveBeenCalledWith({ cmd: "redes" }, 20000);
+
+    usb.enviar = vi.fn(async () => ({ ok: false, erro: "comando_desconhecido" }));
+    await usb.redes();
+    expect(usb.enviar).toHaveBeenCalledTimes(1);
 
   });
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { LOGS, campoCsv, dataFormatada, filtrarLogs, montarCsv } from "./auditoria.js";
+import { LOGS, agruparPorDia, campoCsv, dataFormatada, filtrarLogs, montarCsv } from "./auditoria.js";
 
 describe("filtrarLogs", () => {
   it("sem filtro devolve todos", () => {
@@ -33,5 +33,16 @@ describe("csv", () => {
     const csv = montarCsv(LOGS.slice(0, 1));
     expect(csv.startsWith("﻿\"ID\";")).toBe(true);
     expect(csv.split("\r\n")).toHaveLength(2);
+  });
+});
+
+describe("agruparPorDia", () => {
+  it("junta os eventos do mesmo dia na ordem da lista", () => {
+    const grupos = agruparPorDia(LOGS);
+    expect(grupos.map(g => g.dia)).toEqual(["20/10/2026", "19/10/2026", "18/10/2026"]);
+    expect(grupos.map(g => g.logs.length)).toEqual([2, 2, 2]);
+  });
+  it("lista vazia não tem dia", () => {
+    expect(agruparPorDia([])).toEqual([]);
   });
 });

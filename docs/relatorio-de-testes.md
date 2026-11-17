@@ -21,6 +21,14 @@
 | E2E real (site publicado + API de produção) | `npm run test:e2e:real` | 57 passaram, 0 falharam, 0 pulados (site publicado no commit `4d51edd`, chat com Azure OpenAI incluído) |
 | E2E real do chat (build local + API de produção) | `REAL-PUB-04`, `05` e `09`, veja abaixo | 3 passaram, 0 falharam (2 perguntas de verdade à rota `/chat`) |
 
+**Reexecução em 17/11/2026** na `main` (commit `faa598b`, com redesign, tela do motorista, alertas
+push e exclusão de empresa), na mesma máquina: lint sem avisos; 615 testes unitários em 66
+arquivos, 0 falhas; cobertura de 99,19% de linhas e instruções, 95,15% de ramos e 98,84% de
+funções; build ok; e2e simulado com 295 passando, 0 falhando e 19 pulados (dois projetos, desktop
+e celular). O site publicado serve o mesmo build (`index-Bv_irH8p.js`) e as telas públicas e as
+do painel, com a API simulada, abriram sem erro de console. A suíte real contra produção não foi
+repetida nesta data.
+
 Lint, unitários, build e e2e simulado foram repetidos depois da ligação do chat com Azure
 OpenAI (branch `everson`, 08/11/2026). A suíte real completa contra o site publicado será
 repetida depois da próxima publicação; até lá, os testes do chat rodaram contra o build local
@@ -208,7 +216,8 @@ só pelo e2e, também têm teste de componente (`Home.test.jsx`, 18 casos; `Chat
 | `Home` | seções e título da aba; setas e pontos do carrossel dando a volta nas pontas; avanço automático a cada 6 s e parada com movimento reduzido; menu móvel; âncoras (rolagem suave, sem animação com movimento reduzido, clique com Ctrl, âncora na URL, âncora inexistente); cabeçalho opaco após 50 px; login embutido (campos vazios, só espaços, sucesso com `POST /login` e ida ao dashboard, credencial recusada, recusa sem lista de erros, falha de rede) |
 | `ChatWidget` | abrir/fechar com foco, Escape e ×; saudação uma só vez; chips de FAQ respondidos localmente sem chamar a API; campo livre em `POST /chat` com as fontes; histórico da pergunta anterior; falha da rota caindo no FAQ; FAQ sem resposta com aviso do WhatsApp; 429 por minuto (aviso da API) e 429 diário (FAQ); campo vazio; Manual e infográfico (sem duplicar, imagem ausente); resolução Sim/Não; avaliação (sem nota, com nota e comentário, acréscimo às já salvas, armazenamento indisponível); cancelamento do pedido ao sair da tela |
 
-As telas do motorista são de outro integrante e não entram nesta medição.
+Na medição de 16/11 as telas do motorista ainda não estavam na `main`; na reexecução de 17/11
+elas entram na conta (`pages/Motorista` com 100% de linhas e ramos).
 
 Apoio nos testes (`src/testes/setup.js`): o jsdom não tem `<dialog>.showModal()`, `PointerEvent`
 nem `AbortSignal.any`, então o arquivo de preparação simula o essencial de cada um (atributo

@@ -28,6 +28,8 @@ vi.mock("../../components/PainelLayout.jsx", () => ({
 }));
 vi.mock("./RiscoSaida.jsx", () => ({ default: () => <div data-testid="risco-saida" /> }));
 vi.mock("./RiscoRota.jsx", () => ({ default: () => <div data-testid="risco-rota" /> }));
+vi.mock("../../components/PrevisaoSensor.jsx", () => ({ default: ({ deviceId, variante }) => <div data-testid="previsao" data-device={deviceId} data-variante={variante} /> }));
+vi.mock("./AvisoFalhaSensor.jsx", () => ({ default: ({ deviceId }) => <div data-testid="aviso-falha" data-device={deviceId} /> }));
 
 const FAIXA = { min: null, max: 15, margem: 5 };
 const PERFIL = { id: "demonstrativo", nome: "Demonstrativo" };
@@ -88,6 +90,36 @@ describe("Dashboard", () => {
     expect(leituras.buscarLeituras).toHaveBeenCalledWith({ deviceId: "esp32-01", limite: 60 });
   });
 
+  it("cartão herói: número grande, pílula com ícone, régua com marcador e sensor online", async () => {
+    abrir();
+    await waitFor(() => expect(document.getElementById("temperatura")).toHaveTextContent("7.3 °C"));
+    expect(document.querySelector("#statusCarga svg")).not.toBeNull();
+    expect(screen.getByText("Carga atual: Demonstrativo")).toBeInTheDocument();
+    expect(screen.getByRole("img", { name: /Régua de faixa de 0 a 25 °C, temperatura atual 7.3 °C/ })).toBeInTheDocument();
+    expect(document.querySelector(".regua-marcador")).toHaveStyle({ left: "29.2%" });
+    expect(screen.getByText("Segura: até 15 °C")).toBeInTheDocument();
+    expect(screen.getByText("Atenção: 15 a 20 °C")).toBeInTheDocument();
+    expect(screen.getByText("Crítica: acima de 20 °C")).toBeInTheDocument();
+    expect(document.getElementById("contatoSensor")).toHaveTextContent(/^Online · último contato \d{2}:\d{2}$/);
+  });
+
+  it("leitura antiga: selo do sensor sem contato; antes da leitura, régua sem marcador", async () => {
+    leituras.buscarLeituras.mockResolvedValue([leitura(600, 7)]);
+    abrir();
+    await waitFor(() => expect(document.getElementById("contatoSensor")).toHaveTextContent(/^Sem contato · último contato/));
+    expect(document.getElementById("contatoSensor")).toHaveClass("selo-contato--offline");
+  });
+
+  it("perto da borda da régua o rótulo do valor encosta no limite", async () => {
+    leituras.buscarLeituras.mockResolvedValue([leitura(10, 24.5, "CRITICO")]);
+    const { unmount } = abrir();
+    await waitFor(() => expect(document.querySelector(".regua-valor")).toHaveClass("regua-valor--fim"));
+    unmount();
+    leituras.buscarLeituras.mockResolvedValue([leitura(10, 1)]);
+    abrir();
+    await waitFor(() => expect(document.querySelector(".regua-valor")).toHaveClass("regua-valor--inicio"));
+  });
+
   it("temperatura em atenção ou crítica: status e alerta aparecem", async () => {
     leituras.buscarLeituras.mockResolvedValue([leitura(10, 17.2, "ATENCAO")]);
     abrir();
@@ -120,12 +152,20 @@ describe("Dashboard", () => {
     expect(document.getElementById("temperatura")).toHaveTextContent("-- °C");
   });
 
+  it("previsão em 10 min: variante painel com o sensor do veículo, e nada sem veículo", async () => {
+    abrir();
+    const previsao = await screen.findByTestId("previsao");
+    expect(previsao).toHaveAttribute("data-device", VAN.deviceId);
+    expect(previsao).toHaveAttribute("data-variante", "painel");
+  });
+
   it("sem veículo cadastrado: orienta o cadastro", async () => {
     veiculo.escolherVeiculo.mockResolvedValue({ veiculos: [], veiculo: null, perfil: undefined, faixa: FAIXA });
     abrir();
     expect(await screen.findByText("Nenhum veículo cadastrado.")).toBeInTheDocument();
     expect(document.getElementById("veiculoCodigo")).toHaveTextContent("--");
     expect(leituras.buscarLeituras).not.toHaveBeenCalled();
+    expect(screen.queryByTestId("previsao")).toBeNull();
   });
 
   it("falha da API: histórico com erro, conexão falsa e aviso de falta de conexão", async () => {

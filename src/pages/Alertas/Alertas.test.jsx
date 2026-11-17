@@ -87,14 +87,28 @@ describe("Alertas", () => {
       leitura(0, 18, "ATENCAO")
     ]);
     abrir();
-    await screen.findByRole("table");
+    await screen.findByText("Ocorrências de temperatura · VAN-01");
 
-    // Duas ocorrências: a de 12:00 (atenção) e a de 12:28-12:30 (crítica).
-    expect(screen.getAllByRole("row")).toHaveLength(3);
-    expect(screen.getByText("CRÍTICO")).toBeInTheDocument();
-    expect(screen.getByText("ATENÇÃO")).toBeInTheDocument();
+    // Duas ocorrências na linha do tempo do dia: a de 12:28-12:30 (crítica, em cima) e a de 12:00 (atenção).
+    const ocorrencias = document.querySelectorAll(".linha-tempo li.ocorrencia");
+    expect(ocorrencias).toHaveLength(2);
+    expect(ocorrencias[0]).toHaveTextContent("CRÍTICO");
+    expect(ocorrencias[0]).toHaveTextContent("pico 22.5 °C");
+    expect(ocorrencias[0]).toHaveTextContent("3 leituras");
+    expect(ocorrencias[1]).toHaveTextContent("ATENÇÃO");
+    expect(ocorrencias[1]).toHaveTextContent("1 leitura");
+    expect(screen.getAllByRole("heading", { level: 3 })).toHaveLength(1);
     expect(screen.getByText("22.5 °C", { selector: "strong" })).toBeInTheDocument();
-    expect(screen.getByText("Ocorrências de temperatura · VAN-01")).toBeInTheDocument();
+
+    // Só a ocorrência com mais de uma leitura ganha o mini gráfico, com o limite que passou.
+    const graficos = screen.getAllByRole("img");
+    expect(graficos).toHaveLength(1);
+    expect(graficos[0]).toHaveAccessibleName("3 leituras fora da faixa, de 16.0 °C a 22.5 °C; limite 15.0 °C.");
+    expect(ocorrencias[0]).toHaveTextContent("limite máximo 15.0 °C");
+
+    // Tiles: Críticas e Pico pedem atenção pela borda e pelo texto.
+    expect(screen.getByText("Críticas").closest(".card")).toHaveClass("destaque", "critico");
+    expect(screen.getByText("Pico registrado").closest(".card")).toHaveClass("destaque", "critico");
   });
 
   it("troca o período para 7 dias e busca de novo", async () => {

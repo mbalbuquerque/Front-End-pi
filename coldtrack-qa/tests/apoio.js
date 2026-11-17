@@ -13,7 +13,9 @@
 //   /assistente (assistente do painel) e devolve a lista dos pedidos
 //   ({ corpo, autorizacao }). Sem ela, /assistente responde 503 (o assistente
 //   mostra o aviso de indisponível), com ou sem simularApi.
-// - `entrarComo(page, "gestor" | "operador")` grava uma sessão falsa no
+// - `respostaMotorista(status, minutos)` monta o GET /motorista simulado
+//   (veículo VAN-01); simularApi já responde com ele em NORMAL.
+// - `entrarComo(page, "gestor" | "operador" | "motorista")` grava uma sessão falsa no
 //   localStorage (chave coldtrack.sessao) antes de a página abrir.
 // - `errosDoConsole(page)` junta console.error e exceções da página.
 //
@@ -39,8 +41,9 @@ const HORA = 3600 * 1000;
 // ---------------------------------------------------------
 
 export const USUARIOS = {
-  gestor: { id: "u-gestor", nome: "Gestora Teste", email: "gestora@teste.com", perfil: "gestor" },
-  operador: { id: "u-operador", nome: "Operador Teste", email: "operador@teste.com", perfil: "operador" }
+  gestor: { id: "u-gestor", nome: "Gestora Teste", email: "gestora@teste.com", perfil: "gestor", empresa: "Frio Sul" },
+  operador: { id: "u-operador", nome: "Operador Teste", email: "operador@teste.com", perfil: "operador" },
+  motorista: { id: "u-motorista", nome: "Motorista Teste", email: "motorista@teste.com", perfil: "motorista", veiculo: "VAN-01" }
 };
 
 const PERFIS = [
@@ -146,6 +149,46 @@ export function predicao(params) {
 }
 
 
+// Resposta simulada de GET /predict/sensor (previsão 10 min): hoje a API recomenda
+// a persistência. `extra` sobrescreve campos. Valores de teste, não do modelo real.
+export function previsaoSensor(extra = {}) {
+
+  const ponto = (temperatura, status = "NORMAL") => ({ para: new Date(Date.now() + 600000).toISOString(), temperatura, status });
+
+  return {
+    deviceId: "esp32-teste-01",
+    horizonteMin: 10,
+    ultimaLeitura: { medidoEm: new Date().toISOString(), perfil: "demonstrativo", temperatura: 11.8, status: "NORMAL" },
+    previsao: ponto(12.4),
+    baseline: ponto(11.8),
+    recomendada: "baseline",
+    antecipaExcursao: false,
+    motivo: null,
+    modelo: { versao: "teste-v1", maeModelo: 0.342, maeBaseline: 0.3128, superaBaseline: false },
+    ...extra
+  };
+
+}
+
+
+// Resposta simulada de GET /motorista (tela do motorista): o veículo VAN-01,
+// com a leitura medida há `minutos`. Valores de teste.
+export function respostaMotorista(status = "NORMAL", minutos = 0) {
+
+  const temperatura = { NORMAL: 11.8, ATENCAO: 14.2, CRITICO: 17.5 }[status] ?? 11.8;
+
+  return {
+    veiculo: { id: "VAN-01", tipo: "Van refrigerada", perfil: "frutas" },
+    faixa: { nome: "Frutas", min: 10, max: 13, margem: 3 },
+    leitura: { temperatura, umidade: 85, status, medidoEm: new Date(Date.now() - minutos * 60000).toISOString() },
+    status,
+    minutosSemLeitura: minutos,
+    viagem: viagens()[0]
+  };
+
+}
+
+
 // ---------------------------------------------------------
 // API SIMULADA
 // ---------------------------------------------------------
@@ -177,6 +220,10 @@ export async function simularApi(page) {
       return responder({ erros: ["e-mail ou senha incorretos. Se errou várias vezes, aguarde alguns minutos."] }, 401);
     }
 
+    if (metodo === "DELETE" && caminho === "/empresa") {
+      return responder({ excluida: true, removidos: { empresas: 1 } });
+    }
+
     if (metodo !== "GET") {
       return responder({});
     }
@@ -189,6 +236,8 @@ export async function simularApi(page) {
       case "/usuarios": return responder({ usuarios: Object.values(USUARIOS) });
       case "/leituras": return responder({ leituras: leituras(url.searchParams.get("deviceId")) });
       case "/predict": return responder(predicao(url.searchParams));
+      case "/predict/sensor": return responder(previsaoSensor());
+      case "/motorista": return responder(respostaMotorista());
       default: return responder({ erros: ["Rota não simulada"] }, 404);
     }
 
@@ -337,6 +386,31 @@ export async function entrarComo(page, perfil) {
   await page.addInitScript(valor => {
     localStorage.setItem("coldtrack.sessao", valor);
   }, JSON.stringify(sessao));
+
+}
+
+
+// ---------------------------------------------------------
+// MENU DO PAINEL
+// ---------------------------------------------------------
+
+// No celular a navegação fica embaixo, com Visão geral, Alertas, Sensores e
+// Viagens à vista; o resto do menu e o Sair ficam atrás de "Mais". No
+// computador a barra lateral já mostra tudo e isto não faz nada.
+export async function abrirMenu(page) {
+
+  // A tela é carregada sob demanda (React.lazy): espera a moldura montar.
+  await page.locator("#sidebar").waitFor({ state: "attached" });
+
+  const mais = page.getByRole("button", { name: "Mais", exact: true });
+
+  if (!(await mais.isVisible())) {
+    return;
+  }
+
+  // O assistente aberto cobre a barra inferior: Escape fecha a conversa.
+  await page.keyboard.press("Escape");
+  await mais.click();
 
 }
 

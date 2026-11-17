@@ -1,4 +1,5 @@
 import {
+  abrirMenu,
   entrarComo,
   errosDoConsole,
   expect,
@@ -147,6 +148,7 @@ test("QA-ASSIST-04: segunda pergunta (Enter) leva o histórico no corpo", async 
   });
 
   // Trocar de tela pelo menu (SPA) mantém a conversa.
+  await abrirMenu(page);
   await page.getByRole("link", { name: /Relatórios/ }).click();
   await expect(page.getByRole("heading", { level: 1, name: "Relatórios" })).toBeVisible();
   await botao(page).click();
@@ -236,6 +238,7 @@ test("QA-ASSIST-08: sair e entrar de novo começa uma conversa nova", async ({ p
   await page.getByRole("button", { name: "O que o operador pode fazer?" }).click();
   await expect(painel(page).getByText("Primeira conversa.")).toBeVisible();
 
+  await abrirMenu(page);
   await page.locator("#botaoSair").click();
   await expect(page).toHaveURL(/\/login$/);
   await expect(page.locator("#assistenteBotao")).toHaveCount(0);

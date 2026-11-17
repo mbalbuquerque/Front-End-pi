@@ -3,8 +3,11 @@
 // Porte do site antigo: viagens.html + js/viagens.js.
 
 import { useRef, useState } from "react";
+import { Link } from "react-router-dom";
 import { Carregando, ErroAzure } from "../../components/Estado.jsx";
+import Gaveta from "../../components/Gaveta.jsx";
 import GraficoTemperatura from "../../components/GraficoTemperatura.jsx";
+import Icone from "../../components/Icone.jsx";
 import PainelLayout from "../../components/PainelLayout.jsx";
 import { usePolling } from "../../hooks/usePolling.js";
 import { useSessao } from "../../hooks/useSessao.jsx";
@@ -139,13 +142,32 @@ export default function Viagens() {
         {tela.tipo === "erro" && <ErroAzure />}
         {tela.tipo === "ok" && (
           <>
+            <div className="frota-topo">
+              <p className="frota-rotulo">
+                {tela.viagens.length === 1 ? "1 viagem" : `${tela.viagens.length} viagens`}
+              </p>
+              {gestor && tela.veiculos.length > 0 && (
+                <button type="button" className="botao botao-icone" onClick={() => mudarFormulario(true)}>
+                  <Icone nome="adicionar" tamanho={20} />
+                  Registrar viagem
+                </button>
+              )}
+            </div>
+
             {gestor && (
-              <FormularioViagem
-                veiculos={tela.veiculos}
-                aberto={formularioAberto}
-                aoMudarAberto={mudarFormulario}
-                aoSalvar={recarregar}
-              />
+              tela.veiculos.length ? (
+                <FormularioViagem
+                  veiculos={tela.veiculos}
+                  aberto={formularioAberto}
+                  aoMudarAberto={mudarFormulario}
+                  aoSalvar={recarregar}
+                />
+              ) : (
+                <div className="panel estado">
+                  <strong>Cadastre um veículo antes de registrar viagens.</strong>
+                  A viagem fica ligada ao sensor do veículo. <Link to="/veiculos">Ir para Veículos</Link>
+                </div>
+              )
             )}
 
             {tela.viagens.length ? tela.viagens.map((viagem, i) => {
@@ -187,6 +209,7 @@ export default function Viagens() {
 }
 
 
+// Registro na gaveta da direita; enquanto aberta, a lista não se redesenha.
 function FormularioViagem({ veiculos, aberto, aoMudarAberto, aoSalvar }) {
 
   const [erro, setErro] = useState("");
@@ -204,7 +227,7 @@ function FormularioViagem({ veiculos, aberto, aoMudarAberto, aoSalvar }) {
 
     try {
       await api("/viagens", { metodo: "POST", corpo: dados });
-      // O original redesenhava o formulário: volta fechado e vazio.
+      // Volta fechado e vazio.
       form.reset();
       aoMudarAberto(false);
       aoSalvar();
@@ -215,30 +238,27 @@ function FormularioViagem({ veiculos, aberto, aoMudarAberto, aoSalvar }) {
   }
 
   return (
-    <details className="panel" id="painelNovo" open={aberto} onToggle={e => aoMudarAberto(e.currentTarget.open)}>
-      <summary><h2>Registrar viagem</h2></summary>
-
-      {veiculos.length ? (
-        <>
-          <form id="formViagem" className="form-grade" noValidate onSubmit={enviar}>
-            <label className="campo">
-              <span>Veículo</span>
-              <select name="veiculo" required>
-                {veiculos.map(v => <option key={v.id} value={v.id}>{v.id} · {v.tipo}</option>)}
-              </select>
-            </label>
-            <label className="campo"><span>Origem</span><input name="origem" placeholder="Petrolina/PE" required /></label>
-            <label className="campo"><span>Destino</span><input name="destino" placeholder="Porto de Suape/PE" required /></label>
-            <label className="campo"><span>Carga</span><input name="carga" placeholder="Manga Tommy Atkins" required /></label>
-            <label className="campo"><span>Início</span><input name="inicio" type="datetime-local" defaultValue={agoraLocal()} required /></label>
-            <button type="submit" className="botao">Registrar</button>
-          </form>
+    <Gaveta id="painelNovo" titulo="Registrar viagem" aberta={aberto} aoFechar={() => aoMudarAberto(false)}>
+      <form id="formViagem" className="gaveta-form" noValidate onSubmit={enviar}>
+        <div className="gaveta-corpo">
+          <label className="campo">
+            <span>Veículo</span>
+            <select name="veiculo" required>
+              {veiculos.map(v => <option key={v.id} value={v.id}>{v.id} · {v.tipo}</option>)}
+            </select>
+          </label>
+          <label className="campo"><span>Origem</span><input name="origem" placeholder="Petrolina/PE" required /></label>
+          <label className="campo"><span>Destino</span><input name="destino" placeholder="Porto de Suape/PE" required /></label>
+          <label className="campo"><span>Carga</span><input name="carga" placeholder="Manga Tommy Atkins" required /></label>
+          <label className="campo"><span>Início</span><input name="inicio" type="datetime-local" defaultValue={agoraLocal()} required /></label>
           <p className="erro-form" id="erroViagem" role="alert" hidden={!erro}>{erro}</p>
-        </>
-      ) : (
-        <p className="estado">Cadastre um veículo antes de registrar viagens.</p>
-      )}
-    </details>
+        </div>
+        <div className="gaveta-rodape">
+          <button type="button" className="botao secundario" onClick={() => aoMudarAberto(false)}>Cancelar</button>
+          <button type="submit" className="botao">Registrar</button>
+        </div>
+      </form>
+    </Gaveta>
   );
 
 }
@@ -256,25 +276,37 @@ function PainelViagem({ viagem, leituras, indice, faixa, agora, gestor, aoEncerr
   const tempoFora = ocorrencias.reduce((total, o) => total + o.duracao, 0);
 
   return (
-    <article className="panel">
+    <article className={`panel viagem${fim ? " concluida" : ""}`}>
 
-      <div className="panel-header">
-        <div>
+      <div className="viagem-topo">
+        <div className="viagem-titulo">
           <h2>{viagem.id} · {viagem.veiculo}</h2>
-          <p>{viagem.carga}</p>
+          {fim
+            ? <span className="status aguardando">CONCLUÍDA</span>
+            : <span className="status normal">EM ANDAMENTO</span>}
         </div>
-        {fim
-          ? <span className="status aguardando">CONCLUÍDA</span>
-          : <span className="status normal">EM ANDAMENTO</span>}
+        <p className="viagem-carga"><span>Carga</span> {viagem.carga}</p>
       </div>
 
-      <div className="rota section-gap">
-        <span>{viagem.origem}</span>
-        <span className="seta" aria-hidden="true">→</span>
-        <span>{viagem.destino}</span>
+      {/* Linha do tempo do trajeto: origem, situação e destino. */}
+      <div className="rota">
+        <div className="rota-ponta origem">
+          <span className="rota-rotulo">Origem</span>
+          <span className="rota-local"><i aria-hidden="true" />{viagem.origem}</span>
+        </div>
+        <div className="rota-linha" aria-hidden="true">
+          <span className="rota-situacao">
+            <Icone nome={fim ? "ok" : "veiculo"} tamanho={18} />
+            {fim ? "Encerrada" : "Em trânsito"}
+          </span>
+        </div>
+        <div className="rota-ponta destino">
+          <span className="rota-rotulo">Destino</span>
+          <span className="rota-local">{viagem.destino}<i aria-hidden="true" /></span>
+        </div>
       </div>
 
-      <div className="campos">
+      <div className="campos viagem-campos">
         <div>
           <span>Início</span>
           <strong>{formatarDataHora(inicio)}</strong>
@@ -287,7 +319,7 @@ function PainelViagem({ viagem, leituras, indice, faixa, agora, gestor, aoEncerr
           <span>Faixa registrada</span>
           <strong>{r ? `${formatarTemp(r.minima)} a ${formatarTemp(r.maxima)}` : "--"}</strong>
         </div>
-        <div>
+        <div className={ocorrencias.length ? "fora" : undefined}>
           <span>Tempo fora da faixa</span>
           <strong>{ocorrencias.length
             ? `${formatarDuracao(tempoFora)} em ${ocorrencias.length} ocorrência${ocorrencias.length > 1 ? "s" : ""}`
@@ -295,19 +327,22 @@ function PainelViagem({ viagem, leituras, indice, faixa, agora, gestor, aoEncerr
         </div>
       </div>
 
-      {leituras
-        ? <GraficoTemperatura id={`graficoViagem${indice}`} className="section-gap" leituras={leituras} faixa={faixa} />
-        : <p className="nota">O veículo {viagem.veiculo} não está mais cadastrado.</p>}
+      {leituras ? (
+        <section className="viagem-grafico" aria-label={`Temperatura da viagem ${viagem.id}`}>
+          <h3>Temperatura da carga na viagem</h3>
+          <GraficoTemperatura id={`graficoViagem${indice}`} leituras={leituras} faixa={faixa} />
+        </section>
+      ) : <p className="nota">O veículo {viagem.veiculo} não está mais cadastrado.</p>}
 
       {gestor && (
-        <div className="acoes-item">
-          {!fim && (
-            <>
-              <button type="button" className="botao secundario" onClick={() => aoEncerrar(viagem.id)}>Encerrar viagem</button>
-              {" "}
-            </>
-          )}
+        <div className="viagem-acoes">
           <button type="button" className="botao perigo" onClick={() => aoRemover(viagem.id)}>Remover</button>
+          {!fim && (
+            <button type="button" className="botao botao-icone" onClick={() => aoEncerrar(viagem.id)}>
+              <Icone nome="ok" tamanho={20} />
+              Encerrar viagem
+            </button>
+          )}
         </div>
       )}
 

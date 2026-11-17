@@ -2,12 +2,12 @@
 // Porte do site antigo: login.html + js/login.js (página de referência).
 
 import { useRef, useState } from "react";
-import { Link, Navigate, useNavigate } from "react-router-dom";
+import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
+import AcessoLayout from "../../components/AcessoLayout.jsx";
 import { useSessao } from "../../hooks/useSessao.jsx";
 import { useTitulo } from "../../hooks/useTitulo.js";
 import { postPublico } from "../../lib/api.js";
-import { lerSessao } from "../../lib/sessao.js";
-import "../../styles/login/login.css";
+import { lerSessao, rotaInicial } from "../../lib/sessao.js";
 
 
 export default function Login() {
@@ -16,21 +16,25 @@ export default function Login() {
 
   const { usuario, entrar } = useSessao();
   const navigate = useNavigate();
+  const local = useLocation();
 
   const emailRef = useRef(null);
   const senhaRef = useRef(null);
 
-  const [mensagem, setMensagem] = useState("");
+  const [mensagem, setMensagem] = useState(local.state?.aviso || "");
+  // "erro" (vermelho) ou "info" (orientação, em azul). O aviso vindo de outra tela é info.
+  const [tipo, setTipo] = useState(local.state?.aviso ? "info" : "erro");
   const [senhaVisivel, setSenhaVisivel] = useState(false);
   const [entrando, setEntrando] = useState(false);
 
-  // Já logado: vai direto ao painel.
+  // Já logado: vai direto ao painel (o motorista, à tela dele).
   if (usuario && lerSessao()) {
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to={rotaInicial(usuario)} replace />;
   }
 
   function esqueciSenha(evento) {
     evento.preventDefault();
+    setTipo("info");
     setMensagem("Peça ao gestor da sua equipe para definir uma senha nova.");
   }
 
@@ -39,6 +43,7 @@ export default function Login() {
     evento.preventDefault();
 
     setMensagem("");
+    setTipo("erro");
 
     const emailInput = emailRef.current;
     const email = emailInput.value.trim();
@@ -70,7 +75,7 @@ export default function Login() {
       }
 
       entrar(dados.token, dados.usuario);
-      navigate("/dashboard", { replace: true });
+      navigate(rotaInicial(dados.usuario), { replace: true });
 
     }
 
@@ -84,122 +89,83 @@ export default function Login() {
   }
 
   return (
-    <div className="escopo-login raiz-pagina">
-      <main className="login-layout">
-        <section className="brand-panel">
-          <Link className="brand" to="/">
-            <span className="brand-icon">❄</span>{" "}
-            <span>ColdTrack<span className="brand-accent">.</span></span>
-          </Link>
+    <AcessoLayout>
 
-          <div className="brand-content">
-            <span className="eyebrow">COLDTRACK CONTROL</span>
-            <h1>Inteligência e segurança para a cadeia fria.</h1>
-            <p>
-              Monitore cargas, acompanhe indicadores e gerencie
-              suas operações em uma única plataforma.
-            </p>
+      <h1>Entrar</h1>
 
-            <div className="feature-list">
-              <div><span>✓</span> Monitoramento IoT</div>
-              <div><span>✓</span> Infraestrutura em nuvem</div>
-              <div><span>✓</span> Controle de acesso por perfil</div>
-              <div><span>✓</span> Auditoria e rastreabilidade</div>
-            </div>
+      <form id="loginForm" className="acesso-form" noValidate onSubmit={enviar}>
+
+        <div className="campo">
+          <label htmlFor="email">E-mail</label>
+          <input
+            ref={emailRef}
+            type="email"
+            id="email"
+            name="email"
+            placeholder="seuemail@empresa.com"
+            autoComplete="username"
+            maxLength={254}
+            required
+          />
+        </div>
+
+        <div className="campo">
+          <div className="campo-topo">
+            <label htmlFor="password">Senha</label>
+            <a href="#" id="forgotPassword" className="link" onClick={esqueciSenha}>
+              Esqueceu a senha?
+            </a>
           </div>
 
-          <div className="brand-footer">
-            IoT · Cloud Computing · Cyber Security
+          <div className="senha">
+            <input
+              ref={senhaRef}
+              type={senhaVisivel ? "text" : "password"}
+              id="password"
+              name="password"
+              placeholder="Digite sua senha"
+              autoComplete="current-password"
+              required
+            />
+            <button
+              type="button"
+              id="togglePassword"
+              className="senha-mostrar"
+              aria-label={senhaVisivel ? "Ocultar senha" : "Mostrar senha"}
+              aria-pressed={String(senhaVisivel)}
+              onClick={() => setSenhaVisivel(v => !v)}
+            >{senhaVisivel ? "Ocultar" : "Mostrar"}</button>
           </div>
-        </section>
+        </div>
 
-        <section className="form-panel">
-          <div className="form-container">
-            <div className="mobile-brand">❄ ColdTrack</div>
+        <button type="submit" className="botao-primario" id="botaoEntrar" disabled={entrando}>
+          {entrando ? "Entrando…" : "Entrar"}
+        </button>
 
-            <span className="eyebrow">ACESSO À PLATAFORMA</span>
-            <h2>Bem-vindo de volta</h2>
-            <p className="subtitle">
-              Entre com suas credenciais para acessar o ColdTrack Control.
-            </p>
+        <p className="acesso-secundario">
+          <Link to="/cadastro" className="link">Cadastrar empresa</Link>
+        </p>
 
-            <form id="loginForm" noValidate onSubmit={enviar}>
-              <div className="field">
-                <label htmlFor="email">E-mail</label>
-                <input
-                  ref={emailRef}
-                  type="email"
-                  id="email"
-                  name="email"
-                  placeholder="seuemail@empresa.com"
-                  autoComplete="username"
-                  maxLength={254}
-                  required
-                />
-              </div>
+        <p
+          id="loginMessage"
+          className={tipo === "info" ? "aviso aviso-info" : "aviso"}
+          role="status"
+          aria-live="polite"
+        >{mensagem}</p>
 
-              <div className="field">
-                <div className="label-row">
-                  <label htmlFor="password">Senha</label>
-                </div>
+      </form>
 
-                <div className="password-wrapper">
-                  <input
-                    ref={senhaRef}
-                    type={senhaVisivel ? "text" : "password"}
-                    id="password"
-                    name="password"
-                    placeholder="Digite sua senha"
-                    autoComplete="current-password"
-                    required
-                  />
-                  <button
-                    type="button"
-                    id="togglePassword"
-                    className="toggle-password"
-                    aria-label={senhaVisivel ? "Ocultar senha" : "Mostrar senha"}
-                    aria-pressed={String(senhaVisivel)}
-                    onClick={() => setSenhaVisivel(v => !v)}
-                  >{senhaVisivel ? "Ocultar" : "Mostrar"}</button>
-                </div>
-              </div>
+      <p className="acesso-nota">
+        A sessão vale por 8 horas. Sem acesso? Peça ao gestor da sua equipe para criar seu usuário.
+      </p>
 
-              <div className="form-options">
-                <a href="#" id="forgotPassword" onClick={esqueciSenha}>
-                  Esqueceu a senha?
-                </a>
-              </div>
+      <div className="acesso-rodape">
+        <Link to="/" className="voltar">
+          <span aria-hidden="true">←</span> Voltar ao início
+        </Link>
+      </div>
 
-              <p id="loginMessage" className="form-message" role="status" aria-live="polite">{mensagem}</p>
-
-              <div className="login-actions">
-                <button type="submit" className="login-button" id="botaoEntrar" disabled={entrando}>
-                  {entrando ? "Entrando…" : <>Entrar <span aria-hidden="true">→</span></>}
-                </button>
-
-                <Link to="/cadastro" className="register-button">
-                  <span aria-hidden="true">+</span>
-                  Cadastrar empresa
-                </Link>
-              </div>
-            </form>
-
-            <div className="security-note">
-              <span aria-hidden="true">🔒</span>
-              <p>
-                A sessão vale por 8 horas. Sem acesso? Peça ao gestor
-                da sua equipe para criar seu usuário.
-              </p>
-            </div>
-
-            <div className="form-footer">
-              <Link to="/">← Voltar ao início</Link>
-              <span>ColdTrack Control · 2026</span>
-            </div>
-          </div>
-        </section>
-      </main>
-    </div>
+    </AcessoLayout>
   );
 
 }

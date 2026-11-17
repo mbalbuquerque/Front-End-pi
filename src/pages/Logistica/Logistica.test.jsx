@@ -2,15 +2,18 @@
 
 import { fireEvent, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { renderizarNaRota } from "../../testes/apoio.jsx";
 import Logistica from "./Logistica.jsx";
+
+// A tela abre dentro da moldura do painel (PainelLayout), que lê a sessão.
+vi.mock("../../hooks/useSessao.jsx", () => ({ useSessao: () => ({ usuario: null, sair: () => {} }) }));
 
 function abrir() {
   return renderizarNaRota(<Logistica />, "/logistica");
 }
 
-const linhas = () => within(document.getElementById("tabelaCargas")).queryAllByRole("row");
+const linhas = () => within(document.getElementById("tabelaCargas")).queryAllByRole("listitem");
 const dialogo = id => document.getElementById(id);
 
 async function detalhesDe(id) {
@@ -65,7 +68,7 @@ describe("Logistica", () => {
 
   it("Nova carga inválida (mínima >= máxima): mostra o erro e não cadastra", async () => {
     abrir();
-    await userEvent.click(screen.getByRole("button", { name: "+ Nova carga" }));
+    await userEvent.click(screen.getByRole("button", { name: "Nova carga" }));
     expect(dialogo("modalCarga")).toHaveAttribute("open");
     await preencherCarga({ ...NOVA, tempMin: "5", tempMax: "5" });
     fireEvent.submit(document.getElementById("formCarga"));
@@ -75,7 +78,7 @@ describe("Logistica", () => {
 
   it("Nova carga válida: entra na lista como CT-004, sem temperatura", async () => {
     abrir();
-    await userEvent.click(screen.getByRole("button", { name: "+ Nova carga" }));
+    await userEvent.click(screen.getByRole("button", { name: "Nova carga" }));
     await preencherCarga(NOVA);
     fireEvent.submit(document.getElementById("formCarga"));
     expect(linhas()).toHaveLength(4);
@@ -89,7 +92,7 @@ describe("Logistica", () => {
 
   it("Fechar o formulário de carga não cadastra nada", async () => {
     abrir();
-    await userEvent.click(screen.getByRole("button", { name: "+ Nova carga" }));
+    await userEvent.click(screen.getByRole("button", { name: "Nova carga" }));
     await userEvent.click(document.getElementById("fecharModal"));
     expect(dialogo("modalCarga")).not.toHaveAttribute("open");
     expect(linhas()).toHaveLength(3);

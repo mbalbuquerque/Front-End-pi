@@ -1,11 +1,11 @@
 
 :root {
-  --navy: #061b2b;
-  --cyan: #18c8d4;
-  --teal: #087d90;
-  --text: #102d40;
-  --muted: #687e8d;
-  --border: #dce6eb;
+  --navy: var(--ct-navy-900);
+  --cyan: var(--ct-cyan-500);
+  --teal: var(--ct-blue-700);
+  --text: var(--ct-text);
+  --muted: var(--ct-muted);
+  --border: var(--ct-border);
 }
 
 * {
@@ -14,36 +14,9 @@
 
 body {
   margin: 0;
-  font-family: "Segoe UI", Arial, sans-serif;
+  font-family: var(--ct-font-body);
   color: var(--text);
-  background: #f4f8fa;
-}
-
-.topbar {
-  min-height: 76px;
-  background: var(--navy);
-  color: white;
-  padding: 20px max(24px, calc((100vw - 1080px)/2));
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-}
-
-.brand {
-  color: white;
-  font-size: 25px;
-  font-weight: 800;
-  text-decoration: none;
-}
-
-.brand span {
-  color: var(--cyan);
-}
-
-.admin-label {
-  color: #b5d0dd;
-  font-size: 13px;
+  background: var(--ct-canvas);
 }
 
 .container {
@@ -75,7 +48,7 @@ body {
   border-radius: 18px;
   padding: 34px;
   margin-top: 30px;
-  box-shadow: 0 12px 35px rgba(6, 27, 43, .05);
+  box-shadow: none;
 }
 
 .card-heading {
@@ -115,7 +88,7 @@ body {
   padding: 0 14px;
   border: 1px solid var(--border);
   border-radius: 10px;
-  background: #fff;
+  background: var(--ct-surface);
   font: inherit;
   color: var(--text);
 }
@@ -129,22 +102,24 @@ body {
 .security-info {
   margin-top: 30px;
   padding: 18px;
-  background: #eaf5f7;
+  background: var(--ct-blue-50);
   border-radius: 12px;
   font-size: 14px;
+  font-weight: 600;
 }
 
 .security-info p {
   margin: 8px 0 0;
   line-height: 1.6;
-  color: #486777;
+  color: var(--ct-muted);
 }
 
 .message {
   min-height: 22px;
   margin: 20px 0;
-  color: #b42318;
+  color: var(--ct-critico);
   font-size: 14px;
+  font-weight: 600;
 }
 
 .form-actions {
@@ -168,7 +143,7 @@ button {
 }
 
 .btn-primary:hover {
-  background: #065f70;
+  background: var(--ct-blue-700);
 }
 
 .btn-secondary {
@@ -207,4 +182,27 @@ a:focus-visible {
   .form-actions button {
     width: 100%;
   }
+}
+
+/* TIPOGRAFIA DO DESIGN SYSTEM (src/styles/tokens.css): títulos em Barlow Condensed 700. */
+
+h1,
+h2 {
+  font-family: var(--ct-font-display);
+  font-weight: var(--ct-weight-strong);
+  letter-spacing: 0;
+}
+
+/* Texto pequeno nunca abaixo de 12px e sempre com peso >= 600. */
+small {
+  font-size: max(var(--ct-text-caption), 0.875em);
+  font-weight: var(--ct-weight-label);
+}
+
+/* Controles herdam a fonte (o navegador usaria 13,3px peso 400). */
+button,
+input,
+select,
+textarea {
+  font: inherit;
 }

@@ -6,6 +6,9 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { renderizarNaRota } from "../../testes/apoio.jsx";
 import Auditoria from "./Auditoria.jsx";
 
+// A tela abre dentro da moldura do painel (PainelLayout), que lê a sessão.
+vi.mock("../../hooks/useSessao.jsx", () => ({ useSessao: () => ({ usuario: null, sair: () => {} }) }));
+
 afterEach(() => {
   vi.restoreAllMocks();
 });
@@ -14,7 +17,7 @@ function abrir() {
   return renderizarNaRota(<Auditoria />, "/auditoria");
 }
 
-const linhas = () => within(document.getElementById("logsTabela")).queryAllByRole("row");
+const linhas = () => within(document.getElementById("logsTabela")).queryAllByRole("listitem");
 
 describe("Auditoria", () => {
 

@@ -91,7 +91,7 @@ does the dashboard use the fallback demonstration profile (Normal up to 15 °C, 
 ## 3. Structure
 
 ```text
-index.html                 single shell (Inter font, manifest, icons)
+index.html                 single shell (manifest, icons; fonts self-hosted)
 vite.config.js             React, CSS scoping, copies of the old .html pages
 playwright.config.js       e2e against the build (vite preview on port 5500)
 eslint.config.js
@@ -99,7 +99,7 @@ public/                    copied to dist/ as is: sw.js, manifest.json, assets/i
 src/
   main.jsx                 BrowserRouter > AuthProvider > App; registers sw.js in the build
   App.jsx                  routes (each screen lazy-loaded with React.lazy)
-  rotas.js                 ROTAS_LEGADAS (name.html -> route) and the dashboard menu
+  rotas.js                 ROTAS_LEGADAS (name.html -> route) and the dashboard navigation (Operação, Gestão)
   lib/                     API, session, readings, ranges, formatting, vehicle (no React)
   hooks/                   useSessao, usePolling, useVeiculoEscolhido, useTitulo, useMovimentoReduzido
   components/              PainelLayout, RequireAuth, GraficoTemperatura, ChatWidget/, AssistentePainel/...

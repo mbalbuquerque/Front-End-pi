@@ -2,11 +2,11 @@
 // Porte do site antigo: monitoramento.html + js/monitoramento.js.
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Link } from "react-router-dom";
-import { useTitulo } from "../../hooks/useTitulo.js";
-import "../../styles/monitoramento/monitoramento.css";
+import Icone from "../../components/Icone.jsx";
+import PainelLayout from "../../components/PainelLayout.jsx";
+import "../../styles/gestao/gestao.css";
 import {
-  CHANNEL_ID, NORMAL_MAX, consultarCanal, dataLegivel, formatar,
+  CHANNEL_ID, NORMAL_MAX, WARNING_MAX, consultarCanal, dataLegivel, formatar,
   interpretar, montarGrafico, numero
 } from "./thingspeak.js";
 
@@ -16,8 +16,6 @@ const SEM_LEITURA = { texto: "Sem leitura", classe: "" };
 
 
 export default function Monitoramento() {
-
-  useTitulo("Monitoramento | ColdTrack Control");
 
   const [consultando, setConsultando] = useState(false);
   const [conexao, setConexao] = useState("Não verificado");
@@ -77,114 +75,120 @@ export default function Monitoramento() {
   const grafico = leitura ? montarGrafico(leitura.feeds) : null;
 
   return (
-    <div className="escopo-monitoramento raiz-pagina">
+    <PainelLayout
+      titulo="Monitoramento de sensores"
+      subtitulo={`Canal público ThingSpeak ${CHANNEL_ID}, sem vínculo presumido com as cargas`}
+      tituloDocumento="Monitoramento · ColdTrack Control"
+      familia="gestao"
+      extraTopo={
+        <button type="button" id="atualizar" className="botao-g primario" disabled={consultando} onClick={carregar}>
+          <Icone nome="atualizar" tamanho={20} />
+          Atualizar leituras
+        </button>
+      }
+    >
 
-      <div className="layout">
-        <aside className="sidebar">
-          <h2>❄ ColdTrack</h2>
-          <p>CONTROL</p>
-          <nav aria-label="Menu principal">
-            <Link to="/dashboard">Dashboard</Link>
-            <Link to="/logistica">Gestão Logística</Link>
-            <Link to="/monitoramento" aria-current="page">Monitoramento</Link>
-            <Link to="/usuarios">Usuários</Link>
-            <Link to="/auditoria">Auditoria</Link>
-            <Link to="/">Página inicial</Link>
-          </nav>
-          <small>Projeto Integrador · 2026</small>
-        </aside>
+      <div className="gestao">
 
-        <main className="main">
-          <header className="header">
+        <div className={origem.erro ? "aviso-demo error erro" : "aviso-demo"} id="origemDados">
+          <Icone nome={origem.erro ? "alerta" : "sensor"} />
+          <span>{origem.texto}</span>
+        </div>
+
+        <section className="leituras" aria-label="Leituras atuais">
+          <article className={`leitura heroi ${leitura ? situacao.classe : ""}`}>
+            <div className="leitura-topo"><span className="kpi-rotulo">Temperatura</span><Icone nome="termometro" /></div>
+            <div className="leitura-valor"><strong id="temperatura">{leitura ? leitura.temperatura : "—"}</strong><small>°C</small></div>
+          </article>
+          <article className="leitura">
+            <div className="leitura-topo"><span className="kpi-rotulo">Umidade relativa</span><Icone nome="leituras" /></div>
+            <div className="leitura-valor"><strong id="umidade">{leitura ? leitura.umidade : "—"}</strong><small>%</small></div>
+          </article>
+          <article className="leitura">
+            <div className="leitura-topo"><span className="kpi-rotulo">Sinal Wi-Fi</span><Icone nome="wifi" /></div>
+            <div className="leitura-valor"><strong id="rssi">{leitura ? leitura.rssi : "—"}</strong><small>dBm</small></div>
+          </article>
+          <article className="leitura">
+            <div className="leitura-topo"><span className="kpi-rotulo">Situação térmica</span><Icone nome="alerta" /></div>
+            <strong id="situacao" className={situacao.classe ? `estado-termico state ${situacao.classe}` : "estado-termico state"}>{situacao.texto}</strong>
+            <small id="criterio" className="leitura-apoio">Limites: normal até 15 °C; atenção até 20 °C</small>
+          </article>
+        </section>
+
+        <section className="cartao" aria-labelledby="tituloHistorico">
+          <div className="cartao-topo">
             <div>
-              <span className="eyebrow">TELEMETRIA DO DISPOSITIVO</span>
-              <h1>Monitoramento de sensores</h1>
-              <p>Leituras do canal ThingSpeak configurado, sem vinculação presumida às cargas.</p>
+              <h2 id="tituloHistorico">Histórico recente</h2>
+              <p>Últimas 20 amostras do canal público, quando disponíveis.</p>
             </div>
-            <button type="button" id="atualizar" className="primary" disabled={consultando} onClick={carregar}>
-              Atualizar leituras
-            </button>
-          </header>
-
-          <div className={origem.erro ? "notice error" : "notice"} id="origemDados">{origem.texto}</div>
-
-          <section className="metrics" aria-label="Leituras atuais">
-            <article className="metric"><span>Temperatura</span><strong id="temperatura">{leitura ? leitura.temperatura : "—"}</strong><small>°C</small></article>
-            <article className="metric"><span>Umidade relativa</span><strong id="umidade">{leitura ? leitura.umidade : "—"}</strong><small>%</small></article>
-            <article className="metric"><span>Sinal Wi-Fi</span><strong id="rssi">{leitura ? leitura.rssi : "—"}</strong><small>dBm</small></article>
-            <article className="metric">
-              <span>Situação térmica</span>
-              <strong id="situacao" className={situacao.classe ? `state ${situacao.classe}` : "state"}>{situacao.texto}</strong>
-              <small id="criterio">Limites: normal até 15 °C; atenção até 20 °C</small>
-            </article>
-          </section>
-
-          <section className="panel">
-            <div className="panelhead">
-              <div>
-                <h2>Histórico recente</h2>
-                <p>Últimas 20 amostras do canal público, quando disponíveis.</p>
-              </div>
-              <div className="meta">
-                <span id="conexao" role="status">{conexao}</span>
-                <span id="ultimaLeitura">{leitura ? leitura.ultimaLeitura : "Última leitura: —"}</span>
-              </div>
+            <div className="monitor-meta">
+              <span id="conexao" role="status">{conexao}</span>
+              <span id="ultimaLeitura">{leitura ? leitura.ultimaLeitura : "Última leitura: —"}</span>
             </div>
+          </div>
 
-            <div className="chartbox">
-              <svg id="grafico" viewBox="0 0 760 230" role="img" aria-label="Gráfico de temperatura das últimas leituras">
-                {leitura && !grafico && <text x="24" y="110">Sem temperaturas disponíveis</text>}
-                {!leitura && <text x="24" y="110" fill="#6a8190">Sem dados para exibir</text>}
-                {grafico && (
-                  <>
-                    {grafico.limites.map(lim => (
+          <div className="cartao-topo sem-borda">
+            <ul className="legenda" aria-label="Legenda do gráfico">
+              <li><i aria-hidden="true" />Temperatura</li>
+              <li><i className="normal" aria-hidden="true" />Limite normal ({NORMAL_MAX} °C)</li>
+              <li><i className="atencao" aria-hidden="true" />Limite de atenção ({WARNING_MAX} °C)</li>
+            </ul>
+          </div>
+
+          <div className="grafico-caixa">
+            {leitura && !grafico && <p className="grafico-vazio">Sem temperaturas disponíveis</p>}
+            {!leitura && <p className="grafico-vazio">Sem dados para exibir</p>}
+            <svg id="grafico" viewBox="0 0 760 230" role="img" aria-label="Gráfico de temperatura das últimas leituras">
+              {grafico && (
+                <>
+                  {grafico.limites.map(lim => {
+                    const tipo = lim.valor === NORMAL_MAX ? "normal" : "atencao";
+                    return (
                       <g key={lim.valor}>
-                        <line x1={46} y1={lim.y} x2={722} y2={lim.y}
-                          stroke={lim.valor === NORMAL_MAX ? "#0b90a1" : "#bd8836"} strokeDasharray="5 5" />
-                        <text x={8} y={lim.y - 5} fill="#647e8d" fontSize={11}>{String(lim.valor)}</text>
+                        <line className={`limite ${tipo}`} x1={46} y1={lim.y} x2={722} y2={lim.y} />
+                        <text className={`limite-rotulo ${tipo}`} x={0} y={lim.y + 4}>{`${lim.valor} °C`}</text>
                       </g>
-                    ))}
-                    {grafico.trechos.map(pontos => (
-                      <polyline key={pontos} points={pontos} fill="none" stroke="#087f92" strokeWidth={3}
-                        strokeLinecap="round" strokeLinejoin="round" />
-                    ))}
-                    {grafico.circulos.map(c => (
-                      <circle key={`${c.cx}-${c.cy}`} cx={c.cx} cy={c.cy} r={3} fill="#087f92" />
-                    ))}
-                    <text x={46} y={222} fill="#647e8d" fontSize={12}>Temperatura (°C) · ordem cronológica</text>
-                  </>
-                )}
-              </svg>
-            </div>
+                    );
+                  })}
+                  {grafico.trechos.map(pontos => (
+                    <polyline key={pontos} className="linha" points={pontos} />
+                  ))}
+                  {grafico.circulos.map(c => (
+                    <circle key={`${c.cx}-${c.cy}`} className="ponto" cx={c.cx} cy={c.cy} r={3.5} />
+                  ))}
+                  <text className="eixo-legenda" x={46} y={224}>Temperatura (°C) · ordem cronológica</text>
+                </>
+              )}
+            </svg>
+          </div>
 
-            <div className="tablewrap">
-              <table>
-                <thead>
-                  <tr><th>Data / hora</th><th>Temperatura</th><th>Umidade</th><th>RSSI</th></tr>
-                </thead>
-                <tbody id="historico">
-                  {leitura
-                    ? leitura.feeds.slice().reverse().map(feed => (
-                      <tr key={feed.created_at}>
-                        <td>{dataLegivel(feed.created_at)}</td>
-                        <td>{numero(feed.field1) === null ? "—" : `${formatar(numero(feed.field1))} °C`}</td>
-                        <td>{numero(feed.field2) === null ? "—" : `${formatar(numero(feed.field2))} %`}</td>
-                        <td>{numero(feed.field3) === null ? "—" : `${formatar(numero(feed.field3), 0)} dBm`}</td>
-                      </tr>
-                    ))
-                    : <tr><td colSpan={4}>{inicial ? "Aguardando dados." : "Sem dados disponíveis."}</td></tr>}
-                </tbody>
-              </table>
-            </div>
-          </section>
+          <div className="tabela-rolagem">
+            <table className="tabela-g tabela-historico">
+              <thead>
+                <tr><th>Data / hora</th><th className="num">Temperatura</th><th className="num">Umidade</th><th className="num">RSSI</th></tr>
+              </thead>
+              <tbody id="historico">
+                {leitura
+                  ? leitura.feeds.slice().reverse().map(feed => (
+                    <tr key={feed.created_at}>
+                      <td>{dataLegivel(feed.created_at)}</td>
+                      <td className="num">{numero(feed.field1) === null ? "—" : `${formatar(numero(feed.field1))} °C`}</td>
+                      <td className="num">{numero(feed.field2) === null ? "—" : `${formatar(numero(feed.field2))} %`}</td>
+                      <td className="num">{numero(feed.field3) === null ? "—" : `${formatar(numero(feed.field3), 0)} dBm`}</td>
+                    </tr>
+                  ))
+                  : <tr><td colSpan={4} className="vazio">{inicial ? "Aguardando dados." : "Sem dados disponíveis."}</td></tr>}
+              </tbody>
+            </table>
+          </div>
+        </section>
 
-          <p className="footnote">
-            O canal ThingSpeak pode ser público, mas o acesso depende da conexão e das permissões configuradas. A ausência de leituras não é interpretada como temperatura normal. Esta tela não autentica usuários nem substitui alertas operacionais do Back-End.
-          </p>
-        </main>
+        <p className="nota-rodape">
+          O canal ThingSpeak pode ser público, mas o acesso depende da conexão e das permissões configuradas. A ausência de leituras não é interpretada como temperatura normal. Esta tela não autentica usuários nem substitui alertas operacionais do Back-End.
+        </p>
       </div>
 
-    </div>
+    </PainelLayout>
   );
 
 }

@@ -4,6 +4,7 @@ import {
   formatarDataHora,
   formatarDuracao,
   formatarHora,
+  formatarMomento,
   formatarTemp,
   formatarUmidade,
   infoStatus
@@ -11,6 +12,13 @@ import {
 
 
 describe("formatar", () => {
+
+  it("momento: só a hora quando é hoje, com o dia quando não é", () => {
+    const agora = new Date(2026, 10, 17, 15, 0);
+    expect(formatarMomento(new Date(2026, 10, 17, 11, 2), agora)).toBe("11:02");
+    expect(formatarMomento(new Date(2026, 10, 16, 23, 59), agora)).toBe("16/11 23:59");
+    expect(formatarMomento(new Date())).toMatch(/^\d{2}:\d{2}$/);
+  });
 
   it("temperatura e umidade com 1 casa; não número vira --", () => {
     expect(formatarTemp(4)).toBe("4.0 °C");

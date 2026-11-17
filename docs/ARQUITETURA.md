@@ -23,7 +23,7 @@ npm run test:e2e   # Playwright em coldtrack-qa/tests (rode o build antes)
 ## 1. Estrutura
 
 ```text
-index.html                 casca única (fonte Inter, manifest, ícones)
+index.html                 casca única (manifest, ícones; fontes servidas pelo próprio site)
 vite.config.js             React + escopo de CSS + cópias das páginas .html antigas
 public/                    vai para dist/ como está: sw.js, manifest.json, assets/icons/
 scripts/enviar-site.sh     envio de dist/ para o Azure (CI e publicar.sh)
@@ -32,13 +32,14 @@ docs/                      documentação (não vai para o site)
 src/
   main.jsx                 BrowserRouter > AuthProvider > App; registra o sw.js no build
   App.jsx                  todas as rotas (cada tela com React.lazy)
-  rotas.js                 ROTAS_LEGADAS (nome.html -> rota) e PAGINAS_PAINEL (menu)
+  rotas.js                 ROTAS_LEGADAS (nome.html -> rota), GRUPOS_PAINEL/PAGINAS_PAINEL (menu)
   lib/                     lógica sem React (API, sessão, leituras, faixas, formatação)
   hooks/                   useSessao, usePolling, useVeiculoEscolhido, useTitulo,
-                           useMovimentoReduzido
+                           useMovimentoReduzido, useAlertasPush, useTelaAcesa
   components/              PainelLayout, FaixaOffline, RequireAuth, Estado, StatusSelo, FiltroPeriodo,
                            SeletorVeiculo, GraficoTemperatura, ChatWidget/, AssistentePainel/
   pages/<Nome>/<Nome>.jsx  uma pasta por tela (regras puras em .js e testes ao lado)
+  styles/tokens.css        tokens do design system (--ct-*: cor, fonte, espaço, raio, sombra, movimento)
   styles/base.css          reset mínimo global
   styles/<familia>/*.css   CSS de cada família de telas, escopado por .escopo-<familia>
   assets/images/           imagens WebP (slide-1..3, coldtrack-infografico)
@@ -53,8 +54,8 @@ ficam dentro de `<Route element={<RequireAuth />}>`. Para criar uma tela nova, s
 | Rota | Arquivo | Família | Login |
 |---|---|---|---|
 | `/` | `pages/Home/Home.jsx` | home (+ chat) | não |
-| `/login` | `pages/Login/Login.jsx` | login | não |
-| `/cadastro` | `pages/Cadastro/Cadastro.jsx` | painel | não |
+| `/login` | `pages/Login/Login.jsx` | login (`AcessoLayout`) | não |
+| `/cadastro` | `pages/Cadastro/Cadastro.jsx` | login (`AcessoLayout`) | não |
 | `/dashboard` | `pages/Dashboard/Dashboard.jsx` | painel | sim |
 | `/alertas` | `pages/Alertas/Alertas.jsx` | painel | sim |
 | `/relatorios` | `pages/Relatorios/Relatorios.jsx` | painel | sim |
@@ -62,6 +63,7 @@ ficam dentro de `<Route element={<RequireAuth />}>`. Para criar uma tela nova, s
 | `/sensores` | `pages/Sensores/Sensores.jsx` | painel | sim |
 | `/viagens` | `pages/Viagens/Viagens.jsx` | painel | sim |
 | `/configuracoes` | `pages/Configuracoes/Configuracoes.jsx` | painel | sim |
+| `/motorista` | `pages/Motorista/Motorista.jsx` | motorista | sim (só perfil motorista) |
 | `/usuarios` | `pages/Usuarios/Usuarios.jsx` | usuarios | não (demo) |
 | `/auditoria` | `pages/Auditoria/Auditoria.jsx` | auditoria | não (demo) |
 | `/cadastro-usuario` | `pages/CadastroUsuario/CadastroUsuario.jsx` | cadastro-usuario | não (demo) |
@@ -90,14 +92,12 @@ O CSS de cada família veio do site anterior (HTML + JS) e redefine `:root`, `*`
 
 | Família | Classe raiz | Arquivos | Import |
 |---|---|---|---|
-| painel | `escopo-painel` | `style.css`, `telas.css`, `assistente.css` (via `index.css`) | `styles/painel/index.css` (já feito no `PainelLayout`) |
+| shell | `escopo-shell` | `shell.css` (moldura: barra lateral, barra superior, navegação inferior, faixa offline) | `styles/shell/shell.css` (já feito no `PainelLayout`) |
+| painel | `escopo-painel` | `style.css`, `telas.css`, `assistente.css`, `alertas.css`, `sensores.css`, `frota.css`, `configuracoes.css` (via `index.css`) | `styles/painel/index.css` (já feito no `PainelLayout`) |
 | home | `escopo-home` | `home.css` | `styles/home/home.css` |
 | login | `escopo-login` | `login.css` | `styles/login/login.css` |
 | cadastro-usuario | `escopo-cadastro-usuario` | `cadastro.css` | `styles/cadastro-usuario/cadastro.css` |
-| usuarios | `escopo-usuarios` | `usuarios.css` | `styles/usuarios/usuarios.css` |
-| auditoria | `escopo-auditoria` | `auditoria.css` | `styles/auditoria/auditoria.css` |
-| logistica | `escopo-logistica` | `logistica.css` | `styles/logistica/logistica.css` |
-| monitoramento | `escopo-monitoramento` | `monitoramento.css` | `styles/monitoramento/monitoramento.css` |
+| gestao | `escopo-gestao` | `gestao.css` (Usuários, Auditoria, Logística e Monitoramento: tiles, filtros, tabela, diálogo, quadro, linha do tempo) | `styles/gestao/gestao.css` |
 | chat | `escopo-chat` | `chat.css` | `styles/chat/chat.css` (raiz do widget, sem `raiz-pagina`) |
 
 Regras:
@@ -106,13 +106,24 @@ Regras:
   `display: flex` que o body tinha. Use `className="escopo-<familia> raiz-pagina"`
   (`.raiz-pagina` dá `min-height: 100vh`).
 - Tudo que a tela mostra tem que estar **dentro** da raiz, inclusive `<dialog>`: as variáveis
-  (`--navy`, `--red`...) só existem ali. Não use portal para fora do escopo.
+  (`--navy`, `--red`...) só existem ali. Elas apontam para os tokens globais `--ct-*` de
+  `src/styles/tokens.css` (sem escopo, valem em todo o app); cor, fonte, raio, sombra e
+  movimento novos usam o token direto, nunca um valor solto. Não use portal para fora do escopo.
 - Seletor antigo que dependia do `<body>` ou do HTML fixo pode ser ajustado no CSS da família
-  (registre no commit). Já ajustado: `.pagina-login { flex: 1 }` em `painel/index.css`.
-- `/cadastro` usa a família painel: `<div className="escopo-painel raiz-pagina"><div className="pagina-login"><main className="login">…`.
+  (registre no commit).
+- `/login` e `/cadastro` usam a família login pela moldura `<AcessoLayout>`
+  (`components/AcessoLayout.jsx`): painel navy com a marca e a régua de faixa, formulário num cartão.
+- Telas internas (as do painel e as de gestão: Usuários, Novo usuário, Auditoria, Logística,
+  Monitoramento) ficam dentro do shell: `<div class="escopo-shell">` com a barra lateral e, ao
+  lado, `<div class="escopo-<familia> ct-area">` com a barra superior e o `<main>`. O shell só usa
+  classes `ct-*` (nada de regra por elemento), para não atingir o conteúdo das famílias.
+- Cadastro curto (veículo, viagem) abre na gaveta da direita, `components/Gaveta.jsx`: um
+  `<dialog>` modal (foco preso, Escape e véu fecham) que fica no DOM mesmo fechado, então o
+  `id` do formulário continua existindo para os testes. A tela guarda o estado "aberta" e pausa o
+  polling enquanto ela está aberta.
 - Impressão da etiqueta (Veículos): a regra é `.escopo-painel:has(.etiqueta[open]) > *:not(.etiqueta)`,
-  então a `<dialog className="etiqueta">` precisa ser filha direta da raiz: passe-a na prop
-  `dialogos` do `PainelLayout`.
+  então a `<dialog className="etiqueta">` precisa ser filha direta da raiz da família: passe-a na
+  prop `dialogos` do `PainelLayout`. Na impressão o shell esconde a barra lateral.
 - `html { scroll-behavior: smooth }` da home virou regra da raiz (sem efeito). Se a rolagem suave
   das âncoras importar, trate na Home (ex.: `scrollIntoView({ behavior: "smooth" })`).
 - Imagens: `import slide1 from "../../assets/images/slide-1.webp"` (o Vite gera a URL com hash).
@@ -183,7 +194,10 @@ permissão, lê a chave pública em `GET /push/chave`, inscreve no `pushManager`
 `userVisibleOnly: true` e manda `inscricao.toJSON()` para `POST /push/inscricao`; se a API recusar,
 cancela a inscrição local e repassa o erro) e `desativarPush()` (`DELETE /push/inscricao` com o
 `endpoint`, melhor esforço, e cancela no navegador). No dev não há service worker: ativar avisa em
-vez de travar. Usado pelo card `AlertasCelular` da tela de Configurações.
+vez de travar. O hook `useAlertasPush` guarda o estado (`verificando`, ocupado, erro) e é usado
+pelo card `AlertasCelular` da tela de Configurações (operador e gestor) e pelo bloco
+`AlertasPushMotorista` da tela do motorista. A API manda ao motorista só os alertas do veículo
+vinculado a ele, com `url` `/motorista` (`projeto-integrador-4-periodo#88`).
 
 **`armazenamento.js`** — `ler`, `gravar`, `remover`, `lerJSON(chave, padrao)`, `gravarJSON` (com try/catch).
 Único lugar que toca `localStorage`. Chaves em uso: `coldtrack.sessao`, `coldtrack.veiculo`
@@ -207,18 +221,25 @@ vez de travar. Usado pelo card `AlertasCelular` da tela de Configurações.
 
 ## 6. Componentes
 
-- **`<FaixaOffline />`** — dentro do `<PainelLayout>`, portanto em toda tela logada. Sem internet
+- **`<FaixaOffline />`** — dentro do `<PainelLayout>`, portanto em toda tela interna. Sem internet
   mostra, fixa no topo (`position: sticky`), "Sem conexão — exibindo os últimos dados recebidos às
   HH:MM" (ou "nenhum dado foi recebido nesta sessão") e some ao voltar a conexão. Com a faixa, o
   indicador do topo passa a "Sem internet". Offline e API são coisas diferentes: a API fora do ar
   com internet continua no "Sem conexão com Azure".
-- **`<PainelLayout titulo subtitulo tituloDocumento? conexao extraTopo dialogos>`** — menu
-  (NavLink com `active` + `aria-current="page"`), usuário, `#botaoSair`, topo com `<h1>`/`<p>`,
-  `extraTopo` antes do indicador, `#fonteDados`, rodapé. `conexao`: `null` "Conectando...",
-  `true` "Azure conectado", `false` "Sem conexão com Azure" (ponto vermelho). `tituloDocumento`
-  padrão `"<titulo> · ColdTrack Control"` (Dashboard: passe `"ColdTrack Control"`).
-  Os filhos entram no `<main>` entre o topo e o rodapé: normalmente `<div id="conteudo" className="page-grid">`.
-  Monta também o `<AssistentePainel />` (a tela não faz nada para tê-lo).
+- **`<PainelLayout titulo? subtitulo? tituloDocumento? conexao? extraTopo? dialogos? familia?>`** —
+  moldura única das telas internas. Barra lateral `#sidebar` com `nav[aria-label="Menu principal"]`
+  nos grupos Operação e Gestão (`GRUPOS_PAINEL` em `rotas.js`; item atual com `active` +
+  `aria-current="page"`; `tambem` acende o item em outra rota, ex.: `/cadastro-usuario` em Usuários),
+  usuário logado, `#botaoSair`. Barra superior com `<h1>`/`<p>`, `extraTopo` e o indicador
+  (`#fonteDados` + "atualizado às HH:MM"). `conexao`: `null` "Conectando...", `true` "Azure
+  conectado", `false` "Sem conexão com Azure" (pílula vermelha); sem a prop (`undefined`) o
+  indicador some. Sem `titulo`, `extraTopo` e `conexao`, a barra superior não aparece (as telas de
+  gestão têm cabeçalho próprio). `tituloDocumento` padrão `"<titulo> · ColdTrack Control"`
+  (Dashboard: passe `"ColdTrack Control"`); sem título não mexe no da aba. `familia` (padrão
+  `"painel"`): família de CSS do conteúdo; só a família painel ganha rodapé e `<AssistentePainel />`.
+  Até 720 px a barra lateral vira a navegação inferior (Visão geral, Alertas, Sensores, Viagens e
+  "Mais", que abre o menu inteiro como gaveta; Escape, o véu ou um item fecham).
+  Os filhos entram no `<main>`: normalmente `<div id="conteudo" className="page-grid">`.
 - **`<AssistentePainel />`** — botão flutuante `#assistenteBotao` ("Assistente") e conversa
   (`role="dialog"` não modal, "Assistente do painel"): saudação pelo primeiro nome, 4 sugestões
   (`SUGESTOES` em `conversa.js`) antes da primeira pergunta, lista `role="log"` `aria-live="polite"`,
@@ -230,7 +251,10 @@ vez de travar. Usado pelo card `AlertasCelular` da tela de Configurações.
   para o botão não cobrir o rodapé, `@media print` esconde tudo (etiqueta QR limpa), entrada de
   180 ms desligada com `prefers-reduced-motion`.
 - **`<RequireAuth perfil?>`** — já envolve as rotas logadas em `App.jsx`. Para bloquear só para
-  gestor dentro de uma tela, use `ehGestor(usuario)` e esconda o trecho.
+  gestor dentro de uma tela, use `ehGestor(usuario)` e esconda o trecho. O perfil motorista é
+  mandado para `/motorista` em qualquer rota do painel; `perfil="motorista"` (só na rota
+  `/motorista`) manda operador e gestor para `/dashboard`. Depois do login, `rotaInicial(usuario)`
+  (`lib/sessao.js`) escolhe o destino.
 - **`<Estado titulo? painel?>texto</Estado>`**, **`<Carregando />`** ("Carregando leituras…"),
   **`<ErroAzure />`** (antigo `ERRO_AZURE`), **`<SemVeiculo />`** (antigo `SEM_VEICULO`).
 - **`<StatusSelo status />`** — antigo `seloStatus()`.
@@ -349,6 +373,9 @@ export default function Relatorios() {
   faixa num sensor da mesma empresa: na simulação do Wokwi, subir a temperatura do DHT22 acima da
   faixa normal do perfil do veículo; ou enviar `POST /api/telemetria` com a chave de um sensor de
   teste e uma temperatura fora da faixa, logo depois de uma leitura normal. A notificação chega uma
-  vez por mudança de faixa; tocar nela abre `/alertas?veiculo=<código>`.
+  vez por mudança de faixa; tocar nela abre `/alertas?veiculo=<código>`. Motorista: entrar com a
+  conta de motorista, tocar em **Ativar alertas no celular** na tela `/motorista`, fechar o
+  navegador e provocar a mudança de faixa no sensor do veículo dele (chega, e o toque abre
+  `/motorista`) e no sensor de outro veículo (não chega).
 - `public/sw.js`: suba `CACHE_NAME` (`coldtrack-v14` → `v15`...) quando mudar o service worker.
   Ele só é registrado no build (`import.meta.env.PROD`).

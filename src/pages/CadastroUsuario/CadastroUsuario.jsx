@@ -3,6 +3,7 @@
 
 import { useRef, useState } from "react";
 import { Link } from "react-router-dom";
+import PainelLayout from "../../components/PainelLayout.jsx";
 import { useTitulo } from "../../hooks/useTitulo.js";
 import "../../styles/cadastro-usuario/cadastro.css";
 import { formatarCPF, validarCPF } from "./cpf.js";
@@ -64,16 +65,10 @@ export default function CadastroUsuario() {
 
   }
 
-  // flow-root: a margem inferior do .container ficava fora do fundo da raiz (no original, o fundo do body cobria tudo).
   return (
-    <div className="escopo-cadastro-usuario raiz-pagina" style={{ display: "flow-root" }}>
+    <PainelLayout familia="cadastro-usuario">
 
-      <header className="topbar">
-        <Link to="/" className="brand">❄ ColdTrack<span>.</span></Link>
-        <span className="admin-label">Painel Administrativo</span>
-      </header>
-
-      <main className="container">
+      <div className="container">
         <div className="page-heading">
           <Link to="/" className="back-link">← Voltar</Link>
           <h1>Cadastro de Usuários</h1>
@@ -151,9 +146,9 @@ export default function CadastroUsuario() {
             </div>
           </form>
         </section>
-      </main>
+      </div>
 
-    </div>
+    </PainelLayout>
   );
 
 }

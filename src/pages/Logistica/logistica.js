@@ -7,6 +7,14 @@ export const CARGAS_INICIAIS = [
   { id: "CT-003", produto: "Uva", origem: "Petrolina/PE", destino: "Fortaleza/CE", sensor: "ESP32-03", tempMin: 2, tempMax: 8, temperatura: 5.7, status: "Em transporte" }
 ];
 
+// Colunas do quadro, na ordem do fluxo da carga.
+export const COLUNAS = [
+  { status: "Em transporte", titulo: "Em transporte" },
+  { status: "Atenção", titulo: "Em atenção" },
+  { status: "Entregue", titulo: "Entregue" },
+  { status: "Cancelada", titulo: "Cancelada" }
+];
+
 export const STATUS_EDITAVEIS = ["Em transporte", "Atenção"];
 
 export const formatarTemperatura = valor =>

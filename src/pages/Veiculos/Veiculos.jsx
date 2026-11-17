@@ -4,6 +4,8 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { Carregando, ErroAzure } from "../../components/Estado.jsx";
+import Gaveta from "../../components/Gaveta.jsx";
+import Icone from "../../components/Icone.jsx";
 import PainelLayout from "../../components/PainelLayout.jsx";
 import StatusSelo from "../../components/StatusSelo.jsx";
 import { usePolling } from "../../hooks/usePolling.js";
@@ -107,6 +109,8 @@ export default function Veiculos() {
 
   }
 
+  const podeCadastrar = gestor && tela.tipo === "ok" && tela.livres.length > 0;
+
   return (
     <PainelLayout
       titulo="Veículos"
@@ -119,14 +123,23 @@ export default function Veiculos() {
         {tela.tipo === "erro" && <ErroAzure />}
         {tela.tipo === "ok" && (
           <>
-            {gestor && (
-              <FormularioVeiculo
-                livres={tela.livres}
-                perfis={tela.perfis}
-                aberto={formularioAberto}
-                aoMudarAberto={mudarFormulario}
-                aoSalvar={recarregar}
-              />
+            <div className="frota-topo">
+              <p className="frota-rotulo">
+                {tela.veiculos.length === 1 ? "1 veículo" : `${tela.veiculos.length} veículos`}
+              </p>
+              {podeCadastrar && (
+                <button type="button" className="botao botao-icone" onClick={() => mudarFormulario(true)}>
+                  <Icone nome="adicionar" tamanho={20} />
+                  Cadastrar veículo
+                </button>
+              )}
+            </div>
+
+            {gestor && !tela.livres.length && (
+              <div className="panel estado">
+                <strong>Nenhum sensor livre para um veículo novo.</strong>
+                Registre o sensor em <Link to="/sensores">Sensores</Link> e volte aqui.
+              </div>
             )}
 
             {tela.veiculos.length ? (
@@ -150,6 +163,16 @@ export default function Veiculos() {
                 {gestor ? "Cadastre o primeiro veículo acima." : "Peça ao gestor para cadastrar a frota."}
               </div>
             )}
+
+            {podeCadastrar && (
+              <FormularioVeiculo
+                livres={tela.livres}
+                perfis={tela.perfis}
+                aberto={formularioAberto}
+                aoMudarAberto={mudarFormulario}
+                aoSalvar={recarregar}
+              />
+            )}
           </>
         )}
       </div>
@@ -159,18 +182,11 @@ export default function Veiculos() {
 }
 
 
+// Cadastro na gaveta da direita. Enquanto ela está aberta a lista não se
+// redesenha (o polling espera), para não apagar o que o gestor digitou.
 function FormularioVeiculo({ livres, perfis, aberto, aoMudarAberto, aoSalvar }) {
 
   const [erro, setErro] = useState("");
-
-  if (!livres.length) {
-    return (
-      <div className="panel estado">
-        <strong>Nenhum sensor livre para um veículo novo.</strong>
-        Registre o sensor em <Link to="/sensores">Sensores</Link> e volte aqui.
-      </div>
-    );
-  }
 
   async function enviar(evento) {
 
@@ -182,7 +198,7 @@ function FormularioVeiculo({ livres, perfis, aberto, aoMudarAberto, aoSalvar }) 
 
     try {
       await api("/veiculos", { metodo: "POST", corpo: dados });
-      // O original redesenhava o formulário: volta fechado e vazio.
+      // Volta fechado e vazio.
       form.reset();
       aoMudarAberto(false);
       aoSalvar();
@@ -193,32 +209,34 @@ function FormularioVeiculo({ livres, perfis, aberto, aoMudarAberto, aoSalvar }) 
   }
 
   return (
-    <details className="panel" id="painelNovo" open={aberto} onToggle={e => aoMudarAberto(e.currentTarget.open)}>
-      <summary><h2>Cadastrar veículo</h2></summary>
-
-      <form id="formVeiculo" className="form-grade" noValidate onSubmit={enviar}>
-        <label className="campo"><span>Código</span><input name="id" placeholder="CT-002" required /></label>
-        <label className="campo"><span>Tipo</span><input name="tipo" placeholder="Caminhão baú refrigerado" required /></label>
-        <label className="campo">
-          <span>Sensor</span>
-          <select name="deviceId">
-            {livres.map(id => <option key={id} value={id}>{id}</option>)}
-          </select>
-        </label>
-        <label className="campo"><span>Dispositivo</span><input name="dispositivo" placeholder="ESP32-C3 + DHT11" /></label>
-        <label className="campo">
-          <span>Perfil da carga</span>
-          <select name="perfil">
-            {perfis.map(p => (
-              <option key={p.id} value={p.id}>{`${p.nome} (normal ${descreverNormal(faixaDoPerfil(p))})`}</option>
-            ))}
-          </select>
-        </label>
-        <button type="submit" className="botao">Cadastrar</button>
+    <Gaveta id="painelNovo" titulo="Cadastrar veículo" aberta={aberto} aoFechar={() => aoMudarAberto(false)}>
+      <form id="formVeiculo" className="gaveta-form" noValidate onSubmit={enviar}>
+        <div className="gaveta-corpo">
+          <label className="campo"><span>Código</span><input name="id" placeholder="CT-002" required /></label>
+          <label className="campo"><span>Tipo</span><input name="tipo" placeholder="Caminhão baú refrigerado" required /></label>
+          <label className="campo">
+            <span>Sensor</span>
+            <select name="deviceId">
+              {livres.map(id => <option key={id} value={id}>{id}</option>)}
+            </select>
+          </label>
+          <label className="campo"><span>Dispositivo</span><input name="dispositivo" placeholder="ESP32-C3 + DHT11" /></label>
+          <label className="campo">
+            <span>Perfil da carga</span>
+            <select name="perfil">
+              {perfis.map(p => (
+                <option key={p.id} value={p.id}>{`${p.nome} (normal ${descreverNormal(faixaDoPerfil(p))})`}</option>
+              ))}
+            </select>
+          </label>
+          <p className="erro-form" id="erroVeiculo" role="alert" hidden={!erro}>{erro}</p>
+        </div>
+        <div className="gaveta-rodape">
+          <button type="button" className="botao secundario" onClick={() => aoMudarAberto(false)}>Cancelar</button>
+          <button type="submit" className="botao">Cadastrar</button>
+        </div>
       </form>
-
-      <p className="erro-form" id="erroVeiculo" role="alert" hidden={!erro}>{erro}</p>
-    </details>
+    </Gaveta>
   );
 
 }
@@ -247,9 +265,9 @@ function CardVeiculo({ veiculo, ultima, perfis, agora, gestor, aoEtiqueta, aoRem
   }
 
   return (
-    <article className="item-card">
+    <article className="veiculo-card">
 
-      <header>
+      <header className="veiculo-topo">
         <div>
           <h3>{veiculo.id}</h3>
           <p>{veiculo.tipo}</p>
@@ -257,42 +275,42 @@ function CardVeiculo({ veiculo, ultima, perfis, agora, gestor, aoEtiqueta, aoRem
         {situacao}
       </header>
 
-      <div className="campos">
-        <div>
-          <span>Temperatura</span>
-          <strong>{formatarTemp(ultima?.temperatura)}</strong>
-        </div>
-        <div>
-          <span>Umidade</span>
-          <strong>{formatarUmidade(ultima?.umidade)}</strong>
-        </div>
-        <div>
-          <span>Última comunicação</span>
-          <strong>{comunicacao}</strong>
-        </div>
-        <div>
-          <span>Perfil da carga</span>
-          <strong>{perfil ? perfil.nome : veiculo.perfil} · normal {descreverNormal(faixaDoPerfil(perfil))}</strong>
-        </div>
-        <div>
-          <span>Dispositivo</span>
-          <strong>{veiculo.dispositivo || "--"}</strong>
-        </div>
-        <div>
-          <span>ID do sensor</span>
-          <strong>{veiculo.deviceId}</strong>
-        </div>
+      <div className="veiculo-temp">
+        <span>Temperatura</span>
+        <strong>{formatarTemp(ultima?.temperatura)}</strong>
       </div>
 
-      <div className="acoes-item">
+      <dl className="veiculo-medidas">
+        <div>
+          <dt>Umidade</dt>
+          <dd>{formatarUmidade(ultima?.umidade)}</dd>
+        </div>
+        <div>
+          <dt>Última comunicação</dt>
+          <dd>{comunicacao}</dd>
+        </div>
+      </dl>
+
+      <dl className="veiculo-detalhes">
+        <div>
+          <dt>Perfil da carga</dt>
+          <dd>{perfil ? perfil.nome : veiculo.perfil} · normal {descreverNormal(faixaDoPerfil(perfil))}</dd>
+        </div>
+        <div>
+          <dt>Dispositivo</dt>
+          <dd>{veiculo.dispositivo || "--"}</dd>
+        </div>
+        <div>
+          <dt>ID do sensor</dt>
+          <dd>{veiculo.deviceId}</dd>
+        </div>
+      </dl>
+
+      <div className="veiculo-acoes">
         <Link className="botao secundario" to={`/dashboard?veiculo=${encodeURIComponent(veiculo.id)}`}>Ver no painel</Link>
-        {" "}
         <button type="button" className="botao secundario" onClick={() => aoEtiqueta(veiculo.id)}>Etiqueta QR</button>
         {gestor && (
-          <>
-            {" "}
-            <button type="button" className="botao perigo" onClick={() => aoRemover(veiculo.id)}>Remover veículo</button>
-          </>
+          <button type="button" className="botao perigo" onClick={() => aoRemover(veiculo.id)}>Remover veículo</button>
         )}
       </div>
 

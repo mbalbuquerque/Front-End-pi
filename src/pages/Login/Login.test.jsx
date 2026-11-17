@@ -3,19 +3,24 @@
 import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { render } from "@testing-library/react";
+import { MemoryRouter } from "react-router-dom";
 import { renderizarNaRota } from "../../testes/apoio.jsx";
 import Login from "./Login.jsx";
 
 const sessao = vi.hoisted(() => ({ usuario: null, entrar: vi.fn() }));
 const api = vi.hoisted(() => ({ postPublico: vi.fn() }));
-const armazenada = vi.hoisted(() => ({ lerSessao: vi.fn() }));
+const armazenada = vi.hoisted(() => ({
+  lerSessao: vi.fn(),
+  rotaInicial: usuario => (usuario?.perfil === "motorista" ? "/motorista" : "/dashboard")
+}));
 
 vi.mock("../../hooks/useSessao.jsx", () => ({ useSessao: () => sessao }));
 vi.mock("../../lib/api.js", () => api);
 vi.mock("../../lib/sessao.js", () => armazenada);
 
 function abrir() {
-  return renderizarNaRota(<Login />, "/login", ["/dashboard", "/cadastro"]);
+  return renderizarNaRota(<Login />, "/login", ["/dashboard", "/motorista", "/cadastro"]);
 }
 
 beforeEach(() => {
@@ -25,6 +30,15 @@ beforeEach(() => {
 });
 
 describe("Login", () => {
+
+  it("mostra o aviso vindo da navegação (ex.: empresa excluída)", () => {
+    render(
+      <MemoryRouter initialEntries={[{ pathname: "/login", state: { aviso: "Empresa excluída." } }]}>
+        <Login />
+      </MemoryRouter>
+    );
+    expect(screen.getByRole("status")).toHaveTextContent("Empresa excluída.");
+  });
 
   it("e-mail inválido: avisa e não chama a API", async () => {
     abrir();
@@ -83,6 +97,23 @@ describe("Login", () => {
     expect(sessao.entrar).toHaveBeenCalledWith("t", usuario);
   });
 
+  it("login de motorista: vai direto para a tela do motorista", async () => {
+    const usuario = { id: "moto@empresa.com", perfil: "motorista", veiculo: "CT-001" };
+    api.postPublico.mockResolvedValue({ ok: true, dados: { token: "t", usuario } });
+    abrir();
+    await userEvent.type(screen.getByLabelText("E-mail"), "moto@empresa.com");
+    await userEvent.type(screen.getByLabelText("Senha"), "segredo123");
+    await userEvent.click(screen.getByRole("button", { name: /Entrar/ }));
+    await waitFor(() => expect(screen.getByText("destino /motorista")).toBeInTheDocument());
+  });
+
+  it("motorista já logado: vai direto para /motorista", () => {
+    sessao.usuario = { id: "moto@empresa.com", perfil: "motorista" };
+    armazenada.lerSessao.mockReturnValue({ token: "t" });
+    abrir();
+    expect(screen.getByText("destino /motorista")).toBeInTheDocument();
+  });
+
   it("mostrar/ocultar senha alterna o tipo do campo", async () => {
     abrir();
     const campo = screen.getByLabelText("Senha");
@@ -97,6 +128,19 @@ describe("Login", () => {
     abrir();
     await userEvent.click(screen.getByText("Esqueceu a senha?"));
     expect(screen.getByRole("status")).toHaveTextContent("Peça ao gestor");
+    // Orientação sai em azul; erro de validação volta ao vermelho.
+    expect(screen.getByRole("status")).toHaveClass("aviso", "aviso-info");
+    await userEvent.click(screen.getByRole("button", { name: /Entrar/ }));
+    expect(screen.getByRole("status")).toHaveTextContent("Informe um e-mail válido.");
+    expect(screen.getByRole("status")).not.toHaveClass("aviso-info");
+  });
+
+  it("tela dividida: marca com a régua de faixa e o formulário no cartão", () => {
+    abrir();
+    expect(screen.getByRole("heading", { level: 1, name: "Entrar" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "ColdTrack Control, página inicial" })).toHaveAttribute("href", "/");
+    expect(screen.getByText("Faixa segura")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Cadastrar empresa" })).toHaveAttribute("href", "/cadastro");
   });
 
   it("já logado: vai direto ao dashboard", () => {

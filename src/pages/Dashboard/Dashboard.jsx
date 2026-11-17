@@ -4,7 +4,10 @@
 import { useRef, useState } from "react";
 import Estado, { SemVeiculo } from "../../components/Estado.jsx";
 import GraficoTemperatura from "../../components/GraficoTemperatura.jsx";
+import Icone from "../../components/Icone.jsx";
 import PainelLayout from "../../components/PainelLayout.jsx";
+import PrevisaoSensor from "../../components/PrevisaoSensor.jsx";
+import ReguaFaixa from "../../components/ReguaFaixa.jsx";
 import SeletorVeiculo from "../../components/SeletorVeiculo.jsx";
 import { usePolling } from "../../hooks/usePolling.js";
 import { useVeiculoEscolhido } from "../../hooks/useVeiculoEscolhido.js";
@@ -12,6 +15,7 @@ import { HISTORY_SIZE, UPDATE_INTERVAL } from "../../lib/config.js";
 import { descreverNormal } from "../../lib/faixas.js";
 import { STATUS_INFO, formatarTemp } from "../../lib/formatar.js";
 import { buscarLeituras, resumir } from "../../lib/leituras.js";
+import AvisoFalhaSensor from "./AvisoFalhaSensor.jsx";
 import RiscoRota from "./RiscoRota.jsx";
 import RiscoSaida from "./RiscoSaida.jsx";
 import {
@@ -21,6 +25,10 @@ import {
   ordenarLeituras,
   resumoUltima
 } from "./telemetria.js";
+
+
+// Ícone da pílula de status (o texto vem junto: a cor nunca é a única pista).
+const ICONE_STATUS = { normal: "ok", atencao: "alerta", critico: "critico", aguardando: "aguardando" };
 
 
 export default function Dashboard() {
@@ -116,6 +124,14 @@ export default function Dashboard() {
   const veiculo = escolha?.veiculo;
   const info = ultima ? STATUS_INFO[ultima.situacao] || STATUS_INFO.NORMAL : null;
   const contato = contatoDaLeitura(ultimaEm, Date.now(), conexao === false);
+  const online = Boolean(ultimaEm) && !contato.semDados;
+  const nomeCarga = veiculo ? (escolha.perfil ? escolha.perfil.nome : veiculo.perfil) : "";
+
+  // "7.3 °C" -> número grande e unidade menor (o texto do elemento continua "7.3 °C").
+  const textoTemp = ultima ? ultima.temperatura : "-- °C";
+  const corte = textoTemp.lastIndexOf(" ");
+  const numero = textoTemp.slice(0, corte);
+  const unidade = textoTemp.slice(corte + 1);
 
   return (
     <PainelLayout
@@ -128,6 +144,8 @@ export default function Dashboard() {
       )}
     >
 
+      <AvisoFalhaSensor deviceId={veiculo?.deviceId} />
+
       {contato.semDados && (
         <div id="semDadosAviso" className="alert" role="status">
           <strong>{contato.desde ? `Sem dados desde ${contato.desde}` : "Sem conexão com a API"}</strong>{" "}
@@ -139,35 +157,80 @@ export default function Dashboard() {
         </div>
       )}
 
-      <section className="cards">
+      <section className="visao-topo" aria-label="Situação atual da carga">
 
-        <article className="card">
-          <span>Temperatura atual</span>
-          <strong id="temperatura">{ultima ? ultima.temperatura : "-- °C"}</strong>
-          <small id="tempStatus">
-            {ultima ? TEXTOS_STATUS[ultima.situacao] || TEXTOS_STATUS.NORMAL : "Aguardando dados"}
-          </small>
-        </article>
+        <article className="heroi">
 
-        <article className="card">
-          <span>Umidade relativa</span>
-          <strong id="umidade">{ultima ? ultima.umidade : "-- %"}</strong>
-          <small>Compartimento de carga</small>
-        </article>
+          <header className="heroi-topo">
+            <div>
+              <p className="heroi-rotulo">
+                {veiculo ? `Carga atual: ${nomeCarga}` : "Carga atual"}
+              </p>
+              <h2>Temperatura da carga</h2>
+            </div>
+            <div id="statusCarga" className={`status ${info ? info.classe : "aguardando"}`}>
+              <Icone nome={ICONE_STATUS[info ? info.classe : "aguardando"]} tamanho={18} />
+              {info ? info.texto : "AGUARDANDO"}
+            </div>
+          </header>
 
-        <article className="card">
-          <span>Sinal Wi-Fi</span>
-          <strong id="rssi">{ultima ? ultima.rssi : "-- dBm"}</strong>
-          <small id="rssiStatus">{ultima ? ultima.sinal : "Aguardando dados"}</small>
-        </article>
-
-        <article className="card status-card">
-          <span>Status da carga</span>
-          <div id="statusCarga" className={`status ${info ? info.classe : "aguardando"}`}>
-            {info ? info.texto : "AGUARDANDO"}
+          <div className="heroi-leitura">
+            <strong id="temperatura" className="heroi-numero">
+              <span>{numero}</span> <span className="heroi-unidade">{unidade}</span>
+            </strong>
+            <div className="heroi-apoio">
+              <small id="tempStatus">
+                {ultima ? TEXTOS_STATUS[ultima.situacao] || TEXTOS_STATUS.NORMAL : "Aguardando dados"}
+              </small>
+              {veiculo && <span>Faixa segura: {descreverNormal(escolha.faixa)}</span>}
+            </div>
           </div>
-          <small>Processamento Edge</small>
+
+          {veiculo && (
+            <ReguaFaixa faixa={escolha.faixa} temperatura={ultima ? parseFloat(ultima.temperatura) : null} />
+          )}
+
+          {veiculo && <PrevisaoSensor variante="painel" deviceId={veiculo.deviceId} />}
+
+          <dl className="heroi-veiculo">
+            <div>
+              <dt>Veículo</dt>
+              <dd id="veiculoCodigo">{veiculo ? veiculo.id : "--"}</dd>
+            </div>
+            <div>
+              <dt>Carga</dt>
+              <dd id="veiculoCarga">
+                {veiculo ? `${nomeCarga} · normal ${descreverNormal(escolha.faixa)}` : "--"}
+              </dd>
+            </div>
+          </dl>
+
         </article>
+
+        <div className="visao-tiles">
+
+          <article className="tile">
+            <span className="tile-rotulo"><Icone nome="umidade" tamanho={18} /> Umidade relativa</span>
+            <strong id="umidade">{ultima ? ultima.umidade : "-- %"}</strong>
+            <small>Compartimento de carga</small>
+          </article>
+
+          <article className="tile">
+            <span className="tile-rotulo"><Icone nome="wifi" tamanho={18} /> Sinal Wi-Fi</span>
+            <strong id="rssi">{ultima ? ultima.rssi : "-- dBm"}</strong>
+            <small id="rssiStatus">{ultima ? ultima.sinal : "Aguardando dados"}</small>
+          </article>
+
+          <article className="tile">
+            <span className="tile-rotulo"><Icone nome="sensor" tamanho={18} /> Sensor</span>
+            <strong id="veiculoSensor" className="tile-sensor">{veiculo ? veiculo.deviceId : "--"}</strong>
+            <small id="contatoSensor" className={`selo-contato selo-contato--${online ? "online" : "offline"}`}>
+              {online ? "Online" : "Sem contato"}
+              {contato.desde ? ` · último contato ${contato.desde}` : ""}
+            </small>
+          </article>
+
+        </div>
 
       </section>
 
@@ -177,37 +240,13 @@ export default function Dashboard() {
 
           <div className="panel-header">
             <div>
-              <h2>Monitoramento em tempo real</h2>
+              <h2>Temperatura · últimos 30 min</h2>
               <p id="subtituloVeiculo">{veiculo ? `${veiculo.tipo} • ${veiculo.id}` : "ColdTrack Edge"}</p>
             </div>
-            <span className="badge">Transporte Refrigerado</span>
           </div>
 
-          <div className="vehicle">
-            <div className="truck">🚚</div>
-            <div>
-              <span>VEÍCULO</span>
-              <strong id="veiculoCodigo">{veiculo ? veiculo.id : "--"}</strong>
-            </div>
-            <div>
-              <span>CARGA</span>
-              <strong id="veiculoCarga">
-                {veiculo
-                  ? `${escolha.perfil ? escolha.perfil.nome : veiculo.perfil} · normal ${descreverNormal(escolha.faixa)}`
-                  : "--"}
-              </strong>
-            </div>
-            <div>
-              <span>SENSOR</span>
-              <strong id="veiculoSensor">{veiculo ? veiculo.deviceId : "--"}</strong>
-            </div>
-          </div>
-
-          <div className="chart-placeholder">
-            <div className="chart-title">Histórico de temperatura</div>
-            <div id="historico" className={comGrafico ? "com-grafico" : undefined}>
-              <Historico {...historico} />
-            </div>
+          <div id="historico" className={comGrafico ? "com-grafico" : undefined}>
+            <Historico {...historico} />
           </div>
 
         </article>
@@ -236,7 +275,7 @@ export default function Dashboard() {
           </div>
 
           <div id="alerta" className={`alert${!ultima || ultima.situacao === "NORMAL" ? " hidden" : ""}`}>
-            <strong>⚠ Alerta de temperatura</strong>{" "}
+            <strong>Alerta de temperatura</strong>{" "}
             <p>A temperatura da carga está fora da condição normal.</p>
           </div>
 

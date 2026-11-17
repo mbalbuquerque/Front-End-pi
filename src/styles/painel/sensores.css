@@ -1,0 +1,405 @@
+/* ==========================================================
+   SENSORES (design system, seções 3, 7 e 8): painel do cabo,
+   lista de sensores em cartões, ajuda e registro sem cabo.
+   Só tokens de src/styles/tokens.css.
+   ========================================================== */
+
+
+/* Só para leitor de tela (cabeçalho da tabela de sensores). */
+.so-leitor {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.tela-sensores .panel p {
+  font-size: var(--ct-text-body-sm);
+  line-height: var(--ct-leading-body);
+}
+
+.titulo-icone {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.titulo-icone .ct-icone {
+  flex: none;
+  color: var(--ct-blue-700);
+}
+
+.tela-sensores .botao {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--ct-space-2);
+  min-height: var(--ct-touch);
+  padding: 10px 18px;
+  font-size: var(--ct-text-body-sm);
+}
+
+.tela-sensores .acoes-item {
+  gap: 12px;
+}
+
+
+/* Painel do cabo */
+#painelCabo h2 {
+  margin-bottom: var(--ct-space-2);
+}
+
+#painelCabo .acoes-item a {
+  font-size: var(--ct-text-body-sm);
+  font-weight: var(--ct-weight-label);
+}
+
+
+/* Lista de sensores */
+.lista-sensores h2 {
+  margin-bottom: var(--ct-space-3);
+}
+
+/* A nota de atualização fica embaixo da lista, como no protótipo. */
+.lista-sensores {
+  display: flex;
+  flex-direction: column;
+}
+
+.lista-sensores > .nota-info {
+  order: 2;
+  margin: var(--ct-space-3) 0 0;
+}
+
+.nota-info {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--ct-space-2);
+}
+
+.nota-info .ct-icone {
+  flex: none;
+  margin-top: 2px;
+}
+
+.lista-sensores #tabelaSensores {
+  margin-top: var(--ct-space-3);
+}
+
+/* A tabela vira uma pilha de cartões: cada <tr> é um cartão em grade. */
+.tabela-sensores,
+.tabela-sensores tbody {
+  display: block;
+}
+
+.tabela-sensores tbody tr {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  grid-template-areas:
+    "nome   nome  temp acoes"
+    "situ   sinal temp acoes";
+  align-items: center;
+  gap: 6px var(--ct-space-4);
+  padding: 20px var(--ct-space-4) 20px 88px;
+  border: 1px solid var(--ct-border);
+  border-radius: 0;
+  transition: none;
+}
+
+.tabela-sensores tbody tr + tr {
+  border-top: 0;
+}
+
+.tabela-sensores tbody tr:first-child {
+  border-radius: var(--ct-radius-card) var(--ct-radius-card) 0 0;
+}
+
+.tabela-sensores tbody tr:last-child {
+  border-radius: 0 0 var(--ct-radius-card) var(--ct-radius-card);
+}
+
+.tabela-sensores tbody tr:only-child {
+  border-radius: var(--ct-radius-card);
+}
+
+.tabela-sensores tbody tr:hover {
+  background: transparent;
+}
+
+.tabela-sensores td {
+  display: block;
+  padding: 0;
+  border: 0;
+  white-space: normal;
+}
+
+.tabela-sensores td.sensor-nome {
+  grid-area: nome;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 10px;
+}
+
+.sensor-nome strong {
+  font-size: 17px;
+  font-weight: var(--ct-weight-strong);
+}
+
+.sensor-detalhe {
+  color: var(--ct-muted);
+  font-size: var(--ct-text-body-sm);
+  font-weight: var(--ct-weight-label);
+}
+
+.sensor-icone {
+  position: absolute;
+  left: var(--ct-space-4);
+  top: 50%;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  margin-top: -22px;
+  border-radius: var(--ct-radius-card);
+  background: var(--ct-blue-50);
+  color: var(--ct-blue-700);
+}
+
+.sensor-desligado .sensor-icone {
+  background: var(--ct-offline-bg);
+  color: var(--ct-offline);
+}
+
+.sensor-falha .sensor-icone {
+  background: var(--ct-critico-bg);
+  color: var(--ct-critico);
+}
+
+.sensor-falha {
+  box-shadow: inset 4px 0 0 var(--ct-critico);
+}
+
+/* Com a linha da falha, o sinal desce para a própria linha (não aperta a coluna). */
+@media (min-width: 1051px) {
+
+  .tabela-sensores tbody tr.sensor-falha {
+    grid-template-areas:
+      "nome  nome  temp acoes"
+      "situ  situ  temp acoes"
+      "sinal sinal temp acoes";
+  }
+
+}
+
+.tabela-sensores td.sensor-situacao {
+  grid-area: situ;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
+}
+
+.sensor-situacao .selo-conexao,
+.sensor-situacao .status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  padding: 4px 12px;
+  font-size: var(--ct-text-label);
+  font-weight: var(--ct-weight-strong);
+}
+
+/* Ponto do selo: forma + texto, nunca só a cor. */
+.sensor-situacao .selo-conexao::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: var(--ct-radius-pill);
+  background: currentColor;
+}
+
+.tabela-sensores .linha-apoio {
+  margin: 0;
+  font-size: var(--ct-text-label);
+}
+
+.tabela-sensores td.sensor-sinal {
+  grid-area: sinal;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--ct-muted);
+  font-size: var(--ct-text-label);
+  font-weight: var(--ct-weight-label);
+}
+
+.sensor-sinal .ct-icone {
+  flex: none;
+}
+
+/* Sensor em falha (#52): texto + ícone na cor crítica, nunca só a cor. */
+.falha-sensor {
+  display: inline-flex;
+  flex-basis: 100%;
+  align-items: center;
+  gap: 6px;
+  color: var(--ct-critico);
+  font-size: var(--ct-text-body-sm);
+  font-weight: var(--ct-weight-strong);
+}
+
+.falha-sensor .ct-icone {
+  flex: none;
+}
+
+/* Última leitura válida de um sensor em falha: fica, mas apagada e dita antiga. */
+.sensor-temp.antiga strong {
+  color: var(--ct-muted);
+}
+
+.tabela-sensores td.sensor-temp {
+  grid-area: temp;
+  text-align: right;
+}
+
+.sensor-temp strong {
+  display: block;
+  font-family: var(--ct-font-display);
+  font-size: var(--ct-text-headline);
+  font-weight: var(--ct-weight-strong);
+  line-height: var(--ct-leading-headline);
+  font-variant-numeric: tabular-nums;
+}
+
+.sensor-temp small {
+  display: block;
+  color: var(--ct-muted);
+}
+
+.tabela-sensores .acoes-tabela {
+  grid-area: acoes;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ct-space-2);
+  justify-content: flex-end;
+}
+
+.tabela-sensores .acoes-tabela .botao {
+  min-height: 40px;
+  padding: 8px 14px;
+  font-size: var(--ct-text-label);
+}
+
+
+/* Ajuda e registro sem cabo: cartões que abrem com seta */
+.tela-sensores details.panel summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ct-space-3);
+  min-height: var(--ct-touch);
+  list-style: none;
+}
+
+.tela-sensores details.panel summary::-webkit-details-marker {
+  display: none;
+}
+
+.tela-sensores details.panel summary h2 {
+  font-size: var(--ct-text-title);
+}
+
+.tela-sensores details.panel summary::after {
+  content: "";
+  flex: none;
+  width: 10px;
+  height: 10px;
+  margin-right: 4px;
+  border-right: 2px solid var(--ct-muted);
+  border-bottom: 2px solid var(--ct-muted);
+  transform: rotate(45deg);
+}
+
+.tela-sensores details.panel[open] summary::after {
+  transform: rotate(-135deg);
+}
+
+.tela-sensores details.panel summary:focus-visible {
+  outline: var(--ct-focus-ring);
+  outline-offset: var(--ct-focus-offset);
+  border-radius: var(--ct-radius-control);
+}
+
+
+@media (max-width: 1050px) {
+
+  .tabela-sensores tbody tr {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      "nome  temp"
+      "situ  temp"
+      "sinal temp"
+      "acoes acoes";
+  }
+
+  .tabela-sensores .acoes-tabela {
+    justify-content: flex-start;
+    margin-top: 10px;
+  }
+
+}
+
+@media (max-width: 720px) {
+
+  /* Celular: um cartão por sensor (protótipo), selo em cima. */
+  .lista-sensores.panel {
+    padding: 20px var(--ct-space-3);
+  }
+
+  .tabela-sensores tbody {
+    display: grid;
+    gap: 12px;
+  }
+
+  .tabela-sensores tbody tr,
+  .tabela-sensores tbody tr:first-child,
+  .tabela-sensores tbody tr:last-child {
+    grid-template-areas:
+      "situ  situ"
+      "nome  nome"
+      "sinal temp"
+      "acoes acoes";
+    padding: var(--ct-space-3);
+    border: 1px solid var(--ct-border);
+    border-radius: var(--ct-radius-card);
+  }
+
+  .sensor-icone {
+    display: none;
+  }
+
+  .sensor-nome {
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--ct-border);
+  }
+
+  .sensor-temp {
+    align-self: end;
+  }
+
+  .tabela-sensores .acoes-tabela .botao {
+    flex: 1;
+    min-height: var(--ct-touch);
+  }
+
+  .tela-sensores .acoes-item .botao {
+    width: 100%;
+  }
+
+}

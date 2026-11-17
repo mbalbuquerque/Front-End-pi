@@ -1,0 +1,348 @@
+/* ==========================================================
+   ALERTAS (design system, seções 3, 4 e 7): tiles de resumo,
+   linha do tempo de ocorrências por dia e mini gráfico.
+   Só tokens de src/styles/tokens.css.
+   ========================================================== */
+
+
+/* Filtro de período como controle segmentado. Troca de período não anima
+   (ação de muitas vezes por dia). */
+.tela-alertas .acoes {
+  margin-bottom: 0;
+}
+
+.tela-alertas .filtro {
+  background: var(--ct-offline-bg);
+  border-color: var(--ct-border);
+}
+
+.tela-alertas .filtro button {
+  min-height: 40px;
+  padding: 8px 18px;
+  font-size: var(--ct-text-body-sm);
+  color: var(--ct-offline);
+}
+
+.tela-alertas .filtro button[aria-pressed="true"] {
+  background: var(--ct-surface);
+  color: var(--ct-navy-900);
+  box-shadow: inset 0 0 0 1px var(--ct-border-strong);
+}
+
+
+/* Tiles de resumo */
+.tela-alertas .resumo {
+  gap: var(--ct-space-3);
+}
+
+.tela-alertas .resumo .card {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding: var(--ct-space-4);
+}
+
+.tela-alertas .resumo .card span {
+  font-size: var(--ct-text-label);
+  font-weight: var(--ct-weight-label);
+}
+
+.tela-alertas .resumo .card strong {
+  margin: var(--ct-space-2) 0 var(--ct-space-1);
+  font-family: var(--ct-font-display);
+  font-size: 40px;
+  font-weight: var(--ct-weight-strong);
+  line-height: var(--ct-leading-display);
+  font-variant-numeric: tabular-nums;
+  color: var(--ct-text);
+}
+
+.tela-alertas .resumo .card small {
+  font-size: var(--ct-text-label);
+}
+
+/* Tile que pede atenção: borda e texto na cor do status (o texto já diz o quê). */
+.tela-alertas .resumo .card.destaque.atencao {
+  border-color: var(--ct-atencao-borda);
+}
+
+.tela-alertas .resumo .card.destaque.critico {
+  border-color: var(--ct-critico);
+}
+
+.tela-alertas .resumo .card.destaque.atencao span,
+.tela-alertas .resumo .card.destaque.atencao small,
+.tela-alertas .resumo .card strong.atencao {
+  color: var(--ct-atencao);
+}
+
+.tela-alertas .resumo .card.destaque.critico span,
+.tela-alertas .resumo .card.destaque.critico small,
+.tela-alertas .resumo .card strong.critico {
+  color: var(--ct-critico);
+}
+
+
+/* Linha do tempo */
+.ocorrencias h2 {
+  margin-bottom: var(--ct-space-3);
+}
+
+.linha-tempo-dia + .linha-tempo-dia {
+  margin-top: var(--ct-space-4);
+}
+
+.linha-tempo-dia h3 {
+  margin-bottom: var(--ct-space-3);
+  color: var(--ct-muted);
+  font-size: var(--ct-text-label);
+  font-weight: var(--ct-weight-strong);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.linha-tempo-dia ol {
+  position: relative;
+  list-style: none;
+  padding-left: var(--ct-space-5);
+}
+
+/* Trilho vertical da linha do tempo. */
+.linha-tempo-dia ol::before {
+  content: "";
+  position: absolute;
+  left: 9px;
+  top: 12px;
+  bottom: 12px;
+  width: 2px;
+  background: var(--ct-border);
+}
+
+.ocorrencia {
+  position: relative;
+}
+
+.ocorrencia + .ocorrencia {
+  margin-top: var(--ct-space-3);
+}
+
+/* Ponto no trilho: forma reforçada pela pílula escrita do cartão. */
+.ocorrencia-ponto {
+  position: absolute;
+  left: calc(-1 * var(--ct-space-5) + 3px);
+  top: 22px;
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--ct-surface);
+  border-radius: var(--ct-radius-pill);
+  background: var(--ct-offline);
+}
+
+.ocorrencia.atencao .ocorrencia-ponto {
+  background: var(--ct-atencao-borda);
+}
+
+.ocorrencia.critico .ocorrencia-ponto {
+  background: var(--ct-critico);
+}
+
+.ocorrencia-cartao {
+  display: grid;
+  gap: var(--ct-space-3);
+  padding: var(--ct-space-3) 20px;
+  border: 1px solid var(--ct-border);
+  border-radius: var(--ct-radius-card);
+  background: var(--ct-surface);
+}
+
+.ocorrencia-cartao header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ct-space-2) 12px;
+}
+
+.ocorrencia-cartao header .status {
+  margin: 0;
+  padding: 5px 12px;
+  font-size: var(--ct-text-label);
+}
+
+.ocorrencia-cartao time {
+  font-size: var(--ct-text-body);
+  font-weight: var(--ct-weight-strong);
+  font-variant-numeric: tabular-nums;
+}
+
+.ocorrencia-dados {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ct-space-2) 20px;
+  list-style: none;
+  color: var(--ct-muted);
+  font-size: var(--ct-text-body-sm);
+  font-weight: var(--ct-weight-label);
+  font-variant-numeric: tabular-nums;
+}
+
+.ocorrencia-dados li {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ocorrencia-dados .ct-icone {
+  flex: none;
+}
+
+.ocorrencia-dados .pico.atencao {
+  color: var(--ct-atencao);
+}
+
+.ocorrencia-dados .pico.critico {
+  color: var(--ct-critico);
+}
+
+
+/* Mini gráfico da ocorrência */
+.mini-grafico {
+  padding: 12px var(--ct-space-3);
+  border: 1px solid var(--ct-border);
+  border-radius: var(--ct-radius-control);
+  background: var(--ct-subtle);
+}
+
+.mini-grafico figcaption {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--ct-space-3);
+  margin-bottom: var(--ct-space-2);
+  color: var(--ct-muted);
+  font-size: var(--ct-text-label);
+  font-weight: var(--ct-weight-label);
+  font-variant-numeric: tabular-nums;
+}
+
+.mini-grafico figcaption .atencao {
+  color: var(--ct-atencao);
+}
+
+.mini-grafico figcaption .critico {
+  color: var(--ct-critico);
+}
+
+.mini-grafico svg {
+  display: block;
+  width: 100%;
+  height: 96px;
+  overflow: visible;
+}
+
+.mini-limite {
+  stroke: var(--ct-muted);
+  stroke-width: 1.5;
+  stroke-dasharray: 6 5;
+}
+
+.mini-linha {
+  fill: none;
+  stroke: var(--ct-offline);
+  stroke-width: 2.5;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.mini-linha.atencao {
+  stroke: var(--ct-atencao);
+}
+
+.mini-linha.critico {
+  stroke: var(--ct-critico);
+}
+
+
+/* Estado vazio: uma frase, ícone de confirmação */
+.estado-vazio {
+  display: grid;
+  justify-items: center;
+  gap: var(--ct-space-1);
+  padding: var(--ct-space-5) 0;
+  font-size: var(--ct-text-body-sm);
+  font-weight: var(--ct-weight-label);
+}
+
+.estado-icone {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  margin-bottom: var(--ct-space-2);
+  border: 1px solid var(--ct-border);
+  border-radius: var(--ct-radius-pill);
+  background: var(--ct-normal-bg);
+  color: var(--ct-normal);
+}
+
+.estado-vazio strong {
+  margin-bottom: 0;
+  font-size: var(--ct-text-body);
+}
+
+.nota-rodape {
+  color: var(--ct-muted);
+  font-size: var(--ct-text-label);
+  font-weight: var(--ct-weight-label);
+  text-align: center;
+}
+
+
+@media (max-width: 720px) {
+
+  .tela-alertas .filtro {
+    display: flex;
+  }
+
+  .tela-alertas .filtro button {
+    flex: 1;
+    min-height: var(--ct-touch);
+  }
+
+  .tela-alertas .acoes > .filtro {
+    width: 100%;
+  }
+
+  /* No celular só cabem dois tiles por linha (protótipo). */
+  .tela-alertas .resumo {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .tela-alertas .resumo .card {
+    padding: var(--ct-space-3);
+  }
+
+  .tela-alertas .resumo .card strong {
+    font-size: 34px;
+  }
+
+  .ocorrencias.panel {
+    padding: 20px var(--ct-space-3);
+  }
+
+  .linha-tempo-dia ol {
+    padding-left: var(--ct-space-4);
+  }
+
+  .linha-tempo-dia ol::before {
+    left: 5px;
+  }
+
+  .ocorrencia-ponto {
+    left: calc(-1 * var(--ct-space-4) - 1px);
+  }
+
+  .ocorrencia-cartao {
+    padding: 14px;
+  }
+
+}
