@@ -4,6 +4,8 @@ import { entrarComo, expect, simularApi, test } from "./apoio.js";
 // navegador (navigator.serial simulado): a "placa" responde ao protocolo
 // CT< / CT> do firmware. Nada sai para a API de escrita: o sensor já é da
 // empresa (troca só a rede, comando "wifi").
+// Cenário "reinicia" (window.__cenarioPlaca): abrir a porta reinicia a placa,
+// que manda o log de boot, ignora comandos e só fica pronta segundos depois.
 
 test.beforeEach(async ({ page }) => {
 
@@ -18,10 +20,14 @@ test.beforeEach(async ({ page }) => {
     let resto = "";
 
     window.__comandosPlaca = [];
+    window.__comandosPerdidos = [];
+    window.__sinaisPlaca = [];
+    let aceita = true;
+    let scansRecusados = 0;
 
     const respostas = {
       info: () => ({ id: "esp32-teste-01", chip: "esp32-teste-01", configurado: true, ssid: "Casa", wifi: true, fw: "2026.11.16.2" }),
-      redes: () => ({
+      redes: () => window.__cenarioPlaca === "reinicia" && scansRecusados++ === 0 ? { ok: false, erro: "scan_falhou" } : ({
         ok: true,
         redes: [
           { ssid: "Senac-Visitantes", rssi: -84, canal: 11, seguranca: "wpa2" },
@@ -48,13 +54,30 @@ test.beforeEach(async ({ page }) => {
               continue;
             }
             const comando = JSON.parse(linha.slice(3));
+            if (!aceita) {
+              window.__comandosPerdidos.push(comando);   // placa no meio do boot
+              continue;
+            }
             window.__comandosPlaca.push(comando);
             const responder = respostas[comando.cmd];
             setTimeout(() => placa(responder ? responder() : { ok: false, erro: "comando_desconhecido" }), 50);
           }
         }
       }),
-      async open() {},
+      async open() {
+        if (window.__cenarioPlaca !== "reinicia") {
+          return;
+        }
+        aceita = false;
+        setTimeout(() => controle.enqueue(codificador.encode("ESP-ROM:esp32c3-api1-20210207\r\nrst:0x15 (USB_UART_CHIP_RESET)\r\nConectando ao Wi-Fi Casa....\r\n")), 100);
+        setTimeout(() => {
+          aceita = true;
+          controle.enqueue(codificador.encode('Sistema iniciado.\r\nCT>{"pronto":true,"fw":"2026.11.16.3"}\r\n'));
+        }, 3000);
+      },
+      async setSignals(sinais) {
+        window.__sinaisPlaca.push(sinais);
+      },
       async close() {}
     };
 
@@ -107,5 +130,37 @@ test("QA-SENSORES cabo: lista as redes que o sensor enxerga e explica a falha co
   expect(comandos.map(c => c.cmd)).toEqual(["info", "redes", "wifi"]);
   expect(comandos[1]).toEqual({ cmd: "redes" });
   expect(comandos[2]).toEqual({ cmd: "wifi", ssid: "Senac-Visitantes", senha: "senha-da-rede" });
+
+});
+
+
+test("QA-SENSORES cabo: placa que reinicia ao abrir a porta só recebe comando depois de pronta", async ({ page }) => {
+
+  await page.addInitScript(() => {
+    window.__cenarioPlaca = "reinicia";
+  });
+
+  await page.goto("/sensores");
+
+  await page.getByRole("button", { name: "Conectar sensor pelo cabo" }).click();
+  await expect(page.getByText("Esperando o sensor ficar pronto")).toBeVisible();
+  await expect(page.locator("#formCabo")).toBeVisible({ timeout: 15000 });
+
+  // Scan recusado uma vez (rádio ocupado): o painel repete e mostra a lista.
+  await page.getByRole("button", { name: "Ver redes que o sensor enxerga" }).click();
+  await expect(page.locator("#tabelaRedes tbody tr")).toHaveCount(2);
+
+  const { comandos, perdidos, sinais } = await page.evaluate(() => ({
+    comandos: window.__comandosPlaca,
+    perdidos: window.__comandosPerdidos,
+    sinais: window.__sinaisPlaca
+  }));
+
+  // RTS solto antes do DTR, para nunca passar pelo estado que reinicia o ESP32-C3.
+  expect(sinais).toEqual([{ requestToSend: false }, { dataTerminalReady: false }]);
+  // Durante o boot só sai "info"; nada de rede ou configuração.
+  expect(perdidos.length).toBeGreaterThan(0);
+  expect(perdidos.every(c => c.cmd === "info")).toBe(true);
+  expect(comandos.map(c => c.cmd)).toEqual(["info", "redes", "redes"]);
 
 });

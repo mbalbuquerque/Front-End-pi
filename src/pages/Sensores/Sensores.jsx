@@ -250,7 +250,7 @@ export default function Sensores() {
     if (!infoPlaca.current) {
       await encerrarCabo();
       mostrarInicioCabo({
-        texto: "O sensor não respondeu. Confira se ele está com o firmware ColdTrack atualizado.",
+        texto: "O sensor não respondeu em 20 s. Confira se ele está com o firmware ColdTrack atualizado.",
         ajuda: "porta"
       });
       return;
@@ -685,7 +685,11 @@ function PainelCabo({ cabo, abrirAjuda, aoConectar, aoEnviar, aoCancelar, aoVerR
   }
 
   if (cabo.etapa === "conversando") {
-    return <div className="estado">Conversando com o sensor…</div>;
+    return (
+      <div className="estado" role="status">
+        Esperando o sensor ficar pronto… Ao abrir a porta o sensor pode reiniciar; isso leva até 20 s.
+      </div>
+    );
   }
 
   if (cabo.etapa === "registrando") {
