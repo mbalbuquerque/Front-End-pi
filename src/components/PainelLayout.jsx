@@ -17,6 +17,7 @@ import { NavLink } from "react-router-dom";
 import { useOnline } from "../lib/conectividade.js";
 import { useSessao } from "../hooks/useSessao.jsx";
 import { useTitulo } from "../hooks/useTitulo.js";
+import { nomeDoPerfil } from "../lib/sessao.js";
 import { PAGINAS_PAINEL } from "../rotas.js";
 import FaixaOffline from "./FaixaOffline.jsx";
 import AssistentePainel from "./AssistentePainel/AssistentePainel.jsx";
@@ -79,7 +80,7 @@ export default function PainelLayout({
         <div className="sidebar-footer">
           <div className="usuario-menu">
             <strong>{usuario?.nome || ""}</strong>
-            <span>{usuario?.perfil === "gestor" ? "Gestor" : "Operador logístico"}</span>
+            <span>{nomeDoPerfil(usuario?.perfil)}</span>
             <span>{usuario?.empresa || ""}</span>
           </div>
           <button type="button" className="sair" id="botaoSair" onClick={sair}>Sair</button>

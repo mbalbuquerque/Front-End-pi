@@ -10,7 +10,7 @@ import { useSessao } from "../../hooks/useSessao.jsx";
 import { api } from "../../lib/api.js";
 import { UPDATE_INTERVAL } from "../../lib/config.js";
 import { carregarPerfis, descreverCritico, descreverNormal, faixaDoPerfil } from "../../lib/faixas.js";
-import { ehGestor } from "../../lib/sessao.js";
+import { ehGestor, nomeDoPerfil } from "../../lib/sessao.js";
 import AlertasCelular from "./AlertasCelular.jsx";
 
 
@@ -26,6 +26,9 @@ export default function Configuracoes() {
 
   // Id do usuário cuja senha o gestor está redefinindo (abre o diálogo).
   const [redefinindo, setRedefinindo] = useState(null);
+
+  // Motorista cujo veículo o gestor está trocando: { id, atual, veiculos, aoTrocar }.
+  const [trocandoVeiculo, setTrocandoVeiculo] = useState(null);
 
   // Carrega uma vez ao abrir a tela, como o original (sem atualização periódica).
   useEffect(() => {
@@ -72,9 +75,14 @@ export default function Configuracoes() {
       titulo="Configurações"
       subtitulo="Sua conta, faixas de temperatura, sensores e usuários"
       conexao={conexao}
-      dialogos={redefinindo && (
-        <DialogoRedefinir key={redefinindo} id={redefinindo} aoFechar={() => setRedefinindo(null)} />
-      )}
+      dialogos={<>
+        {redefinindo && (
+          <DialogoRedefinir key={redefinindo} id={redefinindo} aoFechar={() => setRedefinindo(null)} />
+        )}
+        {trocandoVeiculo && (
+          <DialogoVeiculo key={trocandoVeiculo.id} {...trocandoVeiculo} aoFechar={() => setTrocandoVeiculo(null)} />
+        )}
+      </>}
     >
       <div id="conteudo" className="page-grid">
         {!dados ? <Carregando /> : (
@@ -83,7 +91,9 @@ export default function Configuracoes() {
             <AlertasCelular />
             <FaixasTemperatura perfis={dados.perfis} conectado={dados.conectado} />
             <SensoresComunicacao dispositivos={dados.dispositivos} conectado={dados.conectado} />
-            {gestor && <PainelUsuarios eu={usuario?.id} aoRedefinir={setRedefinindo} />}
+            {gestor && (
+              <PainelUsuarios eu={usuario?.id} aoRedefinir={setRedefinindo} aoTrocarVeiculo={setTrocandoVeiculo} />
+            )}
             <FonteDados />
           </>
         )}
@@ -256,11 +266,28 @@ function FonteDados() {
 
 
 // Só para o gestor: lista, cria, redefine senha e remove usuários da empresa.
-function PainelUsuarios({ eu, aoRedefinir }) {
+// O motorista fica vinculado a um veículo da frota (escolhido na criação e
+// trocado depois pelo botão "Trocar veículo").
+function PainelUsuarios({ eu, aoRedefinir, aoTrocarVeiculo }) {
 
   // { tipo: "carregando" } | { tipo: "erro", mensagem } | { tipo: "ok", usuarios }
   const [estado, setEstado] = useState({ tipo: "carregando" });
   const [erroForm, setErroForm] = useState(null);
+  const [perfilNovo, setPerfilNovo] = useState("operador");
+  const [veiculos, setVeiculos] = useState([]);
+
+  // Frota para o vínculo do motorista. Sem ela, a lista fica vazia e a API recusa.
+  useEffect(() => {
+    let ativo = true;
+    api("/veiculos")
+      .then(({ veiculos: frota }) => {
+        if (ativo) setVeiculos(frota.map(v => v.id).sort());
+      })
+      .catch(() => {});
+    return () => {
+      ativo = false;
+    };
+  }, []);
 
   const carregarUsuarios = useCallback(async () => {
 
@@ -291,6 +318,7 @@ function PainelUsuarios({ eu, aoRedefinir }) {
       await api("/usuarios", { metodo: "POST", corpo: Object.fromEntries(new FormData(form)) });
       // O original remontava o painel inteiro: o formulário volta vazio.
       form.reset();
+      setPerfilNovo("operador");
       carregarUsuarios();
     } catch (falha) {
       setErroForm(falha.message);
@@ -334,7 +362,7 @@ function PainelUsuarios({ eu, aoRedefinir }) {
   return (
     <article className="panel" id="painelUsuarios">
       <h2>Usuários</h2>
-      <p>Quem acessa o painel. Operador acompanha a carga; gestor também cadastra sensores, veículos, viagens e usuários.</p>
+      <p>Quem acessa o painel. Operador acompanha a carga; gestor também cadastra sensores, veículos, viagens e usuários. Motorista só vê, no celular, a temperatura do veículo vinculado a ele.</p>
 
       <div className="tabela-wrap">
         <table className="tabela">
@@ -344,9 +372,17 @@ function PainelUsuarios({ eu, aoRedefinir }) {
               <tr key={u.id}>
                 <td><strong>{u.nome}</strong></td>
                 <td>{u.id}</td>
-                <td>{u.perfil === "gestor" ? "Gestor" : "Operador logístico"}</td>
+                <td>{nomeDoPerfil(u.perfil)}{u.perfil === "motorista" && ` · ${u.veiculo || "sem veículo"}`}</td>
                 <td className="acoes-tabela">{u.id === eu ? "você" : (
                   <>
+                    {u.perfil === "motorista" && (
+                      <button
+                        type="button"
+                        className="botao secundario"
+                        data-trocar-veiculo={u.id}
+                        onClick={() => aoTrocarVeiculo({ id: u.id, atual: u.veiculo, veiculos, aoTrocar: carregarUsuarios })}
+                      >Trocar veículo</button>
+                    )}
                     <button type="button" className="botao secundario" data-redefinir={u.id} onClick={() => aoRedefinir(u.id)}>Redefinir senha</button>
                     <button type="button" className="botao perigo" data-remover-usuario={u.id} onClick={() => removerUsuario(u.id)}>Remover</button>
                   </>
@@ -361,11 +397,17 @@ function PainelUsuarios({ eu, aoRedefinir }) {
         <label className="campo"><span>Nome</span><input name="nome" required /></label>
         <label className="campo"><span>E-mail</span><input name="email" type="email" required /></label>
         <label className="campo"><span>Perfil</span>
-          <select name="perfil">
+          <select name="perfil" value={perfilNovo} onChange={evento => setPerfilNovo(evento.target.value)}>
             <option value="operador">Operador logístico</option>
             <option value="gestor">Gestor</option>
+            <option value="motorista">Motorista</option>
           </select>
         </label>
+        {perfilNovo === "motorista" && (
+          <label className="campo"><span>Veículo do motorista</span>
+            <SeletorFrota veiculos={veiculos} />
+          </label>
+        )}
         <label className="campo"><span>Senha inicial (mín. 8)</span><input name="senha" type="password" autoComplete="new-password" required /></label>
         <button type="submit" className="botao">Criar usuário</button>
       </form>
@@ -414,6 +456,64 @@ function DialogoRedefinir({ id, aoFechar }) {
         <p className="erro-form" role="alert" hidden={erro === null}>{erro}</p>
         <div className="acoes-item">
           <button type="submit" className="botao">Redefinir senha</button>
+          <button type="button" className="botao secundario" data-fechar="" onClick={() => dialogo.current.close()}>Cancelar</button>
+        </div>
+      </form>
+    </dialog>
+  );
+
+}
+
+
+// Lista da frota para o vínculo do motorista (obrigatório nesse perfil).
+function SeletorFrota({ veiculos, atual = "" }) {
+
+  return (
+    <select name="veiculo" defaultValue={atual} required>
+      <option value="" disabled>{veiculos.length ? "Escolha o veículo" : "Nenhum veículo cadastrado"}</option>
+      {veiculos.map(id => <option key={id} value={id}>{id}</option>)}
+    </select>
+  );
+
+}
+
+
+// Gestor troca o veículo vinculado a um motorista (a senha e as sessões ficam como estão).
+function DialogoVeiculo({ id, atual, veiculos, aoTrocar, aoFechar }) {
+
+  const dialogo = useRef(null);
+  const [erro, setErro] = useState(null);
+
+  useEffect(() => {
+    if (!dialogo.current.open) dialogo.current.showModal();
+  }, []);
+
+  async function trocar(evento) {
+
+    evento.preventDefault();
+
+    const veiculo = new FormData(evento.currentTarget).get("veiculo");
+    setErro(null);
+
+    try {
+      await api(`/usuarios/${encodeURIComponent(id)}`, { metodo: "PUT", corpo: { veiculo } });
+      dialogo.current.close();
+      aoTrocar();
+    } catch (falha) {
+      setErro(falha.message);
+    }
+
+  }
+
+  return (
+    <dialog id="trocarVeiculo" className="etiqueta" ref={dialogo} onClose={aoFechar}>
+      <form className="dialogo-form" noValidate onSubmit={trocar}>
+        <h2>Trocar veículo</h2>
+        <p>{id} passa a ver, no celular, a temperatura do veículo escolhido.</p>
+        <label className="campo"><span>Veículo</span><SeletorFrota veiculos={veiculos} atual={atual || ""} /></label>
+        <p className="erro-form" role="alert" hidden={erro === null}>{erro}</p>
+        <div className="acoes-item">
+          <button type="submit" className="botao">Trocar veículo</button>
           <button type="button" className="botao secundario" data-fechar="" onClick={() => dialogo.current.close()}>Cancelar</button>
         </div>
       </form>

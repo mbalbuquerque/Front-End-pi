@@ -62,3 +62,27 @@ export function ehGestor(usuario = usuarioAtual()) {
   return usuario?.perfil === "gestor";
 
 }
+
+
+// Motorista: perfil que só vê a tela /motorista, com o veículo vinculado à conta.
+export function ehMotorista(usuario = usuarioAtual()) {
+
+  return usuario?.perfil === "motorista";
+
+}
+
+
+// Para onde o usuário vai depois do login (e quando cai numa rota que não é dele).
+export function rotaInicial(usuario = usuarioAtual()) {
+
+  return ehMotorista(usuario) ? "/motorista" : "/dashboard";
+
+}
+
+
+// Nome do perfil para a tela.
+export function nomeDoPerfil(perfil) {
+
+  return { gestor: "Gestor", motorista: "Motorista" }[perfil] || "Operador logístico";
+
+}

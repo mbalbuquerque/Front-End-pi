@@ -8,14 +8,17 @@ import Login from "./Login.jsx";
 
 const sessao = vi.hoisted(() => ({ usuario: null, entrar: vi.fn() }));
 const api = vi.hoisted(() => ({ postPublico: vi.fn() }));
-const armazenada = vi.hoisted(() => ({ lerSessao: vi.fn() }));
+const armazenada = vi.hoisted(() => ({
+  lerSessao: vi.fn(),
+  rotaInicial: usuario => (usuario?.perfil === "motorista" ? "/motorista" : "/dashboard")
+}));
 
 vi.mock("../../hooks/useSessao.jsx", () => ({ useSessao: () => sessao }));
 vi.mock("../../lib/api.js", () => api);
 vi.mock("../../lib/sessao.js", () => armazenada);
 
 function abrir() {
-  return renderizarNaRota(<Login />, "/login", ["/dashboard", "/cadastro"]);
+  return renderizarNaRota(<Login />, "/login", ["/dashboard", "/motorista", "/cadastro"]);
 }
 
 beforeEach(() => {
@@ -81,6 +84,23 @@ describe("Login", () => {
     await waitFor(() => expect(screen.getByText("destino /dashboard")).toBeInTheDocument());
     expect(api.postPublico).toHaveBeenCalledWith("/login", { email: "ana@empresa.com", senha: "segredo123" });
     expect(sessao.entrar).toHaveBeenCalledWith("t", usuario);
+  });
+
+  it("login de motorista: vai direto para a tela do motorista", async () => {
+    const usuario = { id: "moto@empresa.com", perfil: "motorista", veiculo: "CT-001" };
+    api.postPublico.mockResolvedValue({ ok: true, dados: { token: "t", usuario } });
+    abrir();
+    await userEvent.type(screen.getByLabelText("E-mail"), "moto@empresa.com");
+    await userEvent.type(screen.getByLabelText("Senha"), "segredo123");
+    await userEvent.click(screen.getByRole("button", { name: /Entrar/ }));
+    await waitFor(() => expect(screen.getByText("destino /motorista")).toBeInTheDocument());
+  });
+
+  it("motorista já logado: vai direto para /motorista", () => {
+    sessao.usuario = { id: "moto@empresa.com", perfil: "motorista" };
+    armazenada.lerSessao.mockReturnValue({ token: "t" });
+    abrir();
+    expect(screen.getByText("destino /motorista")).toBeInTheDocument();
   });
 
   it("mostrar/ocultar senha alterna o tipo do campo", async () => {
