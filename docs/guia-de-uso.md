@@ -8,9 +8,9 @@ Como usar este guia: procure a seção da tela que você está usando (Dashboard
 
 O painel atualiza as telas sozinho a cada 20 segundos. Não é preciso recarregar a página.
 
-## Perfis: gestor e operador
+## Perfis: gestor, operador e motorista
 
-Existem dois perfis. O perfil aparece no menu lateral, abaixo do seu nome: **Gestor** ou **Operador logístico**.
+Existem três perfis. No painel, o perfil aparece no menu lateral, abaixo do seu nome: **Gestor** ou **Operador logístico**. O **Motorista** não usa o painel: ele tem uma tela própria no celular (veja a seção Tela do motorista).
 
 **Operador logístico** acompanha a carga. Pode:
 - ver Dashboard, Veículos, Sensores, Viagens, Alertas, Relatórios e Configurações;
@@ -22,7 +22,9 @@ Existem dois perfis. O perfil aparece no menu lateral, abaixo do seu nome: **Ges
 - **Veículos**: cadastrar (**Cadastrar veículo**) e remover (**Remover veículo**).
 - **Sensores**: conectar sensor pelo cabo USB (**Conectar sensor pelo cabo**), **Registrar sem cabo**, **Gerar nova chave** e **Remover**.
 - **Viagens**: **Registrar viagem**, **Encerrar viagem** e **Remover**.
-- **Configurações**: painel **Usuários** (criar usuário, **Redefinir senha**, **Remover**).
+- **Configurações**: painel **Usuários** (criar usuário, **Redefinir senha**, **Trocar veículo** do motorista, **Remover**).
+
+**Motorista** só vê, no celular, a carga do veículo vinculado à conta dele. Não cadastra nada e não entra nas outras telas: qualquer endereço do painel o leva de volta à tela do motorista.
 
 Para o operador, esses controles simplesmente não aparecem. Se algo estiver faltando na sua tela, peça ao gestor da sua empresa.
 
@@ -33,7 +35,7 @@ Para o operador, esses controles simplesmente não aparecem. Se algo estiver fal
 **Entrar.**
 1. Abra a tela de login.
 2. Digite o **E-mail** e a **Senha**. O botão **Mostrar** exibe a senha digitada; **Ocultar** volta a esconder.
-3. Clique em **Entrar**. Você chega ao Dashboard.
+3. Clique em **Entrar**. Você chega ao Dashboard (o motorista chega à tela do motorista).
 
 Mensagens possíveis: "Informe um e-mail válido.", "Informe sua senha." e "Sem conexão com o servidor. Confira a internet e tente de novo."
 
@@ -264,7 +266,8 @@ Tocar na notificação abre a tela **Alertas** do veículo daquele sensor. Notif
 **Fonte de dados.** De onde o painel lê a telemetria, a frequência de atualização (a cada 20 s) e o aviso de que cada empresa vê só os próprios dados.
 
 **Usuários (somente gestor).** Lista nome, e-mail e perfil de quem acessa a empresa.
-- **Criar usuário**: preencha **Nome**, **E-mail**, **Perfil** (**Operador logístico** ou **Gestor**) e **Senha inicial (mín. 8)** e clique em **Criar usuário**.
+- **Criar usuário**: preencha **Nome**, **E-mail**, **Perfil** (**Operador logístico**, **Gestor** ou **Motorista**) e **Senha inicial (mín. 8)** e clique em **Criar usuário**. No perfil **Motorista** aparece o campo **Veículo do motorista**, obrigatório: escolha o veículo da frota que ele vai acompanhar.
+- **Trocar veículo** (só na linha de um motorista): abre uma janela para escolher outro veículo da frota. A senha e as sessões do motorista continuam as mesmas. Na lista, o perfil aparece como "Motorista · CT-001".
 - **Redefinir senha**: abre uma janela para definir uma **Nova senha (mín. 8)**. A pessoa sai de todos os aparelhos e entra com a senha nova. Use quando alguém esquecer a senha.
 - **Remover**: retira o acesso da pessoa, após confirmação.
 - Na sua própria linha aparece "você", sem botões.
@@ -316,6 +319,30 @@ O que fazer, em ordem:
 6. Aguarde até 20 s para a primeira leitura aparecer depois de ligar.
 
 Boa notícia: enquanto o sensor está sem sinal, ele guarda as leituras na memória (até 500) e as envia quando a conexão volta. Por isso o gráfico e os relatórios usam o horário em que a leitura foi medida, e não o de chegada.
+
+## Tela do motorista
+
+Tela do celular para quem está dirigindo, feita para bater o olho com o celular no suporte. Somente leitura: não tem campo para digitar e nada precisa de toque enquanto o caminhão anda.
+
+**Como abrir.**
+1. O gestor cria o usuário com perfil **Motorista** e escolhe o veículo (veja Configurações → Usuários).
+2. O motorista entra com o e-mail e a senha dele, no navegador do celular. Depois do login ele vai direto para a tela do motorista (endereço `/motorista`).
+3. Para abrir mais rápido, adicione o ColdTrack à tela de início do celular. Com o ícone instalado, segurar o dedo nele mostra o atalho **Motorista**.
+
+**O que a tela mostra.**
+- O status da carga em texto e em cor: **NORMAL** (verde), **ATENÇÃO** (amarelo), **CRÍTICO** (vermelho) ou **SEM SINAL** (cinza), com uma frase do que fazer.
+- A temperatura atual em número grande.
+- A faixa da carga (por exemplo, "Manga: de 10 a 13 °C"), a hora da última leitura ("às 21:30 · há 1 min") e a umidade.
+- A viagem em curso (origem → destino e carga), ou "Nenhuma viagem em curso.".
+- No rodapé, o aviso fixo "Use com o celular no suporte." e se a tela está sendo mantida acesa.
+
+A tela atualiza sozinha a cada 20 s e fica acesa enquanto está aberta (nos navegadores que permitem). Sem leitura há mais de 5 min, o status vira **SEM SINAL** e o último valor ganha o selo **LEITURA ANTIGA**.
+
+**Alertas.** Antes de sair, toque uma vez em **Ativar alertas (som e notificação)** e permita as notificações: o navegador só deixa tocar som depois de um toque na página. Quando a carga piora (de Normal para Atenção, ou para Crítico), o celular vibra, toca um bipe curto e mostra uma notificação. Um aviso fica no topo da tela até a carga voltar ao Normal; se o sensor ficar sem sinal nesse meio-tempo, o aviso continua. O alerta não se repete a cada atualização enquanto a carga segue fora da faixa. Esses alertas funcionam com a tela do motorista aberta (mesmo com outro aplicativo, como o mapa, na frente); os alertas push com o painel fechado são do operador e do gestor (veja Configurações).
+
+**Sem internet.** Aparece a faixa vermelha "Sem conexão — última leitura às HH:MM" e o último valor continua na tela, com o selo **LEITURA ANTIGA**. Se a internet funciona mas o servidor não responde, a faixa diz "Sem resposta do servidor". Tudo volta sozinho quando a conexão volta.
+
+**Nenhum veículo vinculado.** Se a tela disser "Nenhum veículo vinculado a você.", peça ao gestor para escolher o seu veículo em Configurações → Usuários.
 
 ## Assistente do painel
 
