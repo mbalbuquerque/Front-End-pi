@@ -172,11 +172,12 @@ pull request; when an e2e test fails, the report is attached to the run.
 
 ## 6. Deployment
 
-Branch flow: the work happens on **`everson`**; when a stage is ready, a pull request
-`everson` -> `main` is opened. **`everson` must not be deleted** (not even after the merge):
-deployment and the OIDC login to Azure depend on it.
+Branch flow: the work happens on branches created from **`main`**, merged through pull requests
+with green tests. `everson` stays as a fallback (the OIDC login to Azure still accepts it) and must
+not be deleted. Protecting `main` needs a repository administrator; the command is in
+[`CONTRIBUTING.md`](CONTRIBUTING.md).
 
-Every push to the **`everson`** branch triggers `.github/workflows/publicar-site.yml`:
+Every push to the **`main`** branch triggers `.github/workflows/publicar-site.yml`:
 
 1. `npm ci`, `npm run lint`, `npm test`, `npm run build` (stops if any fails);
 2. Azure login through OIDC (`azure/login`, no password stored in the repository);

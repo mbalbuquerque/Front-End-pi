@@ -7,21 +7,37 @@ Guia de trabalho do Front-End do ColdTrack Control. O contrato técnico (estrutu
 
 | Branch | Papel |
 |---|---|
-| `everson` | branch de trabalho; cada push publica o site no Azure (`publicar-site.yml`) |
-| `main` | versão consolidada; recebe a `everson` por pull request quando uma etapa fica pronta |
+| `main` | branch oficial; cada push publica o site no Azure (`publicar-site.yml`) |
+| `everson` | antiga branch de publicação, mantida como reserva; não publica mais depois de receber a `main` |
 
 Fluxo:
 
-1. Atualize a `everson` antes de começar: `git switch everson && git pull`.
-2. Mudança grande ou em paralelo com outra pessoa: crie uma branch a partir da `everson`
-   (`git switch -c <nome>/<assunto>`) e abra um pull request para a `everson`.
-3. Quando a etapa estiver pronta, abra o pull request `everson` -> `main`. O workflow `testes.yml`
-   roda em todo pull request e precisa estar verde para o merge. Depois do merge, traga a `main`
-   de volta para a `everson` (`git switch everson && git merge main`).
-4. **Nunca apague a `everson`** (nem use "apagar branch após o merge"): o deploy do site e o login
-   do GitHub Actions no Azure (OIDC) só aceitam essa branch.
+1. Atualize a `main` antes de começar: `git switch main && git pull`.
+2. Crie uma branch a partir da `main` (`git switch -c <tipo>/<assunto>`) e abra um pull request
+   para a `main`. O workflow `testes.yml` roda em todo pull request e precisa estar verde para o
+   merge.
+3. **Não apague a `everson`**: o login do GitHub Actions no Azure (OIDC) ainda aceita essa branch,
+   e ela é o caminho de volta se a publicação pela `main` falhar. Até a `main` ser trazida para a
+   `everson`, a cópia antiga do workflow que está nela ainda publica a cada push.
 
-Lembre que push na `everson` publica o site: só envie o que passou nas verificações abaixo.
+Lembre que o merge na `main` publica o site: só envie o que passou nas verificações abaixo.
+
+### Proteção da `main`
+
+A `main` deve exigir pull request e o `testes.yml` verde antes do merge. Só um administrador do
+repositório consegue ligar isso (para quem tem só permissão de escrita a API responde 404).
+Comando, rodado por um administrador:
+
+```bash
+gh api -X PUT repos/mbalbuquerque/Front-End-pi/branches/main/protection --input - <<'EOF'
+{"required_status_checks":{"strict":true,"contexts":["Lint, testes, build e e2e"]},
+ "enforce_admins":false,
+ "required_pull_request_reviews":{"required_approving_review_count":0},
+ "restrictions":null}
+EOF
+```
+
+O nome em `contexts` é o do job do `testes.yml`; se ele for renomeado, a lista precisa acompanhar.
 A API e o firmware estão no repositório
 [projeto-integrador-4-periodo](https://github.com/mbalbuquerque/projeto-integrador-4-periodo), com fluxo igual.
 

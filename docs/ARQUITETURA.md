@@ -322,7 +322,7 @@ export default function Relatorios() {
   (etiquetas QR impressas) responde 200 no Azure Storage e o React Router redireciona para
   `/dashboard?veiculo=X`. Rota limpa (`/dashboard`) chega pelo documento 404 (= `index.html`).
 - O site publicado é o conteúdo de `dist/` no container `$web` da conta `stcoldtrackweb7319`
-  (grupo `rg-coldtrack`). O workflow `publicar-site.yml` (push na `everson`) e o `publicar.sh`
+  (grupo `rg-coldtrack`). O workflow `publicar-site.yml` (push na `main`) e o `publicar.sh`
   (máquina local) rodam lint, testes e build e chamam `scripts/enviar-site.sh dist`, que:
   - envia `dist/assets/*` (nomes com hash) com `Cache-Control: public, max-age=31536000, immutable`;
   - envia o resto (`index.html`, cópias `*.html`, `sw.js`, `manifest.json`, `assets/icons/`) com
