@@ -12,6 +12,7 @@ import { UPDATE_INTERVAL } from "../../lib/config.js";
 import { carregarPerfis, descreverCritico, descreverNormal, faixaDoPerfil } from "../../lib/faixas.js";
 import { ehGestor, nomeDoPerfil } from "../../lib/sessao.js";
 import AlertasCelular from "./AlertasCelular.jsx";
+import ExcluirEmpresa from "./ExcluirEmpresa.jsx";
 
 
 export default function Configuracoes() {
@@ -95,6 +96,7 @@ export default function Configuracoes() {
               <PainelUsuarios eu={usuario?.id} aoRedefinir={setRedefinindo} aoTrocarVeiculo={setTrocandoVeiculo} />
             )}
             <FonteDados />
+            {gestor && <ExcluirEmpresa />}
           </>
         )}
       </div>

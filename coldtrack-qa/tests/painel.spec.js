@@ -17,7 +17,7 @@ const TELAS = [
 const SO_GESTOR = {
   "/veiculos": ["#painelNovo", "#formVeiculo"],
   "/sensores": ["#painelCabo", "#formSensor"],
-  "/configuracoes": ["#painelUsuarios", "#formUsuario"]
+  "/configuracoes": ["#painelUsuarios", "#formUsuario", "#excluirEmpresa"]
 };
 
 

@@ -30,20 +30,29 @@ export function AuthProvider({ children }) {
     navigate("/login");
   }, [navigate]);
 
+  // Conta apagada: n�o h� o que avisar ao servidor. Limpa tudo daqui e vai ao
+  // login com um aviso (o Login mostra location.state.aviso).
+  const encerrarLocal = useCallback(aviso => {
+    limparSessao();
+    esquecerRecepcao();
+    setUsuario(null);
+    navigate("/login", { state: { aviso } });
+  }, [navigate]);
+
   // 401 em api(): a sessão já foi limpa lá; aqui só zera o estado e vai ao login.
   useEffect(() => definirAoExpirar(() => {
     setUsuario(null);
     navigate("/login");
   }), [navigate]);
 
-  const valor = useMemo(() => ({ usuario, entrar, sair }), [usuario, entrar, sair]);
+  const valor = useMemo(() => ({ usuario, entrar, sair, encerrarLocal }), [usuario, entrar, sair, encerrarLocal]);
 
   return <SessaoContexto.Provider value={valor}>{children}</SessaoContexto.Provider>;
 
 }
 
 
-// { usuario, entrar(token, usuario), sair() }. usuario é null sem login.
+// { usuario, entrar(token, usuario), sair(), encerrarLocal(aviso) }. usuario é null sem login.
 // eslint-disable-next-line react-refresh/only-export-components
 export function useSessao() {
 

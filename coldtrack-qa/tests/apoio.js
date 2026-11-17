@@ -41,7 +41,7 @@ const HORA = 3600 * 1000;
 // ---------------------------------------------------------
 
 export const USUARIOS = {
-  gestor: { id: "u-gestor", nome: "Gestora Teste", email: "gestora@teste.com", perfil: "gestor" },
+  gestor: { id: "u-gestor", nome: "Gestora Teste", email: "gestora@teste.com", perfil: "gestor", empresa: "Frio Sul" },
   operador: { id: "u-operador", nome: "Operador Teste", email: "operador@teste.com", perfil: "operador" },
   motorista: { id: "u-motorista", nome: "Motorista Teste", email: "motorista@teste.com", perfil: "motorista", veiculo: "VAN-01" }
 };
@@ -196,6 +196,10 @@ export async function simularApi(page) {
 
     if (metodo === "POST" && caminho === "/login") {
       return responder({ erros: ["e-mail ou senha incorretos. Se errou várias vezes, aguarde alguns minutos."] }, 401);
+    }
+
+    if (metodo === "DELETE" && caminho === "/empresa") {
+      return responder({ excluida: true, removidos: { empresas: 1 } });
     }
 
     if (metodo !== "GET") {

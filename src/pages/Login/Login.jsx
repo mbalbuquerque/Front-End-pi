@@ -2,7 +2,7 @@
 // Porte do site antigo: login.html + js/login.js (página de referência).
 
 import { useRef, useState } from "react";
-import { Link, Navigate, useNavigate } from "react-router-dom";
+import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
 import AcessoLayout from "../../components/AcessoLayout.jsx";
 import { useSessao } from "../../hooks/useSessao.jsx";
 import { useTitulo } from "../../hooks/useTitulo.js";
@@ -16,13 +16,14 @@ export default function Login() {
 
   const { usuario, entrar } = useSessao();
   const navigate = useNavigate();
+  const local = useLocation();
 
   const emailRef = useRef(null);
   const senhaRef = useRef(null);
 
-  const [mensagem, setMensagem] = useState("");
-  // "erro" (vermelho) ou "info" (orientação, em azul).
-  const [tipo, setTipo] = useState("erro");
+  const [mensagem, setMensagem] = useState(local.state?.aviso || "");
+  // "erro" (vermelho) ou "info" (orientação, em azul). O aviso vindo de outra tela é info.
+  const [tipo, setTipo] = useState(local.state?.aviso ? "info" : "erro");
   const [senhaVisivel, setSenhaVisivel] = useState(false);
   const [entrando, setEntrando] = useState(false);
 

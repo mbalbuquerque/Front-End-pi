@@ -15,7 +15,7 @@ function tokenValido() {
 }
 
 function Mostra() {
-  const { usuario, entrar, sair } = useSessao();
+  const { usuario, entrar, sair, encerrarLocal } = useSessao();
   const local = useLocation();
   return (
     <div>
@@ -23,6 +23,8 @@ function Mostra() {
       <p data-testid="onde">{local.pathname}</p>
       <button onClick={() => entrar(tokenValido(), { nome: "Gina", perfil: "gestor" })}>entrar</button>
       <button onClick={sair}>sair</button>
+      <button onClick={() => encerrarLocal("Conta apagada.")}>encerrar</button>
+      <p data-testid="aviso">{local.state?.aviso}</p>
     </div>
   );
 }
@@ -67,6 +69,17 @@ describe("useSessao", () => {
     localStorage.setItem(CHAVE_SESSAO, JSON.stringify({ token: "t", usuario: { nome: "Ana" }, expiraEm: Date.now() + 60000 }));
     abrir();
     expect(screen.getByTestId("quem")).toHaveTextContent("Ana");
+  });
+
+  it("encerrarLocal() limpa a sessão, não chama o servidor e leva o aviso ao login", async () => {
+    const sairNoServidor = vi.spyOn(api, "sairNoServidor").mockResolvedValue(true);
+    localStorage.setItem(CHAVE_SESSAO, JSON.stringify({ token: "tok-9", usuario: { nome: "Ana" }, expiraEm: Date.now() + 60000 }));
+    abrir();
+    await userEvent.click(screen.getByRole("button", { name: "encerrar" }));
+    expect(sairNoServidor).not.toHaveBeenCalled();
+    expect(lerSessao()).toBeNull();
+    expect(screen.getByTestId("onde")).toHaveTextContent("/login");
+    expect(screen.getByTestId("aviso")).toHaveTextContent("Conta apagada.");
   });
 
   it("sair() avisa o servidor com o token, limpa a sessão e vai ao login", async () => {
