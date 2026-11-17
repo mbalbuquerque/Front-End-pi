@@ -21,5 +21,20 @@
       "type": "image/png",
       "purpose": "any"
     }
+  ],
+  "shortcuts": [
+    {
+      "name": "Motorista",
+      "short_name": "Motorista",
+      "description": "Temperatura da carga do seu veículo",
+      "url": "/motorista",
+      "icons": [
+        {
+          "src": "/assets/icons/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    }
   ]
 }

@@ -2,9 +2,12 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   CHAVE_SESSAO,
   ehGestor,
+  ehMotorista,
   expiracaoDoToken,
   lerSessao,
   limparSessao,
+  nomeDoPerfil,
+  rotaInicial,
   salvarSessao,
   usuarioAtual
 } from "./sessao.js";
@@ -79,6 +82,21 @@ describe("sessao", () => {
     expect(ehGestor({ perfil: "gestor" })).toBe(true);
     expect(ehGestor({ perfil: "operador" })).toBe(false);
     expect(ehGestor(null)).toBe(false);
+  });
+
+  it("motorista vai para /motorista; os outros perfis para /dashboard", () => {
+    expect(ehMotorista({ perfil: "motorista" })).toBe(true);
+    expect(ehMotorista({ perfil: "gestor" })).toBe(false);
+    expect(ehMotorista()).toBe(false);
+    expect(rotaInicial({ perfil: "motorista" })).toBe("/motorista");
+    expect(rotaInicial({ perfil: "operador" })).toBe("/dashboard");
+    expect(rotaInicial()).toBe("/dashboard");
+  });
+
+  it("nomeDoPerfil", () => {
+    expect(nomeDoPerfil("gestor")).toBe("Gestor");
+    expect(nomeDoPerfil("motorista")).toBe("Motorista");
+    expect(nomeDoPerfil("operador")).toBe("Operador logístico");
   });
 
 });

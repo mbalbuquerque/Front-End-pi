@@ -6,7 +6,7 @@ import { Link, Navigate, useNavigate } from "react-router-dom";
 import { useSessao } from "../../hooks/useSessao.jsx";
 import { useTitulo } from "../../hooks/useTitulo.js";
 import { postPublico } from "../../lib/api.js";
-import { lerSessao } from "../../lib/sessao.js";
+import { lerSessao, rotaInicial } from "../../lib/sessao.js";
 import "../../styles/login/login.css";
 
 
@@ -24,9 +24,9 @@ export default function Login() {
   const [senhaVisivel, setSenhaVisivel] = useState(false);
   const [entrando, setEntrando] = useState(false);
 
-  // Já logado: vai direto ao painel.
+  // Já logado: vai direto ao painel (o motorista, à tela dele).
   if (usuario && lerSessao()) {
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to={rotaInicial(usuario)} replace />;
   }
 
   function esqueciSenha(evento) {
@@ -70,7 +70,7 @@ export default function Login() {
       }
 
       entrar(dados.token, dados.usuario);
-      navigate("/dashboard", { replace: true });
+      navigate(rotaInicial(dados.usuario), { replace: true });
 
     }
 

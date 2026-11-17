@@ -18,7 +18,8 @@ export const ROTAS_LEGADAS = {
   auditoria: "/auditoria",
   "cadastro-usuario": "/cadastro-usuario",
   logistica: "/logistica",
-  monitoramento: "/monitoramento"
+  monitoramento: "/monitoramento",
+  motorista: "/motorista"
 };
 
 

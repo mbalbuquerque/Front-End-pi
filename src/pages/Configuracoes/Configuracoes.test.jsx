@@ -52,6 +52,7 @@ function respostas(rotas = {}) {
     }
     if (chave === "GET /dispositivos") return { dispositivos: [{ id: "a" }, { id: "b" }] };
     if (chave === "GET /usuarios") return { usuarios: USUARIOS };
+    if (chave === "GET /veiculos") return { veiculos: [{ id: "CT-002" }, { id: "CT-001" }] };
     throw new Error(`rota não simulada: ${chave}`);
   });
 }
@@ -224,6 +225,106 @@ describe("Configurações: redefinir senha de usuário", () => {
 
     await userEvent.click(within(dialogo).getByRole("button", { name: "Cancelar" }));
     expect(document.getElementById("redefinir")).toBeNull();
+  });
+
+});
+
+
+describe("Configurações: motorista vinculado a um veículo", () => {
+
+  const MOTORISTA = { id: "moto@empresa.com", nome: "Mario", perfil: "motorista", veiculo: "CT-001" };
+
+  beforeEach(() => {
+    HTMLDialogElement.prototype.showModal = function showModal() {
+      this.setAttribute("open", "");
+    };
+    HTMLDialogElement.prototype.close = function close() {
+      this.removeAttribute("open");
+      this.dispatchEvent(new Event("close"));
+    };
+  });
+
+  it("lista o motorista com o veículo", async () => {
+    respostas({ "GET /usuarios": { usuarios: [...USUARIOS, MOTORISTA, { ...MOTORISTA, id: "sem@empresa.com", nome: "Sem", veiculo: undefined }] } });
+    abrir();
+    expect(await screen.findByText("Motorista · CT-001")).toBeInTheDocument();
+    expect(screen.getByText("Motorista · sem veículo")).toBeInTheDocument();
+    expect(screen.getAllByRole("button", { name: "Trocar veículo" })).toHaveLength(2);
+  });
+
+  it("perfil Motorista pede o veículo da frota e envia junto", async () => {
+    respostas({ "POST /usuarios": {} });
+    abrir();
+    await screen.findByText("você");
+    const form = document.getElementById("formUsuario");
+    expect(within(form).queryByLabelText("Veículo do motorista")).not.toBeInTheDocument();
+
+    await userEvent.selectOptions(within(form).getByLabelText("Perfil"), "motorista");
+    const veiculo = within(form).getByLabelText("Veículo do motorista");
+    expect([...veiculo.options].map(o => o.value)).toEqual(["", "CT-001", "CT-002"]);
+    expect(veiculo).toBeRequired();
+
+    await userEvent.type(within(form).getByLabelText("Nome"), "Mario");
+    await userEvent.type(within(form).getByLabelText("E-mail"), "moto@empresa.com");
+    await userEvent.selectOptions(veiculo, "CT-002");
+    await userEvent.type(within(form).getByLabelText("Senha inicial (mín. 8)"), "senha12345");
+    await userEvent.click(within(form).getByRole("button", { name: "Criar usuário" }));
+
+    await vi.waitFor(() => expect(api.api).toHaveBeenCalledWith("/usuarios", {
+      metodo: "POST",
+      corpo: { nome: "Mario", email: "moto@empresa.com", perfil: "motorista", veiculo: "CT-002", senha: "senha12345" }
+    }));
+    // Depois de criar, o formulário volta ao perfil operador (sem o campo do veículo).
+    await vi.waitFor(() => expect(within(form).queryByLabelText("Veículo do motorista")).not.toBeInTheDocument());
+  });
+
+  it("frota indisponível: o seletor avisa que não há veículo", async () => {
+    respostas({ "GET /veiculos": new Error("Sem conexão.") });
+    abrir();
+    await screen.findByText("você");
+    const form = document.getElementById("formUsuario");
+    await userEvent.selectOptions(within(form).getByLabelText("Perfil"), "motorista");
+    expect(within(form).getByRole("option", { name: "Nenhum veículo cadastrado" })).toBeInTheDocument();
+  });
+
+  it("troca o veículo do motorista e recarrega a lista", async () => {
+    respostas({
+      "GET /usuarios": { usuarios: [...USUARIOS, MOTORISTA] },
+      "PUT /usuarios/moto%40empresa.com": {}
+    });
+    abrir();
+    await userEvent.click(await screen.findByRole("button", { name: "Trocar veículo" }));
+
+    const dialogo = document.getElementById("trocarVeiculo");
+    expect(dialogo).toHaveAttribute("open");
+    const campo = within(dialogo).getByLabelText("Veículo");
+    expect(campo).toHaveValue("CT-001");
+    await userEvent.selectOptions(campo, "CT-002");
+    await userEvent.click(within(dialogo).getByRole("button", { name: "Trocar veículo" }));
+
+    await vi.waitFor(() => expect(api.api).toHaveBeenCalledWith("/usuarios/moto%40empresa.com", {
+      metodo: "PUT",
+      corpo: { veiculo: "CT-002" }
+    }));
+    await vi.waitFor(() => expect(document.getElementById("trocarVeiculo")).toBeNull());
+    await vi.waitFor(() => expect(api.api.mock.calls.filter(c => c[0] === "/usuarios" && !c[1]).length).toBe(2));
+  });
+
+  it("troca recusada: erro no diálogo; Cancelar fecha", async () => {
+    respostas({
+      "GET /usuarios": { usuarios: [...USUARIOS, { ...MOTORISTA, veiculo: undefined }] },
+      "PUT /usuarios/moto%40empresa.com": new Error("veiculo: CT-009 não está cadastrado na frota")
+    });
+    abrir();
+    await userEvent.click(await screen.findByRole("button", { name: "Trocar veículo" }));
+
+    const dialogo = document.getElementById("trocarVeiculo");
+    expect(within(dialogo).getByLabelText("Veículo")).toHaveValue("");
+    await userEvent.click(within(dialogo).getByRole("button", { name: "Trocar veículo" }));
+    expect(await within(dialogo).findByText("veiculo: CT-009 não está cadastrado na frota")).toBeVisible();
+
+    await userEvent.click(within(dialogo).getByRole("button", { name: "Cancelar" }));
+    expect(document.getElementById("trocarVeiculo")).toBeNull();
   });
 
 });

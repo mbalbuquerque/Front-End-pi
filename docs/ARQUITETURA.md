@@ -62,6 +62,7 @@ ficam dentro de `<Route element={<RequireAuth />}>`. Para criar uma tela nova, s
 | `/sensores` | `pages/Sensores/Sensores.jsx` | painel | sim |
 | `/viagens` | `pages/Viagens/Viagens.jsx` | painel | sim |
 | `/configuracoes` | `pages/Configuracoes/Configuracoes.jsx` | painel | sim |
+| `/motorista` | `pages/Motorista/Motorista.jsx` | motorista | sim (só perfil motorista) |
 | `/usuarios` | `pages/Usuarios/Usuarios.jsx` | usuarios | não (demo) |
 | `/auditoria` | `pages/Auditoria/Auditoria.jsx` | auditoria | não (demo) |
 | `/cadastro-usuario` | `pages/CadastroUsuario/CadastroUsuario.jsx` | cadastro-usuario | não (demo) |
@@ -230,7 +231,10 @@ vez de travar. Usado pelo card `AlertasCelular` da tela de Configurações.
   para o botão não cobrir o rodapé, `@media print` esconde tudo (etiqueta QR limpa), entrada de
   180 ms desligada com `prefers-reduced-motion`.
 - **`<RequireAuth perfil?>`** — já envolve as rotas logadas em `App.jsx`. Para bloquear só para
-  gestor dentro de uma tela, use `ehGestor(usuario)` e esconda o trecho.
+  gestor dentro de uma tela, use `ehGestor(usuario)` e esconda o trecho. O perfil motorista é
+  mandado para `/motorista` em qualquer rota do painel; `perfil="motorista"` (só na rota
+  `/motorista`) manda operador e gestor para `/dashboard`. Depois do login, `rotaInicial(usuario)`
+  (`lib/sessao.js`) escolhe o destino.
 - **`<Estado titulo? painel?>texto</Estado>`**, **`<Carregando />`** ("Carregando leituras…"),
   **`<ErroAzure />`** (antigo `ERRO_AZURE`), **`<SemVeiculo />`** (antigo `SEM_VEICULO`).
 - **`<StatusSelo status />`** — antigo `seloStatus()`.
