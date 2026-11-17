@@ -53,6 +53,20 @@ export function formatarHora(data) {
 }
 
 
+// "14:05" quando é hoje; "16/11 14:05" em outro dia (horário local).
+export function formatarMomento(data, agora = new Date()) {
+
+  const hora = formatarHora(data);
+
+  if (data.toDateString() === agora.toDateString()) {
+    return hora;
+  }
+
+  return `${data.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" })} ${hora}`;
+
+}
+
+
 export function formatarDuracao(ms) {
 
   const minutos = Math.round(ms / 60000);

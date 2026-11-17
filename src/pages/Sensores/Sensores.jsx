@@ -7,12 +7,13 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { ErroAzure } from "../../components/Estado.jsx";
+import Icone from "../../components/Icone.jsx";
 import PainelLayout from "../../components/PainelLayout.jsx";
 import { usePolling } from "../../hooks/usePolling.js";
 import { useSessao } from "../../hooks/useSessao.jsx";
 import { api } from "../../lib/api.js";
 import { UPDATE_INTERVAL } from "../../lib/config.js";
-import { formatarDataHora, formatarTemp } from "../../lib/formatar.js";
+import { formatarDataHora, formatarMomento, formatarTemp } from "../../lib/formatar.js";
 import { buscarLeituras, horarioDe } from "../../lib/leituras.js";
 import { ehGestor } from "../../lib/sessao.js";
 import { SensorUsb, serialDisponivel } from "./serial.js";
@@ -473,7 +474,7 @@ export default function Sensores() {
       subtitulo="Situação de cada sensor e conexão de sensor novo pelo cabo USB"
       conexao={conexao}
     >
-      <div id="conteudo" className="page-grid">
+      <div id="conteudo" className="page-grid tela-sensores">
 
         <div id="chaveNova" ref={chaveRef}>
           {chaveNova && (
@@ -488,7 +489,7 @@ export default function Sensores() {
 
         {gestor && (
           <article className="panel" id="painelCabo">
-            <h2>Conectar sensor pelo cabo</h2>
+            <h2 className="titulo-icone"><Icone nome="usb" tamanho={24} />Conectar sensor pelo cabo</h2>
             <PainelCabo
               cabo={cabo}
               abrirAjuda={abrirAjuda}
@@ -500,11 +501,14 @@ export default function Sensores() {
           </article>
         )}
 
-        <article className="panel">
+        <article className="panel lista-sensores">
           <h2>Sensores registrados</h2>
-          <p>
-            A situação se atualiza sozinha a cada {UPDATE_INTERVAL / 1000} s.{" "}
-            Depois de conectar, ligue o sensor a um veículo em <Link to="/veiculos">Veículos</Link>.
+          <p className="nota-info">
+            <Icone nome="info" tamanho={18} />
+            <span>
+              A situação se atualiza sozinha a cada {UPDATE_INTERVAL / 1000} s.{" "}
+              Depois de conectar, ligue o sensor a um veículo em <Link to="/veiculos">Veículos</Link>.
+            </span>
           </p>
           <div id="tabelaSensores">
             {tabela.tipo === "carregando" && <div className="estado">Carregando sensores…</div>}
@@ -547,6 +551,8 @@ export default function Sensores() {
 }
 
 
+// Cada sensor é uma linha de tabela desenhada como cartão (design system: selo
+// Online/Offline + último contato). A tabela fica pela leitura de tela e pelos testes.
 function TabelaSensores({ dispositivos, veiculos, ultimas, agora, gestor, aoGerarChave, aoRemover }) {
 
   if (!dispositivos.length) {
@@ -561,56 +567,63 @@ function TabelaSensores({ dispositivos, veiculos, ultimas, agora, gestor, aoGera
   }
 
   return (
-    <div className="tabela-wrap">
-      <table className="tabela">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Descrição</th>
-            <th>Veículo</th>
-            <th>Situação</th>
-            <th>Sinal Wi-Fi</th>
-            <th>Última temperatura</th>
-            {gestor && <th></th>}
-          </tr>
-        </thead>
-        <tbody>
-          {dispositivos.map((d, i) => {
+    <table className="tabela tabela-sensores">
+      <thead className="so-leitor">
+        <tr>
+          <th scope="col">Sensor</th>
+          <th scope="col">Situação</th>
+          <th scope="col">Sinal Wi-Fi</th>
+          <th scope="col">Última temperatura</th>
+          {gestor && <th scope="col">Ações</th>}
+        </tr>
+      </thead>
+      <tbody>
+        {dispositivos.map((d, i) => {
 
-            const veiculo = veiculos.find(v => v.deviceId === d.id);
-            const ultima = ultimas[i];
-            const situacao = situacaoDoSensor(ultima, agora);
-            const selo = seloConexao(d);
-            const contato = textoUltimoContato(d);
+          const veiculo = veiculos.find(v => v.deviceId === d.id);
+          const ultima = ultimas[i];
+          const situacao = situacaoDoSensor(ultima, agora);
+          const selo = seloConexao(d);
+          const contato = textoUltimoContato(d);
+          const ligado = selo ? selo.classe === "online" : situacao.classe === "normal";
 
-            return (
-              <tr key={d.id}>
-                <td><strong>{d.id}</strong></td>
-                <td>{d.descricao || "--"}</td>
-                <td>{veiculo ? veiculo.id : "nenhum"}</td>
-                <td>
-                  {selo
-                    ? <span className={`selo-conexao ${selo.classe}`} data-conexao={selo.classe}>{selo.texto}</span>
-                    : <span className={`status ${situacao.classe}`}>{situacao.texto}</span>}
-                  {contato
-                    ? <small className="linha-apoio" data-ultimo-contato>{contato}</small>
-                    : ultima && <small className="linha-apoio">último envio {formatarDataHora(horarioDe(ultima))}</small>}
+          return (
+            <tr key={d.id} className={ligado ? "sensor-ligado" : "sensor-desligado"}>
+              <td className="sensor-nome">
+                <span className="sensor-icone" aria-hidden="true"><Icone nome={ligado ? "sensor" : "semSinal"} /></span>
+                <strong>{d.id}</strong>
+                <span className="sensor-detalhe">
+                  {d.descricao || "--"} · {veiculo ? `veículo ${veiculo.id}` : "nenhum veículo"}
+                </span>
+              </td>
+              <td className="sensor-situacao">
+                {selo
+                  ? <span className={`selo-conexao ${selo.classe}`} data-conexao={selo.classe}>{selo.texto}</span>
+                  : <span className={`status ${situacao.classe}`}>{situacao.texto}</span>}
+                {contato
+                  ? <small className="linha-apoio" data-ultimo-contato>{contato}</small>
+                  : ultima && <small className="linha-apoio">último envio {formatarDataHora(horarioDe(ultima))}</small>}
+              </td>
+              <td className="sensor-sinal">
+                <Icone nome="wifi" tamanho={18} />
+                <span>{ultima ? descreverSinal(ultima.rssi) : "--"}</span>
+              </td>
+              <td className="sensor-temp">
+                <strong>{ultima ? formatarTemp(ultima.temperatura) : "--"}</strong>
+                {ultima && <small>leitura de {formatarMomento(horarioDe(ultima), new Date(agora))}</small>}
+              </td>
+              {gestor && (
+                <td className="acoes-tabela">
+                  <button type="button" className="botao secundario" data-nova-chave={d.id} onClick={() => aoGerarChave(d.id)}>Gerar nova chave</button>
+                  <button type="button" className="botao perigo" data-remover={d.id} onClick={() => aoRemover(d.id)}>Remover</button>
                 </td>
-                <td>{ultima ? descreverSinal(ultima.rssi) : "--"}</td>
-                <td>{ultima ? formatarTemp(ultima.temperatura) : "--"}</td>
-                {gestor && (
-                  <td className="acoes-tabela">
-                    <button type="button" className="botao secundario" data-nova-chave={d.id} onClick={() => aoGerarChave(d.id)}>Gerar nova chave</button>
-                    <button type="button" className="botao perigo" data-remover={d.id} onClick={() => aoRemover(d.id)}>Remover</button>
-                  </td>
-                )}
-              </tr>
-            );
+              )}
+            </tr>
+          );
 
-          })}
-        </tbody>
-      </table>
-    </div>
+        })}
+      </tbody>
+    </table>
   );
 
 }
@@ -675,7 +688,7 @@ function PainelCabo({ cabo, abrirAjuda, aoConectar, aoEnviar, aoCancelar, aoVerR
           cadastra na sua empresa e grava nele a rede Wi-Fi que ele vai usar.
         </p>
         <div className="acoes-item">
-          <button type="button" className="botao" id="botaoCabo" onClick={aoConectar}>Conectar sensor pelo cabo</button>
+          <button type="button" className="botao" id="botaoCabo" onClick={aoConectar}><Icone nome="usb" tamanho={20} />Conectar sensor pelo cabo</button>
           <LinkAjuda item="passos" abrirAjuda={abrirAjuda}>Como funciona</LinkAjuda>
         </div>
         <Mensagem erro={cabo.erro} abrirAjuda={abrirAjuda} />
