@@ -9,43 +9,6 @@
 
 body { margin: 0; }
 
-.layout {
-  min-height: 100vh;
-  display: flex;
-}
-
-.sidebar {
-  width: 245px;
-  flex-shrink: 0;
-  padding: 30px 20px;
-  background: var(--ct-navy-900);
-  color: white;
-  display: flex;
-  flex-direction: column;
-}
-
-.sidebar h2 { margin: 0; color: var(--ct-surface); }
-.sidebar > p { color: var(--ct-cyan-500); letter-spacing: 3px; }
-.sidebar nav { display: grid; gap: 8px; margin-top: 35px; }
-
-.sidebar a {
-  padding: 13px;
-  color: var(--ct-on-navy-muted);
-  text-decoration: none;
-  border-radius: 9px;
-}
-
-.sidebar a:hover,
-.sidebar a.active {
-  color: white;
-  background: var(--ct-navy-800);
-}
-
-.sidebar small {
-  margin-top: auto;
-  color: var(--ct-on-navy-muted);
-}
-
 .main { flex: 1; min-width: 0; padding: 36px; }
 
 .header, .panel-heading, .modal-heading {
@@ -173,10 +136,7 @@ dialog input { width: 100%; }
 }
 
 @media (max-width: 720px) {
-  .layout { display: block; }
-  .sidebar { width: 100%; padding: 18px; }
-  .sidebar nav { display: flex; flex-wrap: wrap; margin-top: 12px; }
-  .sidebar small { display: none; }
+
   .main { padding: 18px; }
   .header { align-items: flex-start; flex-direction: column; }
   .metrics { grid-template-columns: 1fr 1fr; }
@@ -195,7 +155,6 @@ dialog input { width: 100%; }
 .feedback { margin-top:14px; color:var(--ct-normal); font-weight:600; min-height:1.5em; }
 #modalConfirmacao p { line-height:1.6; }
 @media (max-width:720px) { .detail-actions { flex-direction:column; } .detail-actions button { width:100%; } }
-
 
 /* TIPOGRAFIA DO DESIGN SYSTEM (src/styles/tokens.css): títulos em Barlow Condensed 700. */
 

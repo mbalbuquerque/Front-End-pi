@@ -19,34 +19,6 @@ body {
   background: var(--ct-canvas);
 }
 
-.topbar {
-  min-height: 76px;
-  background: var(--navy);
-  color: white;
-  padding: 20px max(24px, calc((100vw - 1080px)/2));
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-}
-
-.brand {
-  color: white;
-  font-size: 25px;
-  font-weight: 800;
-  text-decoration: none;
-}
-
-.brand span {
-  color: var(--cyan);
-}
-
-.admin-label {
-  color: var(--ct-on-navy-muted);
-  font-size: 13px;
-  font-weight: 600;
-}
-
 .container {
   max-width: 1080px;
   margin: 44px auto;
@@ -211,7 +183,6 @@ a:focus-visible {
     width: 100%;
   }
 }
-
 
 /* TIPOGRAFIA DO DESIGN SYSTEM (src/styles/tokens.css): títulos em Barlow Condensed 700. */
 

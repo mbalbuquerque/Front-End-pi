@@ -99,7 +99,7 @@ public/                    copied to dist/ as is: sw.js, manifest.json, assets/i
 src/
   main.jsx                 BrowserRouter > AuthProvider > App; registers sw.js in the build
   App.jsx                  routes (each screen lazy-loaded with React.lazy)
-  rotas.js                 ROTAS_LEGADAS (name.html -> route) and the dashboard menu
+  rotas.js                 ROTAS_LEGADAS (name.html -> route) and the dashboard navigation (Operação, Gestão)
   lib/                     API, session, readings, ranges, formatting, vehicle (no React)
   hooks/                   useSessao, usePolling, useVeiculoEscolhido, useTitulo, useMovimentoReduzido
   components/              PainelLayout, RequireAuth, GraficoTemperatura, ChatWidget/, AssistentePainel/...

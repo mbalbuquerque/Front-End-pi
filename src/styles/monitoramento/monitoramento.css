@@ -13,54 +13,6 @@ body {
   margin: 0;
 }
 
-.layout {
-  display: flex;
-  min-height: 100vh;
-}
-
-.sidebar {
-  width: 245px;
-  flex-shrink: 0;
-  padding: 30px 20px;
-  background: var(--ct-navy-900);
-  color: white;
-  display: flex;
-  flex-direction: column;
-}
-
-.sidebar h2 {
-  margin: 0;
-}
-
-.sidebar > p {
-  color: var(--ct-cyan-500);
-  letter-spacing: 3px;
-}
-
-.sidebar nav {
-  display: grid;
-  gap: 8px;
-  margin-top: 35px;
-}
-
-.sidebar a {
-  padding: 13px;
-  color: var(--ct-on-navy-muted);
-  text-decoration: none;
-  border-radius: 9px;
-}
-
-.sidebar a:hover,
-.sidebar a[aria-current] {
-  background: var(--ct-navy-800);
-  color: white;
-}
-
-.sidebar small {
-  margin-top: auto;
-  color: var(--ct-on-navy-muted);
-}
-
 .main {
   flex: 1;
   min-width: 0;
@@ -245,24 +197,6 @@ td {
 }
 
 @media (max-width: 720px) {
-  .layout {
-    display: block;
-  }
-
-  .sidebar {
-    width: 100%;
-    padding: 18px;
-  }
-
-  .sidebar nav {
-    display: flex;
-    flex-wrap: wrap;
-    margin-top: 12px;
-  }
-
-  .sidebar small {
-    display: none;
-  }
 
   .main {
     padding: 18px;
@@ -296,7 +230,6 @@ td {
     grid-template-columns: 1fr;
   }
 }
-
 
 /* TIPOGRAFIA DO DESIGN SYSTEM (src/styles/tokens.css): títulos em Barlow Condensed 700. */
 

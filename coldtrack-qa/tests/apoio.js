@@ -364,6 +364,31 @@ export async function entrarComo(page, perfil) {
 
 
 // ---------------------------------------------------------
+// MENU DO PAINEL
+// ---------------------------------------------------------
+
+// No celular a navegação fica embaixo, com Visão geral, Alertas, Sensores e
+// Viagens à vista; o resto do menu e o Sair ficam atrás de "Mais". No
+// computador a barra lateral já mostra tudo e isto não faz nada.
+export async function abrirMenu(page) {
+
+  // A tela é carregada sob demanda (React.lazy): espera a moldura montar.
+  await page.locator("#sidebar").waitFor({ state: "attached" });
+
+  const mais = page.getByRole("button", { name: "Mais", exact: true });
+
+  if (!(await mais.isVisible())) {
+    return;
+  }
+
+  // O assistente aberto cobre a barra inferior: Escape fecha a conversa.
+  await page.keyboard.press("Escape");
+  await mais.click();
+
+}
+
+
+// ---------------------------------------------------------
 // CONSOLE
 // ---------------------------------------------------------
 

@@ -132,6 +132,18 @@ título e botão nunca peso 300/400; `letter-spacing` negativo só acima de 24 p
 | Faixa offline | topo fixo, `#8F1D1D`, "Sem conexão — exibindo os últimos dados recebidos às HH:MM" |
 | Tela do motorista | sem navegação; fundo tingido pelo status; número herói gigante; botões ≥ 56 px |
 
+### Shell implementado (`components/PainelLayout.jsx`, `styles/shell/shell.css`)
+
+- Uma barra lateral `#sidebar` de 256 px; até 720 px ela mesma vira a navegação inferior (um só
+  `nav` "Menu principal" nos dois tamanhos). "Mais" abre o menu inteiro como gaveta de baixo
+  (280 ms, `ease-drawer`), com véu; Escape, o véu ou um item fecham.
+- Ícones de traço em SVG no próprio código (`components/Icone.jsx`): sem fonte de ícones externa.
+- Barra superior clara também no celular: o protótipo de celular troca o título por uma barra
+  navy só com logo, mas o `<h1>` da tela precisa continuar visível.
+- Rótulo da navegação inferior em 12 px/600 (o protótipo usa 10 px, abaixo do piso).
+- "atualizado às HH:MM" (hora real da última resposta da API) no lugar de "atualizado há N s".
+- Telas de gestão entram no shell com o cabeçalho próprio (sem barra superior) até a fase delas.
+
 ## 8. Acessibilidade
 
 - Contraste ≥ 4,5:1 em todo texto.

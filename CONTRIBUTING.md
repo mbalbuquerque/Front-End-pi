@@ -80,10 +80,11 @@ São os mesmos passos do CI. Na primeira vez, instale o navegador: `npx playwrig
 
 1. **Rota.** Crie `src/pages/<Nome>/<Nome>.jsx` e registre a rota em `src/App.jsx` com
    `lazy(() => import("./pages/<Nome>/<Nome>.jsx"))`. Tela logada vai dentro do
-   `<Route element={<RequireAuth />}>`. Se a tela aparece no menu do painel, acrescente-a em
-   `PAGINAS_PAINEL` (`src/rotas.js`).
-2. **Layout e CSS.** Tela do painel usa `<PainelLayout titulo subtitulo conexao>`, que já
-   importa a família `painel`. Tela fora do painel: importe o CSS da família
+   `<Route element={<RequireAuth />}>`. Se a tela aparece no menu do painel, acrescente-a no grupo
+   certo de `GRUPOS_PAINEL` (`src/rotas.js`), com um ícone de `components/Icone.jsx`.
+2. **Layout e CSS.** Tela interna usa `<PainelLayout titulo subtitulo conexao>`, que já
+   importa o shell e a família `painel`; tela interna com CSS próprio passa `familia="<familia>"`.
+   Tela fora do painel (landing, login): importe o CSS da família
    (`src/styles/<familia>/*.css`) e use a raiz `<div className="escopo-<familia> raiz-pagina">`.
    Família nova = pasta nova em `src/styles/`; o escopo é aplicado sozinho pelo `vite.config.js`.
 3. **Dados.** API só por `src/lib/api.js` (`api`, `postPublico`, `getPublico`); atualização

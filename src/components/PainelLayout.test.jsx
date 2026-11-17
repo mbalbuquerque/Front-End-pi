@@ -58,10 +58,13 @@ describe("PainelLayout", () => {
     expect(document.title).toBe("ColdTrack Control");
   });
 
-  it("menu com as 7 telas e a atual marcada", () => {
+  it("menu único com os grupos Operação e Gestão (11 telas) e a atual marcada", () => {
     abrir();
     const menu = screen.getByRole("navigation", { name: "Menu principal" });
-    expect(within(menu).getAllByRole("link")).toHaveLength(7);
+    expect(within(menu).getAllByRole("link")).toHaveLength(11);
+    expect(within(menu).getByText("Operação")).toBeInTheDocument();
+    expect(within(menu).getByText("Gestão")).toBeInTheDocument();
+    expect(within(menu).getByRole("link", { name: /Monitoramento ThingSpeak/ })).toHaveAttribute("href", "/monitoramento");
     expect(within(menu).getByRole("link", { name: /Sensores/ })).toHaveAttribute("aria-current", "page");
     expect(within(menu).getByRole("link", { name: /Veículos/ })).not.toHaveAttribute("aria-current");
     expect(within(menu).getByRole("link", { name: /Relatórios/ })).toHaveAttribute("href", "/relatorios");
@@ -84,16 +87,68 @@ describe("PainelLayout", () => {
     expect(sessao.sair).toHaveBeenCalledTimes(1);
   });
 
+  it("o formulário de novo usuário acende o item Usuários", () => {
+    abrir({}, "/cadastro-usuario");
+    const menu = screen.getByRole("navigation", { name: "Menu principal" });
+    expect(within(menu).getByRole("link", { name: /Usuários/ })).toHaveAttribute("aria-current", "page");
+    expect(within(menu).getAllByRole("link").filter(link => link.getAttribute("aria-current"))).toHaveLength(1);
+  });
+
+  it("Mais abre e fecha o menu do celular (botão, Escape, véu e clique num item)", async () => {
+    const { container } = abrir();
+    const raiz = container.querySelector(".ct-shell");
+    const mais = screen.getByRole("button", { name: "Mais" });
+    expect(mais).toHaveAttribute("aria-expanded", "false");
+    expect(mais).toHaveAttribute("aria-controls", screen.getByRole("navigation", { name: "Menu principal" }).id);
+
+    await userEvent.click(mais);
+    expect(raiz).toHaveClass("ct-shell--menu-aberto");
+    expect(screen.getByRole("button", { name: "Fechar" })).toHaveAttribute("aria-expanded", "true");
+    await userEvent.click(screen.getByRole("button", { name: "Fechar" }));
+    expect(raiz).not.toHaveClass("ct-shell--menu-aberto");
+
+    await userEvent.click(screen.getByRole("button", { name: "Mais" }));
+    await userEvent.keyboard("{Escape}");
+    expect(raiz).not.toHaveClass("ct-shell--menu-aberto");
+
+    await userEvent.click(screen.getByRole("button", { name: "Mais" }));
+    await userEvent.keyboard("a");
+    expect(raiz).toHaveClass("ct-shell--menu-aberto");
+    await userEvent.click(screen.getByRole("button", { name: "Fechar menu" }));
+    expect(raiz).not.toHaveClass("ct-shell--menu-aberto");
+
+    await userEvent.click(screen.getByRole("button", { name: "Mais" }));
+    await userEvent.click(screen.getByRole("link", { name: /Alertas/ }));
+    expect(raiz).not.toHaveClass("ct-shell--menu-aberto");
+  });
+
+  it("tela de gestão: família própria, sem barra superior, sem rodapé e sem assistente", () => {
+    document.title = "Gestão de Usuários | ColdTrack";
+    const { container } = render(
+      <MemoryRouter initialEntries={["/usuarios"]}>
+        <PainelLayout familia="usuarios"><h1>Gestão de Usuários</h1></PainelLayout>
+      </MemoryRouter>
+    );
+    expect(container.querySelector(".escopo-usuarios")).not.toBeNull();
+    expect(container.querySelector(".ct-topbar")).toBeNull();
+    expect(document.getElementById("fonteDados")).toBeNull();
+    expect(screen.queryByText(/Projeto Integrador 2026/)).not.toBeInTheDocument();
+    expect(screen.queryByTestId("assistente")).not.toBeInTheDocument();
+    expect(screen.getAllByRole("heading", { level: 1 })).toHaveLength(1);
+    expect(document.title).toBe("Gestão de Usuários | ColdTrack");
+  });
+
   it("extraTopo e diálogos são renderizados", () => {
     abrir({ extraTopo: <span>seletor</span>, dialogos: <dialog id="etiqueta" /> });
     expect(screen.getByText("seletor")).toBeInTheDocument();
     expect(document.getElementById("etiqueta")).not.toBeNull();
   });
 
-  it("sem sessão no contexto não quebra (nome vazio)", () => {
+  it("sem sessão no contexto não quebra (sem bloco de usuário)", () => {
     sessao.usuario = null;
-    abrir();
+    const { container } = abrir();
     expect(screen.getByRole("button", { name: "Sair" })).toBeInTheDocument();
+    expect(container.querySelector(".ct-usuario")).toBeNull();
   });
 
   it("sem internet: faixa fixa com a hora dos últimos dados e indicador 'Sem internet'", () => {
@@ -113,15 +168,26 @@ describe("PainelLayout", () => {
 
 describe("IndicadorConexao", () => {
 
-  it("Conectando, Azure conectado e Sem conexão com Azure, com o ponto vermelho na falha", () => {
+  it("Conectando, Azure conectado e Sem conexão com Azure, com a pílula vermelha na falha", () => {
     const { rerender, container } = render(<IndicadorConexao conexao={null} />);
+    const pilula = () => container.querySelector(".ct-pilula");
     expect(screen.getByText("Conectando...")).toBeInTheDocument();
+    expect(pilula()).toHaveClass("ct-pilula--aguardando");
     rerender(<IndicadorConexao conexao={true} />);
     expect(screen.getByText("Azure conectado")).toBeInTheDocument();
-    expect(container.querySelector(".online-dot")).not.toHaveAttribute("style");
+    expect(pilula()).toHaveClass("ct-pilula--ok");
     rerender(<IndicadorConexao conexao={false} />);
     expect(screen.getByText("Sem conexão com Azure")).toBeInTheDocument();
-    expect(container.querySelector(".online-dot")).toHaveAttribute("style", expect.stringContaining("var(--red)"));
+    expect(pilula()).toHaveClass("ct-pilula--falha");
+  });
+
+  it("com dados recebidos e conectado, mostra a hora da última atualização", () => {
+    const { rerender } = render(<IndicadorConexao conexao={true} />);
+    expect(screen.queryByText(/atualizado às/)).not.toBeInTheDocument();
+    act(() => registrarRecepcao(new Date(2026, 10, 16, 9, 7)));
+    expect(screen.getByText("atualizado às 09:07")).toBeInTheDocument();
+    rerender(<IndicadorConexao conexao={false} />);
+    expect(screen.queryByText(/atualizado às/)).not.toBeInTheDocument();
   });
 
 });

@@ -2,9 +2,12 @@
 
 import { fireEvent, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { renderizarNaRota } from "../../testes/apoio.jsx";
 import Logistica from "./Logistica.jsx";
+
+// A tela abre dentro da moldura do painel (PainelLayout), que lê a sessão.
+vi.mock("../../hooks/useSessao.jsx", () => ({ useSessao: () => ({ usuario: null, sair: () => {} }) }));
 
 function abrir() {
   return renderizarNaRota(<Logistica />, "/logistica");

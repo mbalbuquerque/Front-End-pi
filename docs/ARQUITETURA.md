@@ -32,7 +32,7 @@ docs/                      documentação (não vai para o site)
 src/
   main.jsx                 BrowserRouter > AuthProvider > App; registra o sw.js no build
   App.jsx                  todas as rotas (cada tela com React.lazy)
-  rotas.js                 ROTAS_LEGADAS (nome.html -> rota) e PAGINAS_PAINEL (menu)
+  rotas.js                 ROTAS_LEGADAS (nome.html -> rota), GRUPOS_PAINEL/PAGINAS_PAINEL (menu)
   lib/                     lógica sem React (API, sessão, leituras, faixas, formatação)
   hooks/                   useSessao, usePolling, useVeiculoEscolhido, useTitulo,
                            useMovimentoReduzido, useAlertasPush, useTelaAcesa
@@ -92,6 +92,7 @@ O CSS de cada família veio do site anterior (HTML + JS) e redefine `:root`, `*`
 
 | Família | Classe raiz | Arquivos | Import |
 |---|---|---|---|
+| shell | `escopo-shell` | `shell.css` (moldura: barra lateral, barra superior, navegação inferior, faixa offline) | `styles/shell/shell.css` (já feito no `PainelLayout`) |
 | painel | `escopo-painel` | `style.css`, `telas.css`, `assistente.css` (via `index.css`) | `styles/painel/index.css` (já feito no `PainelLayout`) |
 | home | `escopo-home` | `home.css` | `styles/home/home.css` |
 | login | `escopo-login` | `login.css` | `styles/login/login.css` |
@@ -114,9 +115,13 @@ Regras:
 - Seletor antigo que dependia do `<body>` ou do HTML fixo pode ser ajustado no CSS da família
   (registre no commit). Já ajustado: `.pagina-login { flex: 1 }` em `painel/index.css`.
 - `/cadastro` usa a família painel: `<div className="escopo-painel raiz-pagina"><div className="pagina-login"><main className="login">…`.
+- Telas internas (as do painel e as de gestão: Usuários, Novo usuário, Auditoria, Logística,
+  Monitoramento) ficam dentro do shell: `<div class="escopo-shell">` com a barra lateral e, ao
+  lado, `<div class="escopo-<familia> ct-area">` com a barra superior e o `<main>`. O shell só usa
+  classes `ct-*` (nada de regra por elemento), para não atingir o conteúdo das famílias.
 - Impressão da etiqueta (Veículos): a regra é `.escopo-painel:has(.etiqueta[open]) > *:not(.etiqueta)`,
-  então a `<dialog className="etiqueta">` precisa ser filha direta da raiz: passe-a na prop
-  `dialogos` do `PainelLayout`.
+  então a `<dialog className="etiqueta">` precisa ser filha direta da raiz da família: passe-a na
+  prop `dialogos` do `PainelLayout`. Na impressão o shell esconde a barra lateral.
 - `html { scroll-behavior: smooth }` da home virou regra da raiz (sem efeito). Se a rolagem suave
   das âncoras importar, trate na Home (ex.: `scrollIntoView({ behavior: "smooth" })`).
 - Imagens: `import slide1 from "../../assets/images/slide-1.webp"` (o Vite gera a URL com hash).
@@ -214,18 +219,25 @@ vinculado a ele, com `url` `/motorista` (`projeto-integrador-4-periodo#88`).
 
 ## 6. Componentes
 
-- **`<FaixaOffline />`** — dentro do `<PainelLayout>`, portanto em toda tela logada. Sem internet
+- **`<FaixaOffline />`** — dentro do `<PainelLayout>`, portanto em toda tela interna. Sem internet
   mostra, fixa no topo (`position: sticky`), "Sem conexão — exibindo os últimos dados recebidos às
   HH:MM" (ou "nenhum dado foi recebido nesta sessão") e some ao voltar a conexão. Com a faixa, o
   indicador do topo passa a "Sem internet". Offline e API são coisas diferentes: a API fora do ar
   com internet continua no "Sem conexão com Azure".
-- **`<PainelLayout titulo subtitulo tituloDocumento? conexao extraTopo dialogos>`** — menu
-  (NavLink com `active` + `aria-current="page"`), usuário, `#botaoSair`, topo com `<h1>`/`<p>`,
-  `extraTopo` antes do indicador, `#fonteDados`, rodapé. `conexao`: `null` "Conectando...",
-  `true` "Azure conectado", `false` "Sem conexão com Azure" (ponto vermelho). `tituloDocumento`
-  padrão `"<titulo> · ColdTrack Control"` (Dashboard: passe `"ColdTrack Control"`).
-  Os filhos entram no `<main>` entre o topo e o rodapé: normalmente `<div id="conteudo" className="page-grid">`.
-  Monta também o `<AssistentePainel />` (a tela não faz nada para tê-lo).
+- **`<PainelLayout titulo? subtitulo? tituloDocumento? conexao? extraTopo? dialogos? familia?>`** —
+  moldura única das telas internas. Barra lateral `#sidebar` com `nav[aria-label="Menu principal"]`
+  nos grupos Operação e Gestão (`GRUPOS_PAINEL` em `rotas.js`; item atual com `active` +
+  `aria-current="page"`; `tambem` acende o item em outra rota, ex.: `/cadastro-usuario` em Usuários),
+  usuário logado, `#botaoSair`. Barra superior com `<h1>`/`<p>`, `extraTopo` e o indicador
+  (`#fonteDados` + "atualizado às HH:MM"). `conexao`: `null` "Conectando...", `true` "Azure
+  conectado", `false` "Sem conexão com Azure" (pílula vermelha); sem a prop (`undefined`) o
+  indicador some. Sem `titulo`, `extraTopo` e `conexao`, a barra superior não aparece (as telas de
+  gestão têm cabeçalho próprio). `tituloDocumento` padrão `"<titulo> · ColdTrack Control"`
+  (Dashboard: passe `"ColdTrack Control"`); sem título não mexe no da aba. `familia` (padrão
+  `"painel"`): família de CSS do conteúdo; só a família painel ganha rodapé e `<AssistentePainel />`.
+  Até 720 px a barra lateral vira a navegação inferior (Visão geral, Alertas, Sensores, Viagens e
+  "Mais", que abre o menu inteiro como gaveta; Escape, o véu ou um item fecham).
+  Os filhos entram no `<main>`: normalmente `<div id="conteudo" className="page-grid">`.
 - **`<AssistentePainel />`** — botão flutuante `#assistenteBotao` ("Assistente") e conversa
   (`role="dialog"` não modal, "Assistente do painel"): saudação pelo primeiro nome, 4 sugestões
   (`SUGESTOES` em `conversa.js`) antes da primeira pergunta, lista `role="log"` `aria-live="polite"`,

@@ -10,7 +10,7 @@
 }
 
 /* O botão flutuante não cobre o fim da página: o conteúdo ganha folga embaixo. */
-.main {
+.ct-conteudo {
   padding-bottom: 104px;
 }
 
@@ -298,13 +298,14 @@
 /* Celular: botão menor no canto e conversa na largura toda, como folha. */
 @media (max-width: 720px) {
 
-  .main {
+  .ct-conteudo {
     padding-bottom: 92px;
   }
 
+  /* Acima da navegação inferior do celular (styles/shell). */
   .assistente-botao {
     right: 16px;
-    bottom: 16px;
+    bottom: calc(76px + env(safe-area-inset-bottom));
     min-height: 48px;
     padding: 0 16px 0 13px;
   }

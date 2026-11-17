@@ -96,7 +96,7 @@ public/                    copiado para dist/ como está: sw.js, manifest.json, 
 src/
   main.jsx                 BrowserRouter > AuthProvider > App; registra o sw.js no build
   App.jsx                  rotas (cada tela carregada sob demanda com React.lazy)
-  rotas.js                 ROTAS_LEGADAS (nome.html -> rota) e menu do painel
+  rotas.js                 ROTAS_LEGADAS (nome.html -> rota) e navegação do painel (Operação, Gestão)
   lib/                     API, sessão, leituras, faixas, formatação, veículo (sem React)
   hooks/                   useSessao, usePolling, useVeiculoEscolhido, useTitulo, useMovimentoReduzido
   components/              PainelLayout, RequireAuth, GraficoTemperatura, ChatWidget/, AssistentePainel/...

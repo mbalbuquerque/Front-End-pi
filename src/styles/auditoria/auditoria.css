@@ -2,17 +2,7 @@
 *{box-sizing:border-box}
 body{margin:0;font-family: var(--ct-font-body);background:var(--ct-canvas);color:var(--text)}
 button,input,select{font:inherit}
-.app-layout{display:flex;min-height:100vh}
-.sidebar{width:250px;flex-shrink:0;background:var(--navy);color:white;padding:30px 20px;display:flex;flex-direction:column}
-.brand{display:flex;align-items:center;gap:10px;color:white;font-size:24px;font-weight:800;text-decoration:none}
-.brand-symbol,.brand strong{color:var(--cyan)}
-.brand-symbol{font-size:30px}
-.sidebar-label{font-size:12px;font-weight:600;letter-spacing:2px;color:var(--ct-on-navy-muted);margin:45px 10px 15px}
-.sidebar nav{display:grid;gap:8px}
-.sidebar nav a{color:var(--ct-on-navy-muted);text-decoration:none;padding:14px;border-radius:10px;font-size:14px;font-weight:600}
-.sidebar nav a:hover,.sidebar nav a.active{color:white;background:var(--navy-light)}
-.sidebar-footer{margin-top:auto;display:grid;gap:6px;color:var(--ct-on-navy-muted);font-size:12px;font-weight:600;padding:20px 10px 0}
-.sidebar-footer small{color:var(--ct-on-navy-muted)}
+
 .main-content{flex:1;min-width:0;max-width:1600px;padding:42px}
 .page-header,.table-heading{display:flex;align-items:center;justify-content:space-between;gap:20px}
 .eyebrow{color:var(--teal);font-size:12px;font-weight:800;letter-spacing:1.5px}
@@ -61,13 +51,8 @@ dialog::backdrop{background:#061b2ba6}
 .close-button{width:100%;margin-top:24px}
 :focus-visible{outline:3px solid var(--cyan);outline-offset:3px}
 @media(max-width:1300px){.filters{grid-template-columns:repeat(3,minmax(0,1fr))}.search-field{grid-column:span 2}}
-@media(max-width:900px){.sidebar{width:205px}.main-content{padding:25px}.filters{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:680px){.app-layout{display:block}.sidebar{width:100%;padding:18px}.sidebar nav{display:flex;flex-wrap:wrap}.sidebar-label,.sidebar-footer{display:none}.main-content{padding:20px 15px}.page-header{align-items:flex-start;flex-direction:column}.stats{gap:8px}.stat-card{padding:14px}.stat-card strong{font-size:25px}.stat-card span{font-size:12px;font-weight:600}.table-card{padding:18px 12px}.filters{grid-template-columns:1fr}.search-field{grid-column:auto}.table-heading{align-items:flex-start;flex-direction:column}}
-
-/* Navegação: foco visível e rolagem horizontal no mobile */
- .sidebar nav a:focus-visible { outline: 3px solid var(--ct-cyan-500); outline-offset: 2px; }
-@media (max-width: 680px) { .sidebar nav { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 8px; } .sidebar nav a { flex: 0 0 auto; white-space: nowrap; } }
-
+@media(max-width:900px){.main-content{padding:25px}.filters{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:680px){.main-content{padding:20px 15px}.page-header{align-items:flex-start;flex-direction:column}.stats{gap:8px}.stat-card{padding:14px}.stat-card strong{font-size:25px}.stat-card span{font-size:12px;font-weight:600}.table-card{padding:18px 12px}.filters{grid-template-columns:1fr}.search-field{grid-column:auto}.table-heading{align-items:flex-start;flex-direction:column}}
 
 /* TIPOGRAFIA DO DESIGN SYSTEM (src/styles/tokens.css): títulos em Barlow Condensed 700. */
 
