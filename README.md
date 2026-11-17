@@ -88,7 +88,7 @@ demonstrativo de reserva (Normal até 15 °C, Atenção até 20 °C).
 ## 3. Estrutura
 
 ```text
-index.html                 casca única (fonte Inter, manifest, ícones)
+index.html                 casca única (manifest, ícones; fontes servidas pelo próprio site)
 vite.config.js             React, escopo de CSS, cópias das páginas .html antigas
 playwright.config.js       e2e contra o build (vite preview na porta 5500)
 eslint.config.js

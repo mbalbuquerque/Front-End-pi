@@ -1,8 +1,8 @@
 
 :root {
-  font-family: "Segoe UI", Arial, sans-serif;
-  color: #163245;
-  background: #f3f7fa;
+  font-family: var(--ct-font-body);
+  color: var(--ct-text);
+  background: var(--ct-canvas);
 }
 
 * {
@@ -22,7 +22,7 @@ body {
   width: 245px;
   flex-shrink: 0;
   padding: 30px 20px;
-  background: #071d2d;
+  background: var(--ct-navy-900);
   color: white;
   display: flex;
   flex-direction: column;
@@ -33,7 +33,7 @@ body {
 }
 
 .sidebar > p {
-  color: #20c8d5;
+  color: var(--ct-cyan-500);
   letter-spacing: 3px;
 }
 
@@ -45,20 +45,20 @@ body {
 
 .sidebar a {
   padding: 13px;
-  color: #b6d0dc;
+  color: var(--ct-on-navy-muted);
   text-decoration: none;
   border-radius: 9px;
 }
 
 .sidebar a:hover,
 .sidebar a[aria-current] {
-  background: #164257;
+  background: var(--ct-navy-800);
   color: white;
 }
 
 .sidebar small {
   margin-top: auto;
-  color: #8ca8b8;
+  color: var(--ct-on-navy-muted);
 }
 
 .main {
@@ -87,17 +87,17 @@ body {
 
 .header p,
 .panelhead p {
-  color: #698090;
+  color: var(--ct-muted);
 }
 
 .eyebrow {
-  color: #078da0;
+  color: var(--ct-blue-700);
   font-size: 12px;
   font-weight: 700;
 }
 
 .primary {
-  background: #087f92;
+  background: var(--ct-blue-700);
   color: white;
   border: 0;
   border-radius: 9px;
@@ -113,17 +113,18 @@ body {
 }
 
 .notice {
-  background: #e7f4f7;
-  border-left: 4px solid #0b90a1;
+  background: var(--ct-blue-50);
+  border-left: 4px solid var(--ct-blue-700);
   padding: 14px 17px;
   border-radius: 7px;
   margin-bottom: 22px;
   font-size: 14px;
+  font-weight: 600;
 }
 
 .notice.error {
-  background: #fff0e9;
-  border-color: #ba5a33;
+  background: var(--ct-atencao-bg);
+  border-color: var(--ct-atencao);
 }
 
 .metrics {
@@ -136,7 +137,7 @@ body {
 .metric,
 .panel {
   background: white;
-  border: 1px solid #dde7ec;
+  border: 1px solid var(--ct-border);
   border-radius: 14px;
   padding: 23px;
 }
@@ -149,8 +150,9 @@ body {
 
 .metric span,
 .metric small {
-  color: #698090;
+  color: var(--ct-muted);
   font-size: 14px;
+  font-weight: 600;
 }
 
 .metric strong {
@@ -162,15 +164,15 @@ body {
 }
 
 .state.ok {
-  color: #147b46;
+  color: var(--ct-normal);
 }
 
 .state.warning {
-  color: #a9680b;
+  color: var(--ct-atencao);
 }
 
 .state.danger {
-  color: #bd3939;
+  color: var(--ct-critico);
 }
 
 .panel h2 {
@@ -183,13 +185,14 @@ body {
   gap: 8px;
   text-align: right;
   font-size: 13px;
-  color: #506a7a;
+  font-weight: 600;
+  color: var(--ct-muted);
 }
 
 .chartbox {
   overflow-x: auto;
   margin: 20px 0;
-  background: #f8fbfd;
+  background: var(--ct-subtle);
   border-radius: 12px;
   padding: 12px;
 }
@@ -214,21 +217,24 @@ table {
 th,
 td {
   padding: 13px 12px;
-  border-bottom: 1px solid #eaf0f3;
+  border-bottom: 1px solid var(--ct-subtle);
 }
 
 th {
   font-size: 12px;
-  color: #6a8190;
+  font-weight: 600;
+  color: var(--ct-muted);
 }
 
 td {
   font-size: 13px;
+  font-weight: 600;
 }
 
 .footnote {
   font-size: 12px;
-  color: #647e8d;
+  font-weight: 600;
+  color: var(--ct-muted);
   line-height: 1.6;
 }
 
@@ -289,4 +295,28 @@ td {
   .metrics {
     grid-template-columns: 1fr;
   }
+}
+
+
+/* TIPOGRAFIA DO DESIGN SYSTEM (src/styles/tokens.css): títulos em Barlow Condensed 700. */
+
+h1,
+h2 {
+  font-family: var(--ct-font-display);
+  font-weight: var(--ct-weight-strong);
+  letter-spacing: 0;
+}
+
+/* Texto pequeno nunca abaixo de 12px e sempre com peso >= 600. */
+small {
+  font-size: max(var(--ct-text-caption), 0.875em);
+  font-weight: var(--ct-weight-label);
+}
+
+/* Controles herdam a fonte (o navegador usaria 13,3px peso 400). */
+button,
+input,
+select,
+textarea {
+  font: inherit;
 }

@@ -1,20 +1,20 @@
 
 :root {
-  --navy: #061b2b;
-  --navy-light: #10374b;
-  --teal: #087d90;
-  --cyan: #18c8d4;
-  --text: #153244;
-  --muted: #6a7d89;
-  --border: #dce6eb;
+  --navy: var(--ct-navy-900);
+  --navy-light: var(--ct-navy-800);
+  --teal: var(--ct-blue-700);
+  --cyan: var(--ct-cyan-500);
+  --text: var(--ct-text);
+  --muted: var(--ct-muted);
+  --border: var(--ct-border);
 }
 
 * { box-sizing: border-box; }
 
 body {
   margin: 0;
-  font-family: "Segoe UI", Arial, sans-serif;
-  background: #f3f7f9;
+  font-family: var(--ct-font-body);
+  background: var(--ct-canvas);
   color: var(--text);
 }
 
@@ -43,9 +43,10 @@ body {
 .brand span { color: var(--cyan); }
 
 .sidebar-label {
-  font-size: 11px;
+  font-size: 12px;
+  font-weight: 600;
   letter-spacing: 2px;
-  color: #8faebe;
+  color: var(--ct-on-navy-muted);
   margin: 45px 10px 15px;
 }
 
@@ -55,11 +56,12 @@ body {
 }
 
 .sidebar nav a {
-  color: #b6cfda;
+  color: var(--ct-on-navy-muted);
   text-decoration: none;
   padding: 14px;
   border-radius: 10px;
   font-size: 14px;
+  font-weight: 600;
 }
 
 .sidebar nav a:hover,
@@ -72,12 +74,13 @@ body {
   margin-top: auto;
   display: grid;
   gap: 6px;
-  color: #9bbbc9;
+  color: var(--ct-on-navy-muted);
   font-size: 12px;
+  font-weight: 600;
   padding: 20px 10px 0;
 }
 
-.sidebar-footer small { color: #6f99ab; }
+.sidebar-footer small { color: var(--ct-on-navy-muted); }
 
 .main-content {
   flex: 1;
@@ -126,7 +129,7 @@ h1 {
   cursor: pointer;
 }
 
-.btn-primary:hover { background: #066375; }
+.btn-primary:hover { background: var(--ct-blue-700); }
 
 .stats {
   display: grid;
@@ -147,6 +150,7 @@ h1 {
 .stat-card span {
   color: var(--muted);
   font-size: 14px;
+  font-weight: 600;
 }
 
 .stat-card strong {
@@ -164,7 +168,7 @@ h1 {
 .table-heading p { margin: 0; }
 
 .demo-label {
-  font-size: 10px;
+  font-size: 12px;
   color: var(--teal);
   font-weight: 800;
   letter-spacing: 1px;
@@ -206,8 +210,9 @@ table {
 th, td {
   padding: 17px 12px;
   text-align: left;
-  border-bottom: 1px solid #edf1f3;
+  border-bottom: 1px solid var(--ct-subtle);
   font-size: 14px;
+  font-weight: 600;
 }
 
 th {
@@ -224,6 +229,7 @@ th {
   display: block;
   color: var(--muted);
   font-size: 12px;
+  font-weight: 600;
   margin-top: 5px;
 }
 
@@ -236,13 +242,13 @@ th {
 }
 
 .status.ativo {
-  background: #e5f7ed;
-  color: #147d48;
+  background: var(--ct-normal-bg);
+  color: var(--ct-normal);
 }
 
 .status.inativo {
-  background: #f1f2f4;
-  color: #68747e;
+  background: var(--ct-subtle);
+  color: var(--ct-muted);
 }
 
 .action-button {
@@ -255,12 +261,13 @@ th {
   margin: 2px;
 }
 
-.action-button:hover { background: #eaf5f7; }
+.action-button:hover { background: var(--ct-blue-50); }
 
 .empty-state,
 .feedback {
   color: var(--muted);
   font-size: 14px;
+  font-weight: 600;
   padding: 15px 0;
 }
 
@@ -268,7 +275,7 @@ dialog {
   border: 0;
   border-radius: 16px;
   width: min(440px, calc(100% - 30px));
-  box-shadow: 0 20px 70px #061b2b40;
+  box-shadow: var(--ct-shadow-overlay);
 }
 
 dialog::backdrop {
@@ -305,12 +312,36 @@ dialog::backdrop {
   .stats { gap: 8px; }
   .stat-card { padding: 14px; }
   .stat-card strong { font-size: 25px; }
-  .stat-card span { font-size: 12px; }
+  .stat-card span { font-size: 12px;font-weight:600; }
   .table-card { padding: 18px 12px; }
   .filters { grid-template-columns: 1fr; }
   .filters label:first-child { grid-column: auto; }
 }
 
 /* Navegação: foco visível e rolagem horizontal no mobile */
- .sidebar nav a:focus-visible { outline: 3px solid #18c8d4; outline-offset: 2px; }
+ .sidebar nav a:focus-visible { outline: 3px solid var(--ct-cyan-500); outline-offset: 2px; }
 @media (max-width: 680px) { .sidebar nav { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 8px; } .sidebar nav a { flex: 0 0 auto; white-space: nowrap; } }
+
+
+/* TIPOGRAFIA DO DESIGN SYSTEM (src/styles/tokens.css): títulos em Barlow Condensed 700. */
+
+h1,
+h2 {
+  font-family: var(--ct-font-display);
+  font-weight: var(--ct-weight-strong);
+  letter-spacing: 0;
+}
+
+/* Texto pequeno nunca abaixo de 12px e sempre com peso >= 600. */
+small {
+  font-size: max(var(--ct-text-caption), 0.875em);
+  font-weight: var(--ct-weight-label);
+}
+
+/* Controles herdam a fonte (o navegador usaria 13,3px peso 400). */
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}

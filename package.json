@@ -28,6 +28,8 @@
   "homepage": "https://github.com/mbalbuquerque/Front-End-pi#readme",
   "license": "ISC",
   "dependencies": {
+    "@fontsource/barlow-condensed": "^5.3.0",
+    "@fontsource/inter": "^5.3.0",
     "qrcode-generator": "^1.4.4",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",

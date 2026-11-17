@@ -91,7 +91,7 @@ does the dashboard use the fallback demonstration profile (Normal up to 15 °C, 
 ## 3. Structure
 
 ```text
-index.html                 single shell (Inter font, manifest, icons)
+index.html                 single shell (manifest, icons; fonts self-hosted)
 vite.config.js             React, CSS scoping, copies of the old .html pages
 playwright.config.js       e2e against the build (vite preview on port 5500)
 eslint.config.js

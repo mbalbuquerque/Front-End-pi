@@ -23,7 +23,7 @@ npm run test:e2e   # Playwright em coldtrack-qa/tests (rode o build antes)
 ## 1. Estrutura
 
 ```text
-index.html                 casca única (fonte Inter, manifest, ícones)
+index.html                 casca única (manifest, ícones; fontes servidas pelo próprio site)
 vite.config.js             React + escopo de CSS + cópias das páginas .html antigas
 public/                    vai para dist/ como está: sw.js, manifest.json, assets/icons/
 scripts/enviar-site.sh     envio de dist/ para o Azure (CI e publicar.sh)
@@ -39,6 +39,7 @@ src/
   components/              PainelLayout, FaixaOffline, RequireAuth, Estado, StatusSelo, FiltroPeriodo,
                            SeletorVeiculo, GraficoTemperatura, ChatWidget/, AssistentePainel/
   pages/<Nome>/<Nome>.jsx  uma pasta por tela (regras puras em .js e testes ao lado)
+  styles/tokens.css        tokens do design system (--ct-*: cor, fonte, espaço, raio, sombra, movimento)
   styles/base.css          reset mínimo global
   styles/<familia>/*.css   CSS de cada família de telas, escopado por .escopo-<familia>
   assets/images/           imagens WebP (slide-1..3, coldtrack-infografico)
@@ -107,7 +108,9 @@ Regras:
   `display: flex` que o body tinha. Use `className="escopo-<familia> raiz-pagina"`
   (`.raiz-pagina` dá `min-height: 100vh`).
 - Tudo que a tela mostra tem que estar **dentro** da raiz, inclusive `<dialog>`: as variáveis
-  (`--navy`, `--red`...) só existem ali. Não use portal para fora do escopo.
+  (`--navy`, `--red`...) só existem ali. Elas apontam para os tokens globais `--ct-*` de
+  `src/styles/tokens.css` (sem escopo, valem em todo o app); cor, fonte, raio, sombra e
+  movimento novos usam o token direto, nunca um valor solto. Não use portal para fora do escopo.
 - Seletor antigo que dependia do `<body>` ou do HTML fixo pode ser ajustado no CSS da família
   (registre no commit). Já ajustado: `.pagina-login { flex: 1 }` em `painel/index.css`.
 - `/cadastro` usa a família painel: `<div className="escopo-painel raiz-pagina"><div className="pagina-login"><main className="login">…`.
