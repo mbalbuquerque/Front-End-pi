@@ -6,6 +6,7 @@ import { useState } from "react";
 import Estado, { Carregando, ErroAzure, SemVeiculo } from "../../components/Estado.jsx";
 import FiltroPeriodo from "../../components/FiltroPeriodo.jsx";
 import GraficoTemperatura from "../../components/GraficoTemperatura.jsx";
+import Icone from "../../components/Icone.jsx";
 import PainelLayout from "../../components/PainelLayout.jsx";
 import SeletorVeiculo from "../../components/SeletorVeiculo.jsx";
 import StatusSelo from "../../components/StatusSelo.jsx";
@@ -13,7 +14,7 @@ import { usePolling } from "../../hooks/usePolling.js";
 import { useVeiculoEscolhido } from "../../hooks/useVeiculoEscolhido.js";
 import { UPDATE_INTERVAL } from "../../lib/config.js";
 import { descreverCritico, descreverNormal } from "../../lib/faixas.js";
-import { formatarDataHora, formatarTemp, formatarUmidade } from "../../lib/formatar.js";
+import { formatarDataHora, formatarTemp, formatarUmidade, infoStatus } from "../../lib/formatar.js";
 import { buscarLeituras, horarioDe, resumir } from "../../lib/leituras.js";
 import { baixarCsv } from "./csv.js";
 
@@ -99,7 +100,7 @@ function ConteudoRelatorio({ leituras, veiculo, faixa, horas, horasFiltro, aoMud
   if (!r) {
     return (
       <>
-        <div className="acoes"><FiltroPeriodo horas={horasFiltro} aoMudar={aoMudarHoras} /></div>
+        <div className="acoes relatorio-acoes"><FiltroPeriodo horas={horasFiltro} aoMudar={aoMudarHoras} /></div>
         <Estado painel titulo={`Nenhuma leitura ${horas === 24 ? "nas" : "nos"} ${periodo}.`}>
           Confira se o sensor está ligado e conectado.
         </Estado>
@@ -112,14 +113,20 @@ function ConteudoRelatorio({ leituras, veiculo, faixa, horas, horasFiltro, aoMud
 
   return (
     <>
-      <div className="acoes">
+      <div className="acoes relatorio-acoes">
         <FiltroPeriodo horas={horasFiltro} aoMudar={aoMudarHoras} />
-        <button type="button" className="botao" id="baixarCsv" onClick={() => baixarCsv(leituras, veiculo.id, horas)}>
+        <button
+          type="button"
+          className="botao secundario botao-icone"
+          id="baixarCsv"
+          onClick={() => baixarCsv(leituras, veiculo.id, horas)}
+        >
+          <Icone nome="baixar" tamanho={20} />
           Baixar CSV
         </button>
       </div>
 
-      <section className="resumo">
+      <section className="resumo relatorio-resumo">
         <article className="card">
           <span>Leituras</span>
           <strong>{r.total}</strong>
@@ -132,26 +139,26 @@ function ConteudoRelatorio({ leituras, veiculo, faixa, horas, horasFiltro, aoMud
           <small>mín. {formatarTemp(r.minima)} · máx. {formatarTemp(r.maxima)}</small>
         </article>
 
-        <article className="card">
+        <article className={`card${r.critico ? " destaque-critico" : fora ? " destaque-atencao" : ""}`}>
           <span>Fora da faixa normal</span>
           <strong className={r.critico ? "critico" : fora ? "atencao" : ""}>{percentual.toFixed(0)} %</strong>
           <small>{fora} de {r.total} leituras</small>
         </article>
 
-        <article className="card">
+        <article className={`card${r.critico ? " destaque-critico" : ""}`}>
           <span>Críticas</span>
           <strong className={r.critico ? "critico" : ""}>{r.critico}</strong>
           <small>{descreverCritico(faixa)}</small>
         </article>
       </section>
 
-      <article className="panel">
+      <article className="panel relatorio-grafico">
         <h2>Temperatura no período · {veiculo.id}</h2>
         <p>A faixa azul é a faixa normal da carga ({descreverNormal(faixa)}).</p>
         <GraficoTemperatura id="graficoRelatorio" leituras={leituras} faixa={faixa} />
       </article>
 
-      <article className="panel">
+      <article className="panel relatorio-tabela">
         <h2>Leituras</h2>
         <p>{r.total === LIMITE_RELATORIO
           ? `Mostrando as ${LIMITE_RELATORIO} leituras mais recentes do período.`
@@ -167,7 +174,8 @@ function ConteudoRelatorio({ leituras, veiculo, faixa, horas, horasFiltro, aoMud
 function TabelaLeituras({ leituras }) {
 
   return (
-    <div className="tabela-wrap">
+    // Rola dentro do painel com o cabeçalho fixo (design system: tabela de cabeçalho fixo).
+    <div className="tabela-wrap tabela-rolagem" tabIndex={0} role="region" aria-label="Leituras do período">
       <table className="tabela">
         <thead>
           <tr>
@@ -179,7 +187,7 @@ function TabelaLeituras({ leituras }) {
         </thead>
         <tbody>
           {leituras.map((l, i) => (
-            <tr key={`${l.id ?? horarioDe(l).getTime()}-${i}`}>
+            <tr key={`${l.id ?? horarioDe(l).getTime()}-${i}`} className={infoStatus(l.status).classe}>
               <td>{formatarDataHora(horarioDe(l))}</td>
               <td className="num">{formatarTemp(l.temperatura)}</td>
               <td className="num">{formatarUmidade(l.umidade)}</td>

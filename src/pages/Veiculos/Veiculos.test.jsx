@@ -78,6 +78,12 @@ function abrir() {
 
 const cartao = id => screen.getByRole("heading", { name: id }).closest("article");
 
+// O cadastro fica na gaveta da direita: abre pelo botão do topo.
+async function abrirGaveta() {
+  await userEvent.click(await screen.findByRole("button", { name: "Cadastrar veículo" }));
+  expect(document.getElementById("painelNovo")).toHaveAttribute("open");
+}
+
 beforeEach(() => {
   vi.clearAllMocks();
   vi.spyOn(console, "error").mockImplementation(() => {});
@@ -101,6 +107,7 @@ describe("Veiculos", () => {
     expect(screen.getByText("Carregando leituras…")).toBeInTheDocument();
     expect(await screen.findByRole("heading", { name: "VAN-01" })).toBeInTheDocument();
     expect(screen.getAllByRole("heading", { level: 3 })).toHaveLength(3);
+    expect(screen.getByText("3 veículos")).toBeInTheDocument();
     expect(screen.getByTestId("conexao")).toHaveTextContent("true");
   });
 
@@ -149,6 +156,7 @@ describe("Veiculos", () => {
     abrir();
     await screen.findByRole("heading", { name: "VAN-01" });
     expect(document.getElementById("painelNovo")).toBeNull();
+    expect(screen.queryByRole("button", { name: "Cadastrar veículo" })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Remover veículo" })).not.toBeInTheDocument();
     expect(screen.getAllByRole("button", { name: "Etiqueta QR" })).toHaveLength(3);
   });
@@ -156,6 +164,7 @@ describe("Veiculos", () => {
   it("formulário só oferece os sensores livres, em ordem alfabética", async () => {
     abrir();
     await screen.findByRole("heading", { name: "VAN-01" });
+    await abrirGaveta();
     const opcoes = within(document.getElementById("formVeiculo").elements.deviceId).getAllByRole("option");
     expect(opcoes.map(o => o.value)).toEqual(["esp32-livre-a", "esp32-livre-b"]);
     const perfis = within(document.getElementById("formVeiculo").elements.perfil).getAllByRole("option");
@@ -166,6 +175,8 @@ describe("Veiculos", () => {
     dispositivos = [{ id: "esp32-01" }, { id: "esp32-02" }, { id: "esp32-03" }];
     abrir();
     expect(await screen.findByText("Nenhum sensor livre para um veículo novo.")).toBeInTheDocument();
+    expect(document.getElementById("painelNovo")).toBeNull();
+    expect(screen.queryByRole("button", { name: "Cadastrar veículo" })).not.toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Sensores" })).toHaveAttribute("href", "/sensores");
   });
 
@@ -174,6 +185,7 @@ describe("Veiculos", () => {
     respostas({ "POST /veiculos": opcoes => { enviados.push(opcoes.corpo); return {}; } });
     abrir();
     await screen.findByRole("heading", { name: "VAN-01" });
+    await abrirGaveta();
     const form = document.getElementById("formVeiculo");
     await userEvent.type(form.elements.id, "CT-09");
     await userEvent.type(form.elements.tipo, "Truck");
@@ -181,12 +193,34 @@ describe("Veiculos", () => {
     await waitFor(() => expect(enviados).toHaveLength(1));
     expect(enviados[0]).toMatchObject({ id: "CT-09", tipo: "Truck", deviceId: "esp32-livre-a", perfil: "demonstrativo" });
     await waitFor(() => expect(api.api.mock.calls.filter(([c, o]) => c === "/veiculos" && !o).length).toBeGreaterThan(1));
+    // Salvou: a gaveta fecha sozinha.
+    expect(document.getElementById("painelNovo")).not.toHaveAttribute("open");
+  });
+
+  it("gaveta: com ela aberta a lista não se atualiza; Cancelar fecha e o polling volta", async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    try {
+      abrir();
+      await screen.findByRole("heading", { name: "VAN-01" });
+      await abrirGaveta();
+      const chamadas = () => api.api.mock.calls.filter(([c, o]) => c === "/veiculos" && !o).length;
+      const antes = chamadas();
+      await vi.advanceTimersByTimeAsync(25000);
+      expect(chamadas()).toBe(antes);
+      await userEvent.click(screen.getByRole("button", { name: "Cancelar" }));
+      expect(document.getElementById("painelNovo")).not.toHaveAttribute("open");
+      await vi.advanceTimersByTimeAsync(25000);
+      await waitFor(() => expect(chamadas()).toBeGreaterThan(antes));
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it("erro no cadastro: mostra a mensagem da API", async () => {
     respostas({ "POST /veiculos": new Error("código já existe") });
     abrir();
     await screen.findByRole("heading", { name: "VAN-01" });
+    await abrirGaveta();
     fireEvent.submit(document.getElementById("formVeiculo"));
     expect(await screen.findByRole("alert")).toHaveTextContent("código já existe");
   });

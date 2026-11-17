@@ -120,6 +120,10 @@ Regras:
   Monitoramento) ficam dentro do shell: `<div class="escopo-shell">` com a barra lateral e, ao
   lado, `<div class="escopo-<familia> ct-area">` com a barra superior e o `<main>`. O shell só usa
   classes `ct-*` (nada de regra por elemento), para não atingir o conteúdo das famílias.
+- Cadastro curto (veículo, viagem) abre na gaveta da direita, `components/Gaveta.jsx`: um
+  `<dialog>` modal (foco preso, Escape e véu fecham) que fica no DOM mesmo fechado, então o
+  `id` do formulário continua existindo para os testes. A tela guarda o estado "aberta" e pausa o
+  polling enquanto ela está aberta.
 - Impressão da etiqueta (Veículos): a regra é `.escopo-painel:has(.etiqueta[open]) > *:not(.etiqueta)`,
   então a `<dialog className="etiqueta">` precisa ser filha direta da raiz da família: passe-a na
   prop `dialogos` do `PainelLayout`. Na impressão o shell esconde a barra lateral.

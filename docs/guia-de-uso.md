@@ -93,12 +93,14 @@ Botões do cartão: **Ver no painel**, **Etiqueta QR** e, só para o gestor, **R
 
 Antes de cadastrar, o sensor precisa estar registrado em Sensores. Se não houver sensor livre, a tela avisa: "Nenhum sensor livre para um veículo novo."
 
-1. Abra o painel **Cadastrar veículo**.
+1. Clique em **Cadastrar veículo**, no topo da lista. O formulário abre numa gaveta à direita.
 2. Preencha **Código** (exemplo: CT-002) e **Tipo** (exemplo: Caminhão baú refrigerado).
 3. Em **Sensor**, escolha um dos sensores que ainda não têm veículo.
 4. Opcional: **Dispositivo** (exemplo: ESP32-C3 + DHT11).
 5. Em **Perfil da carga**, escolha o perfil. Cada opção mostra a faixa normal, por exemplo "(normal de 10 a 13 °C)".
-6. Clique em **Cadastrar**.
+6. Clique em **Cadastrar**. A gaveta fecha e o veículo entra na lista. **Cancelar**, o **X** ou a tecla Esc fecham sem salvar.
+
+Enquanto a gaveta está aberta a lista não se atualiza, para não apagar o que foi digitado.
 
 O perfil define as faixas de temperatura do veículo (veja a seção Faixas por carga).
 
@@ -199,10 +201,10 @@ A rota real no mapa está marcada como **PLANEJADO**: chega com o módulo 4G com
 ### Registrar viagem (gestor)
 
 É preciso ter ao menos um veículo cadastrado ("Cadastre um veículo antes de registrar viagens.").
-1. Abra o painel **Registrar viagem**.
+1. Clique em **Registrar viagem**, no topo da lista. O formulário abre numa gaveta à direita.
 2. Escolha o **Veículo**.
 3. Preencha **Origem** (exemplo: Petrolina/PE), **Destino**, **Carga** (exemplo: Manga Tommy Atkins) e **Início** (já vem com a data e hora atuais).
-4. Clique em **Registrar**.
+4. Clique em **Registrar**. A gaveta fecha e a viagem entra na lista. **Cancelar**, o **X** ou a tecla Esc fecham sem salvar.
 
 ### Encerrar e remover (gestor)
 

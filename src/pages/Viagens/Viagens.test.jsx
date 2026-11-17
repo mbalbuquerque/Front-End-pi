@@ -87,6 +87,12 @@ beforeEach(() => {
   respostas();
 });
 
+// O registro fica na gaveta da direita: abre pelo botão do topo.
+async function abrirGaveta() {
+  await userEvent.click(await screen.findByRole("button", { name: "Registrar viagem" }));
+  expect(document.getElementById("painelNovo")).toHaveAttribute("open");
+}
+
 describe("Viagens", () => {
 
   it("mostra Carregando antes da resposta", () => {
@@ -114,6 +120,11 @@ describe("Viagens", () => {
     expect(within(paineis[1]).getByText("CONCLUÍDA")).toBeInTheDocument();
     expect(within(paineis[1]).getByText("Duração")).toBeInTheDocument();
     expect(screen.getByText("PLANEJADO")).toBeInTheDocument();
+    // Linha do tempo: a situação do trajeto vem escrita, não só na forma da linha.
+    expect(within(paineis[0]).getByText("Em trânsito")).toBeInTheDocument();
+    expect(within(paineis[1]).getByText("Encerrada")).toBeInTheDocument();
+    expect(paineis[1]).toHaveClass("concluida");
+    expect(screen.getByText("2 viagens")).toBeInTheDocument();
     expect(screen.getByTestId("conexao")).toHaveTextContent("true");
   });
 
@@ -149,6 +160,7 @@ describe("Viagens", () => {
     abrir();
     await screen.findByText("VIA-02 · VAN-01");
     expect(document.getElementById("painelNovo")).toBeNull();
+    expect(screen.queryByRole("button", { name: "Registrar viagem" })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Remover" })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Encerrar viagem" })).not.toBeInTheDocument();
   });
@@ -158,6 +170,7 @@ describe("Viagens", () => {
     respostas({ "POST /viagens": opcoes => { enviados.push(opcoes.corpo); return {}; } });
     abrir();
     await screen.findByText("VIA-02 · VAN-01");
+    await abrirGaveta();
     const form = document.getElementById("formViagem");
     await userEvent.type(form.elements.origem, "Recife/PE");
     await userEvent.type(form.elements.destino, "Natal/RN");
@@ -175,6 +188,7 @@ describe("Viagens", () => {
     respostas({ "POST /viagens": new Error("origem obrigatória") });
     abrir();
     await screen.findByText("VIA-02 · VAN-01");
+    await abrirGaveta();
     fireEvent.submit(document.getElementById("formViagem"));
     expect(await screen.findByRole("alert")).toHaveTextContent("origem obrigatória");
   });
@@ -220,6 +234,8 @@ describe("Viagens", () => {
     viagens = [];
     abrir();
     expect(await screen.findByText("Cadastre um veículo antes de registrar viagens.")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Ir para Veículos" })).toHaveAttribute("href", "/veiculos");
+    expect(screen.queryByRole("button", { name: "Registrar viagem" })).not.toBeInTheDocument();
   });
 
 });
