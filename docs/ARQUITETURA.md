@@ -64,11 +64,11 @@ ficam dentro de `<Route element={<RequireAuth />}>`. Para criar uma tela nova, s
 | `/viagens` | `pages/Viagens/Viagens.jsx` | painel | sim |
 | `/configuracoes` | `pages/Configuracoes/Configuracoes.jsx` | painel | sim |
 | `/motorista` | `pages/Motorista/Motorista.jsx` | motorista | sim (só perfil motorista) |
-| `/usuarios` | `pages/Usuarios/Usuarios.jsx` | usuarios | não (demo) |
-| `/auditoria` | `pages/Auditoria/Auditoria.jsx` | auditoria | não (demo) |
-| `/cadastro-usuario` | `pages/CadastroUsuario/CadastroUsuario.jsx` | cadastro-usuario | não (demo) |
-| `/logistica` | `pages/Logistica/Logistica.jsx` | logistica | não (demo) |
-| `/monitoramento` | `pages/Monitoramento/Monitoramento.jsx` | monitoramento | não (demo) |
+| `/monitoramento` | `pages/Monitoramento/Monitoramento.jsx` | gestao | sim |
+
+As telas antigas com dados de exemplo (Usuários, Novo usuário, Auditoria, Logística) foram
+retiradas; `ROTAS_REMOVIDAS` em `rotas.js` leva o endereço à tela real (`/configuracoes#painelUsuarios`,
+`/viagens`, `/dashboard`).
 | (widget da `/`) | `components/ChatWidget/ChatWidget.jsx` | chat | não |
 | (botão de toda tela logada) | `components/AssistentePainel/AssistentePainel.jsx` (montado no `PainelLayout`) | painel | sim |
 
@@ -96,8 +96,7 @@ O CSS de cada família veio do site anterior (HTML + JS) e redefine `:root`, `*`
 | painel | `escopo-painel` | `style.css`, `telas.css`, `assistente.css`, `alertas.css`, `sensores.css`, `frota.css`, `configuracoes.css` (via `index.css`) | `styles/painel/index.css` (já feito no `PainelLayout`) |
 | home | `escopo-home` | `home.css` | `styles/home/home.css` |
 | login | `escopo-login` | `login.css` | `styles/login/login.css` |
-| cadastro-usuario | `escopo-cadastro-usuario` | `cadastro.css` | `styles/cadastro-usuario/cadastro.css` |
-| gestao | `escopo-gestao` | `gestao.css` (Usuários, Auditoria, Logística e Monitoramento: tiles, filtros, tabela, diálogo, quadro, linha do tempo) | `styles/gestao/gestao.css` |
+| gestao | `escopo-gestao` | `gestao.css` (Monitoramento: tiles, tabela, gráfico) | `styles/gestao/gestao.css` |
 | chat | `escopo-chat` | `chat.css` | `styles/chat/chat.css` (raiz do widget, sem `raiz-pagina`) |
 
 Regras:
@@ -113,8 +112,7 @@ Regras:
   (registre no commit).
 - `/login` e `/cadastro` usam a família login pela moldura `<AcessoLayout>`
   (`components/AcessoLayout.jsx`): painel navy com a marca e a régua de faixa, formulário num cartão.
-- Telas internas (as do painel e as de gestão: Usuários, Novo usuário, Auditoria, Logística,
-  Monitoramento) ficam dentro do shell: `<div class="escopo-shell">` com a barra lateral e, ao
+- Telas internas (as do painel e a de gestão: Monitoramento) ficam dentro do shell: `<div class="escopo-shell">` com a barra lateral e, ao
   lado, `<div class="escopo-<familia> ct-area">` com a barra superior e o `<main>`. O shell só usa
   classes `ct-*` (nada de regra por elemento), para não atingir o conteúdo das famílias.
 - Cadastro curto (veículo, viagem) abre na gaveta da direita, `components/Gaveta.jsx`: um
@@ -229,7 +227,7 @@ vinculado a ele, com `url` `/motorista` (`projeto-integrador-4-periodo#88`).
 - **`<PainelLayout titulo? subtitulo? tituloDocumento? conexao? extraTopo? dialogos? familia?>`** —
   moldura única das telas internas. Barra lateral `#sidebar` com `nav[aria-label="Menu principal"]`
   nos grupos Operação e Gestão (`GRUPOS_PAINEL` em `rotas.js`; item atual com `active` +
-  `aria-current="page"`; `tambem` acende o item em outra rota, ex.: `/cadastro-usuario` em Usuários),
+  `aria-current="page"`; `tambem` acende o item em outra rota; `gestor: true` mostra o item só ao gestor, ex.: Usuários, que abre `/configuracoes#painelUsuarios`),
   usuário logado, `#botaoSair`. Barra superior com `<h1>`/`<p>`, `extraTopo` e o indicador
   (`#fonteDados` + "atualizado às HH:MM"). `conexao`: `null` "Conectando...", `true` "Azure
   conectado", `false` "Sem conexão com Azure" (pílula vermelha); sem a prop (`undefined`) o

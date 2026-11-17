@@ -3,7 +3,7 @@ import { abrirMenu, entrarComo, errosDoConsole, expect, simularApi, test } from 
 // Todas as rotas em 390 px (celular comum): sem rolagem horizontal e sem
 // erro no console. Sessão de gestor (a que mostra mais controles) e API simulada.
 
-const PUBLICAS = ["/", "/cadastro", "/usuarios", "/auditoria", "/cadastro-usuario", "/logistica", "/monitoramento"];
+const PUBLICAS = ["/", "/cadastro"];
 const LOGADAS = ["/dashboard", "/alertas", "/relatorios", "/veiculos", "/sensores", "/viagens", "/configuracoes"];
 
 test.use({ viewport: { width: 390, height: 844 } });
@@ -45,6 +45,16 @@ test.describe("QA - Responsivo 390 px", () => {
       expect(erros, erros.join("\n")).toEqual([]);
     });
   }
+
+  test("QA-041: /monitoramento em 390 px (gestor)", async ({ page }) => {
+    const erros = errosDoConsole(page);
+    await entrarComo(page, "gestor");
+    await simularApi(page);
+    await page.goto("/monitoramento");
+    await expect(page.getByRole("heading", { name: "Monitoramento de sensores" })).toBeVisible();
+    await semRolagemHorizontal(page, "/monitoramento");
+    expect(erros, erros.join("\n")).toEqual([]);
+  });
 
   for (const rota of LOGADAS) {
     test(`QA-041: ${rota} em 390 px (gestor)`, async ({ page }) => {

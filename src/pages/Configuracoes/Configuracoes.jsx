@@ -4,7 +4,7 @@
 // Porte do site antigo: configuracoes.html + js/configuracoes.js.
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Carregando } from "../../components/Estado.jsx";
 import PainelLayout from "../../components/PainelLayout.jsx";
 import { useSessao } from "../../hooks/useSessao.jsx";
@@ -72,6 +72,18 @@ export default function Configuracoes() {
     };
 
   }, []);
+
+  // "Usuários" no menu abre /configuracoes#painelUsuarios: rola até a seção
+  // quando ela aparece (o roteador não rola sozinho para a âncora).
+  const { hash } = useLocation();
+
+  useEffect(() => {
+
+    if (dados && hash) {
+      document.getElementById(hash.slice(1))?.scrollIntoView?.({ block: "start" });
+    }
+
+  }, [dados, hash]);
 
   return (
     <PainelLayout

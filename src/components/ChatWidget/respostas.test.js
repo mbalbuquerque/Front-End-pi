@@ -35,7 +35,7 @@ describe("responder", () => {
 
   it("termo composto vence palavra solta", () => {
     // "carga" (logística, 1 ponto) perde para "cadastrar carga" (10 pontos).
-    expect(responder("como cadastrar carga").texto).toContain("Para cadastrar uma carga");
+    expect(responder("como cadastrar carga").texto).toContain("A carga é acompanhada pela viagem");
   });
 
   it("botão rápido de sensores acha a resposta dos sensores", () => {

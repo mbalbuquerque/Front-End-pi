@@ -11,10 +11,8 @@ const paginas = [
   "/",
   "/login",
   "/cadastro",
-  "/usuarios",
-  "/auditoria",
   "/dashboard",
-  "/logistica"
+  "/monitoramento"
 ];
 
 test.describe("QA - Navegação ColdTrack", () => {

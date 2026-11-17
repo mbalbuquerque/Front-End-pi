@@ -4,7 +4,7 @@
 import { lazy, Suspense } from "react";
 import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import RequireAuth from "./components/RequireAuth.jsx";
-import { ROTAS_LEGADAS } from "./rotas.js";
+import { ROTAS_LEGADAS, ROTAS_REMOVIDAS } from "./rotas.js";
 
 // Cada tela vira um pedaço separado do bundle (JS e CSS da família).
 const Home = lazy(() => import("./pages/Home/Home.jsx"));
@@ -20,11 +20,7 @@ const Viagens = lazy(() => import("./pages/Viagens/Viagens.jsx"));
 const Configuracoes = lazy(() => import("./pages/Configuracoes/Configuracoes.jsx"));
 const Motorista = lazy(() => import("./pages/Motorista/Motorista.jsx"));
 
-// Telas demonstrativas (dados de exemplo, sem API e sem login, como no original).
-const Usuarios = lazy(() => import("./pages/Usuarios/Usuarios.jsx"));
-const Auditoria = lazy(() => import("./pages/Auditoria/Auditoria.jsx"));
-const CadastroUsuario = lazy(() => import("./pages/CadastroUsuario/CadastroUsuario.jsx"));
-const Logistica = lazy(() => import("./pages/Logistica/Logistica.jsx"));
+// Leituras reais do canal público do ThingSpeak (só com sessão).
 const Monitoramento = lazy(() => import("./pages/Monitoramento/Monitoramento.jsx"));
 
 
@@ -56,16 +52,16 @@ export default function App() {
           <Route path="/sensores" element={<Sensores />} />
           <Route path="/viagens" element={<Viagens />} />
           <Route path="/configuracoes" element={<Configuracoes />} />
+          <Route path="/monitoramento" element={<Monitoramento />} />
         </Route>
 
         {/* Só o perfil motorista; ele também não entra nas rotas acima. */}
         <Route path="/motorista" element={<RequireAuth perfil="motorista"><Motorista /></RequireAuth>} />
 
-        <Route path="/usuarios" element={<Usuarios />} />
-        <Route path="/auditoria" element={<Auditoria />} />
-        <Route path="/cadastro-usuario" element={<CadastroUsuario />} />
-        <Route path="/logistica" element={<Logistica />} />
-        <Route path="/monitoramento" element={<Monitoramento />} />
+        {/* Telas antigas com dados de exemplo, removidas: o endereço leva à tela real. */}
+        {Object.entries(ROTAS_REMOVIDAS).map(([rota, para]) => (
+          <Route key={rota} path={rota} element={<Navigate to={para} replace />} />
+        ))}
 
         {Object.entries(ROTAS_LEGADAS).map(([nome, para]) => (
           <Route key={nome} path={`/${nome}.html`} element={<RedirecionarLegado para={para} />} />
