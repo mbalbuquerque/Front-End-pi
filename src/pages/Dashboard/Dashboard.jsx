@@ -12,6 +12,7 @@ import { HISTORY_SIZE, UPDATE_INTERVAL } from "../../lib/config.js";
 import { descreverNormal } from "../../lib/faixas.js";
 import { STATUS_INFO, formatarTemp } from "../../lib/formatar.js";
 import { buscarLeituras, resumir } from "../../lib/leituras.js";
+import AvisoFalhaSensor from "./AvisoFalhaSensor.jsx";
 import RiscoRota from "./RiscoRota.jsx";
 import RiscoSaida from "./RiscoSaida.jsx";
 import {
@@ -127,6 +128,8 @@ export default function Dashboard() {
         <SeletorVeiculo veiculos={escolha.veiculos} veiculo={escolha.veiculo} aoTrocar={trocarVeiculo} />
       )}
     >
+
+      <AvisoFalhaSensor deviceId={veiculo?.deviceId} />
 
       {contato.semDados && (
         <div id="semDadosAviso" className="alert" role="status">

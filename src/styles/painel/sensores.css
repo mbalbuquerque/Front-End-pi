@@ -175,6 +175,27 @@
   color: var(--ct-offline);
 }
 
+.sensor-falha .sensor-icone {
+  background: var(--ct-critico-bg);
+  color: var(--ct-critico);
+}
+
+.sensor-falha {
+  box-shadow: inset 4px 0 0 var(--ct-critico);
+}
+
+/* Com a linha da falha, o sinal desce para a própria linha (não aperta a coluna). */
+@media (min-width: 1051px) {
+
+  .tabela-sensores tbody tr.sensor-falha {
+    grid-template-areas:
+      "nome  nome  temp acoes"
+      "situ  situ  temp acoes"
+      "sinal sinal temp acoes";
+  }
+
+}
+
 .tabela-sensores td.sensor-situacao {
   grid-area: situ;
   display: flex;
@@ -220,6 +241,26 @@
 
 .sensor-sinal .ct-icone {
   flex: none;
+}
+
+/* Sensor em falha (#52): texto + ícone na cor crítica, nunca só a cor. */
+.falha-sensor {
+  display: inline-flex;
+  flex-basis: 100%;
+  align-items: center;
+  gap: 6px;
+  color: var(--ct-critico);
+  font-size: var(--ct-text-body-sm);
+  font-weight: var(--ct-weight-strong);
+}
+
+.falha-sensor .ct-icone {
+  flex: none;
+}
+
+/* Última leitura válida de um sensor em falha: fica, mas apagada e dita antiga. */
+.sensor-temp.antiga strong {
+  color: var(--ct-muted);
 }
 
 .tabela-sensores td.sensor-temp {

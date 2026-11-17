@@ -21,6 +21,7 @@ import { api } from "../../lib/api.js";
 import { UPDATE_INTERVAL } from "../../lib/config.js";
 import { useOnline } from "../../lib/conectividade.js";
 import { formatarHora, formatarTemp, formatarUmidade } from "../../lib/formatar.js";
+import { falhaDoSensor } from "../../lib/sensorFalha.js";
 import { criarSom, notificar, pedirPermissaoDeNotificacao, vibrar } from "./alerta.js";
 import AlertasPushMotorista from "./AlertasPushMotorista.jsx";
 import {
@@ -113,8 +114,10 @@ export default function Motorista() {
   const minutos = leitura ? minutosDesde(leitura.medidoEm, agora) : null;
   const horaLeitura = leitura && minutos !== null ? formatarHora(new Date(leitura.medidoEm)) : null;
   const info = status ? STATUS_MOTORISTA[status] : null;
-  // Valor que não é atual: sem sinal do sensor, sem internet ou API sem responder.
-  const antigo = Boolean(leitura) && (status === "SEM_SINAL" || !online || erro !== null);
+  // Sensor em falha (placa viva mandando heartbeat): a leitura na tela é a última válida.
+  const falhaSensor = falhaDoSensor(dados, new Date(agora));
+  // Valor que não é atual: sem sinal do sensor, sensor em falha, sem internet ou API sem responder.
+  const antigo = Boolean(leitura) && (status === "SEM_SINAL" || falhaSensor !== null || !online || erro !== null);
 
   let faixaTopo = null;
   if (!online) {
@@ -165,6 +168,13 @@ export default function Motorista() {
                   ? "Sensor sem sinal: o aviso continua até chegar uma leitura normal."
                   : "Este aviso fica na tela até a carga voltar ao normal."}
               </div>
+            )}
+
+            {falhaSensor && (
+              <p className="aviso aviso-critico falha-sensor" id="falhaSensorMotorista" role="status">
+                <strong>{falhaSensor.texto}</strong>
+                {leitura ? "O valor abaixo é a última leitura válida." : "Nenhuma leitura válida ainda."}
+              </p>
             )}
 
             <section
