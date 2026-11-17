@@ -5,27 +5,24 @@
 }
 
 :root {
-  --navy: #0b1f33;
-  --blue: #1677ff;
-  --ice: #eef7ff;
-  --background: #f4f7fa;
-  --white: #ffffff;
-  --text: #17212b;
-  --muted: #5f6b76;
-  --blue-text: #0f5fd6;
+  --navy: var(--ct-navy-900);
+  --blue: var(--ct-blue-700);
+  --ice: var(--ct-blue-50);
+  --background: var(--ct-canvas);
+  --white: var(--ct-surface);
+  --text: var(--ct-text);
+  --muted: var(--ct-muted);
+  --blue-text: var(--ct-blue-700);
 
-  --green: #19a463;
-  --yellow: #e5a500;
-  --red: #d93b3b;
+  --green: var(--ct-normal);
+  --yellow: var(--ct-atencao-borda);
+  --red: var(--ct-critico);
 
-  --border: #e2e8ee;
+  --border: var(--ct-border);
 }
 
 body {
-  font-family:
-    Inter,
-    Arial,
-    sans-serif;
+  font-family: var(--ct-font-body);
 
   font-size: 15px;
   font-weight: 500;
@@ -75,7 +72,7 @@ body {
 
   background: var(--blue);
 
-  border-radius: 12px;
+  border-radius: var(--ct-radius-card);
 
   font-size: 23px;
 }
@@ -86,9 +83,10 @@ body {
 }
 
 .brand span {
-  font-size: 10px;
+  font-size: 12px;
+  font-weight: 600;
   letter-spacing: 3px;
-  color: #8da4ba;
+  color: var(--ct-on-navy-muted);
 }
 
 nav {
@@ -100,27 +98,28 @@ nav {
 nav a {
   text-decoration: none;
 
-  color: #aebdca;
+  color: var(--ct-on-navy-muted);
 
   padding: 13px 15px;
 
-  border-radius: 9px;
+  border-radius: var(--ct-radius-control);
 
-  transition: background-color 150ms cubic-bezier(0.23, 1, 0.32, 1),
-    color 150ms cubic-bezier(0.23, 1, 0.32, 1);
+  transition: background-color var(--ct-dur-fast) var(--ct-ease-out),
+    color var(--ct-dur-fast) var(--ct-ease-out);
 }
 
 nav a:hover,
 nav a.active {
   color: white;
-  background: #17334e;
+  background: var(--ct-navy-800);
 }
 
 .sidebar-footer {
   margin-top: auto;
 
-  color: #b9c6d1;
+  color: var(--ct-on-navy-muted);
   font-size: 13px;
+  font-weight: 600;
 
   display: flex;
   align-items: center;
@@ -157,7 +156,8 @@ nav a.active {
 }
 
 .topbar h1 {
-  font-size: 28px;
+  font-size: var(--ct-text-headline);
+  line-height: var(--ct-leading-headline);
 }
 
 .topbar p {
@@ -172,9 +172,10 @@ nav a.active {
 
   padding: 10px 15px;
 
-  border-radius: 20px;
+  border-radius: var(--ct-radius-pill);
 
   font-size: 13px;
+  font-weight: 600;
 
   display: flex;
   align-items: center;
@@ -200,7 +201,7 @@ nav a.active {
 
   border: 1px solid var(--border);
 
-  border-radius: 14px;
+  border-radius: var(--ct-radius-card);
 
   padding: 22px;
 
@@ -210,6 +211,7 @@ nav a.active {
 .card span {
   color: var(--muted);
   font-size: 13px;
+  font-weight: 600;
 }
 
 .card strong {
@@ -242,7 +244,7 @@ nav a.active {
 
   margin: 17px 0 10px;
 
-  border-radius: 20px;
+  border-radius: var(--ct-radius-pill);
 
   font-weight: 700;
 
@@ -250,23 +252,23 @@ nav a.active {
 }
 
 .status.normal {
-  color: #087443;
-  background: #dff7eb;
+  color: var(--ct-normal);
+  background: var(--ct-normal-bg);
 }
 
 .status.atencao {
-  color: #946600;
-  background: #fff2c9;
+  color: var(--ct-atencao);
+  background: var(--ct-atencao-bg);
 }
 
 .status.critico {
-  color: #a82424;
-  background: #ffe1e1;
+  color: var(--ct-critico);
+  background: var(--ct-critico-bg);
 }
 
 .status.aguardando {
-  background: #edf1f4;
-  color: #65727e;
+  background: var(--ct-offline-bg);
+  color: var(--ct-muted);
 }
 
 
@@ -286,7 +288,7 @@ nav a.active {
 
   border: 1px solid var(--border);
 
-  border-radius: 14px;
+  border-radius: var(--ct-radius-card);
 
   padding: 24px;
 }
@@ -299,13 +301,14 @@ nav a.active {
 }
 
 .panel h2 {
-  font-size: 17px;
+  font-size: var(--ct-text-title);
   margin-bottom: 5px;
 }
 
 .panel p {
   color: var(--muted);
   font-size: 13px;
+  font-weight: 600;
 }
 
 .badge {
@@ -315,9 +318,9 @@ nav a.active {
 
   padding: 8px 12px;
 
-  border-radius: 20px;
+  border-radius: var(--ct-radius-pill);
 
-  font-size: 11px;
+  font-size: 12px;
 
   height: fit-content;
 }
@@ -339,9 +342,9 @@ nav a.active {
 
   padding: 20px;
 
-  background: #f8fafc;
+  background: var(--ct-subtle);
 
-  border-radius: 12px;
+  border-radius: var(--ct-radius-card);
 }
 
 .truck {
@@ -353,13 +356,15 @@ nav a.active {
 
   color: var(--muted);
 
-  font-size: 10px;
+  font-size: 12px;
+  font-weight: 600;
 
   margin-bottom: 6px;
 }
 
 .vehicle strong {
   font-size: 13px;
+  font-weight: 600;
 }
 
 
@@ -371,13 +376,13 @@ nav a.active {
   background:
     linear-gradient(
       180deg,
-      #f9fcff,
+      var(--ct-subtle),
       white
     );
 
   border: 1px solid var(--border);
 
-  border-radius: 12px;
+  border-radius: var(--ct-radius-card);
 
   padding: 20px;
 }
@@ -416,10 +421,12 @@ nav a.active {
 .telemetry span {
   color: var(--muted);
   font-size: 13px;
+  font-weight: 600;
 }
 
 .telemetry strong {
   font-size: 13px;
+  font-weight: 600;
 }
 
 
@@ -428,17 +435,17 @@ nav a.active {
 .alert {
   margin-top: 25px;
 
-  background: #fff1f1;
+  background: var(--ct-critico-bg);
 
   border-left: 4px solid var(--red);
 
   padding: 16px;
 
-  border-radius: 8px;
+  border-radius: var(--ct-radius-control);
 }
 
 .alert strong {
-  color: #a82424;
+  color: var(--ct-critico);
 }
 
 .alert p {
@@ -461,6 +468,7 @@ footer {
   text-align: center;
 
   font-size: 12px;
+  font-weight: 600;
 }
 
 
@@ -511,4 +519,27 @@ footer {
   .vehicle {
     grid-template-columns: 1fr;
   }
+}
+
+/* TIPOGRAFIA DO DESIGN SYSTEM (src/styles/tokens.css): títulos em Barlow Condensed 700. */
+
+h1,
+h2 {
+  font-family: var(--ct-font-display);
+  font-weight: var(--ct-weight-strong);
+  letter-spacing: 0;
+}
+
+/* Texto pequeno nunca abaixo de 12px e sempre com peso >= 600. */
+small {
+  font-size: max(var(--ct-text-caption), 0.875em);
+  font-weight: var(--ct-weight-label);
+}
+
+/* Controles herdam a fonte (o navegador usaria 13,3px peso 400). */
+button,
+input,
+select,
+textarea {
+  font: inherit;
 }

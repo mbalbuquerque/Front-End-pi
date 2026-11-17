@@ -1,8 +1,8 @@
 
 :root {
-  font-family: "Segoe UI", Arial, sans-serif;
-  color: #163245;
-  background: #f3f7fa;
+  font-family: var(--ct-font-body);
+  color: var(--ct-text);
+  background: var(--ct-canvas);
 }
 
 * { box-sizing: border-box; }
@@ -18,19 +18,19 @@ body { margin: 0; }
   width: 245px;
   flex-shrink: 0;
   padding: 30px 20px;
-  background: #071d2d;
+  background: var(--ct-navy-900);
   color: white;
   display: flex;
   flex-direction: column;
 }
 
-.sidebar h2 { margin: 0; color: #ffffff; }
-.sidebar > p { color: #20c8d5; letter-spacing: 3px; }
+.sidebar h2 { margin: 0; color: var(--ct-surface); }
+.sidebar > p { color: var(--ct-cyan-500); letter-spacing: 3px; }
 .sidebar nav { display: grid; gap: 8px; margin-top: 35px; }
 
 .sidebar a {
   padding: 13px;
-  color: #b6d0dc;
+  color: var(--ct-on-navy-muted);
   text-decoration: none;
   border-radius: 9px;
 }
@@ -38,12 +38,12 @@ body { margin: 0; }
 .sidebar a:hover,
 .sidebar a.active {
   color: white;
-  background: #164257;
+  background: var(--ct-navy-800);
 }
 
 .sidebar small {
   margin-top: auto;
-  color: #8ca8b8;
+  color: var(--ct-on-navy-muted);
 }
 
 .main { flex: 1; min-width: 0; padding: 36px; }
@@ -57,15 +57,15 @@ body { margin: 0; }
 
 .header { margin-bottom: 24px; }
 .header h1 { margin: 7px 0; font-size: 32px; }
-.header p { color: #698090; }
-.eyebrow { color: #078da0; font-size: 12px; font-weight: 700; }
+.header p { color: var(--ct-muted); }
+.eyebrow { color: var(--ct-blue-700); font-size: 12px; font-weight: 700; }
 
 button, input, select { font: inherit; }
 
 button { cursor: pointer; }
 
 .btn-primary {
-  background: #087f92;
+  background: var(--ct-blue-700);
   color: white;
   border: 0;
   border-radius: 9px;
@@ -73,23 +73,24 @@ button { cursor: pointer; }
   font-weight: 600;
 }
 
-.btn-primary:hover { background: #066779; }
+.btn-primary:hover { background: var(--ct-blue-700); }
 
 .btn-secondary {
-  background: #e9f0f4;
-  color: #173a4d;
+  background: var(--ct-subtle);
+  color: var(--ct-navy-800);
   border: 0;
   border-radius: 8px;
   padding: 10px 14px;
 }
 
 .notice {
-  background: #e7f4f7;
-  border-left: 4px solid #0b90a1;
+  background: var(--ct-blue-50);
+  border-left: 4px solid var(--ct-blue-700);
   padding: 13px 17px;
   border-radius: 7px;
   margin-bottom: 22px;
   font-size: 13px;
+  font-weight: 600;
 }
 
 .metrics {
@@ -101,37 +102,37 @@ button { cursor: pointer; }
 
 .metric, .panel {
   background: white;
-  border: 1px solid #dde7ec;
+  border: 1px solid var(--ct-border);
   border-radius: 14px;
   padding: 23px;
 }
 
 .metric { display: grid; gap: 12px; }
-.metric span { color: #698090; font-size: 14px; }
+.metric span { color: var(--ct-muted); font-size: 14px;font-weight:600; }
 .metric strong { font-size: 30px; }
 
 .panel h2 { margin: 0; font-size: 20px; }
 .filters { display: flex; gap: 10px; flex-wrap: wrap; }
 
 input, select {
-  border: 1px solid #cbd9e0;
+  border: 1px solid var(--ct-border-strong);
   border-radius: 8px;
   padding: 11px 12px;
   background: white;
-  color: #163245;
+  color: var(--ct-text);
 }
 
 input:focus, select:focus {
-  outline: 2px solid #0b90a1;
+  outline: 2px solid var(--ct-blue-700);
   outline-offset: 1px;
 }
 
 .table-wrapper { overflow-x: auto; margin-top: 20px; }
 table { width: 100%; border-collapse: collapse; text-align: left; }
-th, td { padding: 15px 12px; border-bottom: 1px solid #eaf0f3; }
-th { color: #6a8190; font-size: 12px; }
-td { font-size: 13px; }
-td button { color: #087f92; background: none; border: 0; font-weight: 700; }
+th, td { padding: 15px 12px; border-bottom: 1px solid var(--ct-subtle); }
+th { color: var(--ct-muted); font-size: 12px;font-weight:600; }
+td { font-size: 13px;font-weight:600; }
+td button { color: var(--ct-blue-700); background: none; border: 0; font-weight: 700; }
 
 .status {
   display: inline-block;
@@ -141,11 +142,11 @@ td button { color: #087f92; background: none; border: 0; font-weight: 700; }
   font-weight: 700;
 }
 
-.transporte { background: #e4f5ec; color: #147b46; }
-.atencao { background: #fff0d8; color: #a9680b; }
-.entregue { background: #eaf0f4; color: #506a7a; }
+.transporte { background: var(--ct-normal-bg); color: var(--ct-normal); }
+.atencao { background: var(--ct-atencao-bg); color: var(--ct-atencao); }
+.entregue { background: var(--ct-subtle); color: var(--ct-muted); }
 
-.empty { padding: 25px; text-align: center; color: #698090; }
+.empty { padding: 25px; text-align: center; color: var(--ct-muted); }
 
 dialog {
   width: min(540px, calc(100% - 30px));
@@ -154,7 +155,7 @@ dialog {
   border: none;
   border-radius: 14px;
   padding: 25px;
-  box-shadow: 0 18px 60px #0003;
+  box-shadow: var(--ct-shadow-overlay);
 }
 
 dialog::backdrop { background: #071d2d99; }
@@ -163,7 +164,7 @@ dialog label { font-size: 13px; font-weight: 600; }
 dialog input { width: 100%; }
 .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .form-grid > div { display: grid; gap: 8px; }
-#mensagemForm { color: #b13b30; min-height: 18px; }
+#mensagemForm { color: var(--ct-critico); min-height: 18px; }
 #conteudoDetalhes p { line-height: 1.7; }
 
 @media (max-width: 1100px) {
@@ -187,10 +188,34 @@ dialog input { width: 100%; }
 /* Controles de ciclo de vida da carga */
 .detail-actions { display:flex; gap:10px; flex-wrap:wrap; margin-top:18px; }
 .detail-actions button { min-height:42px; }
-.btn-danger { background:#b42332; color:white; border:0; border-radius:9px; padding:12px 18px; font-weight:600; }
-.btn-danger:hover { background:#8c1d29; }
+.btn-danger { background:var(--ct-critico); color:white; border:0; border-radius:9px; padding:12px 18px; font-weight:600; }
+.btn-danger:hover { background:var(--ct-critico); }
 .btn-primary:disabled, .btn-danger:disabled { opacity:.55; cursor:not-allowed; }
-.cancelada { background:#fde8e8; color:#a32030; }
-.feedback { margin-top:14px; color:#147b46; font-weight:600; min-height:1.5em; }
+.cancelada { background:var(--ct-critico-bg); color:var(--ct-critico); }
+.feedback { margin-top:14px; color:var(--ct-normal); font-weight:600; min-height:1.5em; }
 #modalConfirmacao p { line-height:1.6; }
 @media (max-width:720px) { .detail-actions { flex-direction:column; } .detail-actions button { width:100%; } }
+
+
+/* TIPOGRAFIA DO DESIGN SYSTEM (src/styles/tokens.css): títulos em Barlow Condensed 700. */
+
+h1,
+h2 {
+  font-family: var(--ct-font-display);
+  font-weight: var(--ct-weight-strong);
+  letter-spacing: 0;
+}
+
+/* Texto pequeno nunca abaixo de 12px e sempre com peso >= 600. */
+small {
+  font-size: max(var(--ct-text-caption), 0.875em);
+  font-weight: var(--ct-weight-label);
+}
+
+/* Controles herdam a fonte (o navegador usaria 13,3px peso 400). */
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}

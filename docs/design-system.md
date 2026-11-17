@@ -46,11 +46,35 @@ primeiro, com o motivo, ou usa o que já existe.
 
 Faixa offline (sem internet): barra `#8F1D1D` com texto branco (contraste ~8:1).
 
+Tons de apoio, acrescentados na implementação (todos derivados da paleta acima):
+
+| token | valor | uso e motivo |
+|---|---|---|
+| `navy-800` | `#132C4D` | item da barra lateral sob o ponteiro (texto `on-navy-muted` 6,9:1) |
+| `navy-700` | `#1D3A5F` | divisória sobre navy |
+| `blue-50` | `#E8F1FB` | fundo de selo/destaque azul (`blue-700` sobre ele: 5,9:1) |
+| `subtle` | `#F8FAFC` | bloco dentro de cartão |
+| `border-strong` | `#C3CED9` | borda de campo de formulário |
+| `on-navy` | `#E2E8F0` | texto principal sobre navy (13,4:1) |
+| `on-navy-muted` | `#A9B8C9` | texto de apoio sobre navy (8,2:1) |
+| `atencao-borda` | `#E5A500` | forma de ATENÇÃO (barra, ponto, linha de limite); nunca texto |
+| `critico-borda` | `#F3CACA` | borda de caixa de erro |
+| `disabled` | `#9AA6B1` | fundo de botão desabilitado (fora da regra de contraste, WCAG 1.4.3) |
+
+### Implementação
+
+Todos os tokens moram em `src/styles/tokens.css`, como custom properties `--ct-*` no `:root`
+(fora das pastas de família, então sem prefixo de escopo). As variáveis antigas de cada família
+(`--navy`, `--muted`, `--border`...) apontam para eles. Valor novo de cor, fonte, raio, sombra
+ou movimento entra primeiro aqui e em `tokens.css`, nunca solto no CSS da tela.
+
 ## 4. Tipografia
 
 - **Títulos e números grandes:** Barlow Condensed 700 (fonte da casa para produto; compacta,
   boa para números densos).
 - **Corpo, rótulos e tabelas:** Inter.
+- As duas fontes são servidas pelo próprio site (pacotes `@fontsource`, subconjunto latino,
+  importados em `src/main.jsx`); a CSP fica com `font-src 'self'`, sem Google Fonts.
 - Números com algarismos tabulares (`font-variant-numeric: tabular-nums`).
 
 | nível | fonte | tamanho | peso | altura de linha |
@@ -76,7 +100,10 @@ título e botão nunca peso 300/400; `letter-spacing` negativo só acima de 24 p
 ## 6. Movimento
 
 - Transições de UI de 150 a 250 ms com `cubic-bezier(0.23, 1, 0.32, 1)` (ease-out forte).
-- Gaveta: 300 ms com `cubic-bezier(0.32, 0.72, 0, 1)`.
+- Gaveta: 280 ms com `cubic-bezier(0.32, 0.72, 0, 1)` (abaixo do teto de 300 ms da casa).
+- Tokens: `--ct-dur-fast` 150 ms, `--ct-dur-base` 200 ms, `--ct-dur-slow` 250 ms,
+  `--ct-dur-drawer` 280 ms, `--ct-ease-out`, `--ct-ease-drawer`, `--ct-enter-scale` 0,96. Com
+  `prefers-reduced-motion` as durações vão a zero no próprio `tokens.css`.
 - **Proibido:** `ease-in` em UI e `scale(0)`. Entrada a partir de `scale(0.96)` + opacidade.
 - Valor ao vivo mudou: destaque de 200 ms, sem pulo.
 - Ação usada muitas vezes por dia (trocar aba, filtrar) não anima.
@@ -109,7 +136,8 @@ título e botão nunca peso 300/400; `letter-spacing` negativo só acima de 24 p
 
 - Contraste ≥ 4,5:1 em todo texto.
 - Alvo de toque ≥ 44 px no celular (≥ 56 px na tela do motorista).
-- Anel de foco de 2 px `cyan-500` com 2 px de afastamento.
+- Anel de foco de 2 px com 2 px de afastamento: `blue-700` sobre superfície clara e `cyan-500`
+  sobre navy (cyan sobre branco dá 2,8:1, abaixo dos 3:1 de WCAG 1.4.11).
 - Botão só com ícone tem rótulo de texto ou `aria-label`.
 
 ## 9. Desvios permitidos ao implementar a partir do protótipo
