@@ -1,0 +1,731 @@
+/* ==========================================================
+   VEÍCULOS, VIAGENS E RELATÓRIOS (redesign, fase 7)
+   Cartões da frota, gaveta de cadastro, linha do tempo da
+   viagem e relatório com tabela de cabeçalho fixo.
+   Só tokens de src/styles/tokens.css (docs/design-system.md).
+   ========================================================== */
+
+
+/* TOPO DA LISTA: contagem + ação principal ---------------- */
+
+.frota-topo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ct-space-3);
+}
+
+.frota-rotulo {
+  color: var(--ct-muted);
+  font-size: var(--ct-text-label);
+  font-weight: var(--ct-weight-label);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+
+/* BOTÕES DESTAS TELAS (alvo de 44 px, texto no piso de 15 px) */
+
+.botao-icone,
+.veiculo-acoes .botao,
+.viagem-acoes .botao,
+.gaveta-rodape .botao {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--ct-space-2);
+
+  min-height: var(--ct-touch);
+  padding: 0 var(--ct-space-3);
+
+  font-size: var(--ct-text-body-sm);
+  font-weight: var(--ct-weight-label);
+  line-height: 1.2;
+  text-decoration: none;
+
+  transition: background-color var(--ct-dur-fast) var(--ct-ease-out);
+}
+
+.botao-icone .ct-icone {
+  flex: none;
+}
+
+.veiculo-acoes .botao.secundario:hover,
+.gaveta-rodape .botao.secundario:hover,
+.relatorio-acoes .botao.secundario:hover {
+  background: var(--ct-canvas);
+}
+
+.veiculo-acoes .botao.perigo:hover,
+.viagem-acoes .botao.perigo:hover {
+  background: var(--ct-critico-bg);
+}
+
+
+/* CARTÃO DO VEÍCULO --------------------------------------- */
+
+.lista-cards {
+  gap: var(--ct-space-4);
+}
+
+.veiculo-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ct-space-3);
+
+  background: var(--ct-surface);
+  border: 1px solid var(--ct-border);
+  border-radius: var(--ct-radius-card);
+  padding: var(--ct-space-4);
+}
+
+.veiculo-topo {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--ct-space-3);
+}
+
+.veiculo-topo h3 {
+  font-family: var(--ct-font-display);
+  font-size: var(--ct-text-title);
+  font-weight: var(--ct-weight-strong);
+  line-height: var(--ct-leading-title);
+}
+
+.veiculo-topo p {
+  color: var(--ct-muted);
+  font-size: var(--ct-text-body-sm);
+  font-weight: var(--ct-weight-label);
+}
+
+.veiculo-card .status,
+.viagem .status {
+  flex: none;
+  margin: 0;
+  padding: 5px 12px;
+}
+
+/* A temperatura é o maior elemento do cartão (princípio 2). */
+.veiculo-temp span {
+  display: block;
+  color: var(--ct-muted);
+  font-size: var(--ct-text-label);
+  font-weight: var(--ct-weight-label);
+}
+
+.veiculo-temp strong {
+  display: block;
+  font-family: var(--ct-font-display);
+  font-size: var(--ct-text-display);
+  font-weight: var(--ct-weight-strong);
+  line-height: var(--ct-leading-display);
+  font-variant-numeric: tabular-nums;
+}
+
+.veiculo-medidas {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--ct-space-3);
+
+  padding: 12px 0;
+  border-top: 1px solid var(--ct-border);
+  border-bottom: 1px solid var(--ct-border);
+}
+
+.veiculo-medidas dt,
+.veiculo-detalhes dt {
+  color: var(--ct-muted);
+  font-size: var(--ct-text-label);
+  font-weight: var(--ct-weight-label);
+}
+
+.veiculo-medidas dd {
+  font-size: var(--ct-text-body-sm);
+  font-weight: var(--ct-weight-label);
+  font-variant-numeric: tabular-nums;
+}
+
+.veiculo-detalhes {
+  display: grid;
+  gap: var(--ct-space-2);
+}
+
+.veiculo-detalhes div {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 2px var(--ct-space-3);
+}
+
+.veiculo-detalhes dd {
+  font-size: var(--ct-text-body-sm);
+  font-weight: var(--ct-weight-label);
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+
+/* Duas ações de consulta lado a lado; remover fica sozinho embaixo, longe delas. */
+.veiculo-acoes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--ct-space-2);
+
+  margin-top: auto;
+  padding-top: var(--ct-space-3);
+  border-top: 1px solid var(--ct-border);
+}
+
+.veiculo-acoes .botao.perigo {
+  grid-column: 1 / -1;
+  justify-self: start;
+  margin-left: -16px;
+}
+
+
+/* GAVETA DE CADASTRO (à direita, design system seção 7) ---- */
+
+.gaveta {
+  position: fixed;
+  inset: 0 0 0 auto;
+
+  width: min(420px, 100vw);
+  max-width: 100vw;
+  height: 100%;
+  max-height: 100%;
+  margin: 0;
+  padding: 0;
+
+  background: var(--ct-surface);
+  color: var(--ct-text);
+  border: 0;
+  border-left: 1px solid var(--ct-border);
+  box-shadow: var(--ct-shadow-overlay);
+}
+
+/* Entra deslizando da direita; sai na hora (sem animação de saída). */
+.gaveta[open] {
+  animation: gaveta-entra var(--ct-dur-drawer) var(--ct-ease-drawer);
+}
+
+.gaveta::backdrop {
+  background: var(--ct-scrim);
+  animation: gaveta-veu var(--ct-dur-base) var(--ct-ease-out);
+}
+
+@keyframes gaveta-entra {
+  from {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes gaveta-veu {
+  from {
+    opacity: 0;
+  }
+}
+
+.gaveta-folha {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.gaveta-topo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ct-space-3);
+
+  min-height: 64px;
+  padding: 0 var(--ct-space-4);
+  border-bottom: 1px solid var(--ct-border);
+}
+
+.gaveta-topo h2 {
+  font-size: var(--ct-text-title);
+  line-height: var(--ct-leading-title);
+}
+
+.gaveta-fechar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  width: var(--ct-touch);
+  height: var(--ct-touch);
+  margin-right: -10px;
+
+  color: var(--ct-muted);
+  background: transparent;
+  border: 0;
+  border-radius: var(--ct-radius-control);
+
+  cursor: pointer;
+  transition: background-color var(--ct-dur-fast) var(--ct-ease-out);
+}
+
+.gaveta-fechar:hover {
+  background: var(--ct-canvas);
+  color: var(--ct-text);
+}
+
+.gaveta-fechar:focus-visible {
+  outline: var(--ct-focus-ring);
+  outline-offset: var(--ct-focus-offset);
+}
+
+.gaveta-form {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.gaveta-corpo {
+  display: grid;
+  align-content: start;
+  gap: 20px;
+
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--ct-space-4);
+}
+
+.gaveta-corpo .campo input,
+.gaveta-corpo .campo select {
+  border-color: var(--ct-border-strong);
+}
+
+.gaveta-corpo .erro-form {
+  margin: 0;
+  padding: 12px var(--ct-space-3);
+
+  background: var(--ct-critico-bg);
+  border: 1px solid var(--ct-critico-borda);
+  border-radius: var(--ct-radius-control);
+
+  font-size: var(--ct-text-body-sm);
+}
+
+.gaveta-rodape {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+
+  padding: var(--ct-space-3) var(--ct-space-4);
+  background: var(--ct-canvas);
+  border-top: 1px solid var(--ct-border);
+}
+
+
+/* VIAGEM: cabeçalho, linha do tempo, números e gráfico ------ */
+
+.viagem {
+  display: grid;
+  gap: 20px;
+}
+
+.viagem-topo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ct-space-2) var(--ct-space-3);
+}
+
+.viagem-titulo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ct-space-2) 12px;
+}
+
+.viagem .viagem-titulo h2 {
+  margin: 0;
+}
+
+.panel .viagem-carga {
+  color: var(--ct-text);
+  font-size: var(--ct-text-body-sm);
+  font-weight: var(--ct-weight-label);
+}
+
+.viagem-carga span {
+  color: var(--ct-muted);
+  font-size: var(--ct-text-label);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+/* Linha do tempo do trajeto. Sem GPS não há posição real do caminhão:
+   a linha só diz a situação (tracejada em trânsito, cheia quando encerrada). */
+.viagem .rota {
+  display: grid;
+  grid-template-columns: auto minmax(96px, 1fr) auto;
+  align-items: end;
+  gap: 12px;
+
+  margin: 0;
+  padding: var(--ct-space-3) 20px;
+
+  background: var(--ct-subtle);
+  border: 1px solid var(--ct-border);
+  border-radius: var(--ct-radius-control);
+
+  font-weight: var(--ct-weight-label);
+}
+
+.rota-ponta {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ct-space-1);
+  min-width: 0;
+}
+
+.rota-ponta.destino {
+  align-items: flex-end;
+  text-align: right;
+}
+
+.rota-rotulo {
+  color: var(--ct-muted);
+  font-size: var(--ct-text-label);
+  font-weight: var(--ct-weight-label);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.rota-local {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+
+  font-family: var(--ct-font-display);
+  font-size: 20px;
+  font-weight: var(--ct-weight-strong);
+  line-height: 1.2;
+}
+
+.rota-local i {
+  flex: none;
+  width: 14px;
+  height: 14px;
+  border-radius: var(--ct-radius-pill);
+}
+
+.origem .rota-local i {
+  background: var(--ct-blue-700);
+  box-shadow: 0 0 0 3px var(--ct-blue-50);
+}
+
+.destino .rota-local i {
+  background: var(--ct-surface);
+  border: 3px solid var(--ct-muted);
+}
+
+.concluida .destino .rota-local i {
+  background: var(--ct-blue-700);
+  border: 0;
+  box-shadow: 0 0 0 3px var(--ct-blue-50);
+}
+
+.rota-linha {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 24px;
+}
+
+.rota-linha::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  border-top: 2px dashed var(--ct-border-strong);
+}
+
+.concluida .rota-linha::before {
+  border-top: 2px solid var(--ct-blue-700);
+}
+
+.rota-situacao {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+
+  padding: 3px 12px 3px 10px;
+
+  background: var(--ct-surface);
+  color: var(--ct-blue-700);
+  border: 1px solid var(--ct-border-strong);
+  border-radius: var(--ct-radius-pill);
+
+  font-size: var(--ct-text-label);
+  font-weight: var(--ct-weight-label);
+  white-space: nowrap;
+}
+
+.concluida .rota-situacao {
+  color: var(--ct-offline);
+}
+
+.viagem .viagem-campos {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--ct-space-3);
+}
+
+.viagem-campos > div {
+  padding: var(--ct-space-3);
+  background: var(--ct-subtle);
+  border: 1px solid var(--ct-border);
+  border-radius: var(--ct-radius-control);
+}
+
+/* Teve ocorrência fora da faixa: forma de ATENÇÃO na borda; o texto diz quanto. */
+.viagem-campos > div.fora {
+  border-left: 4px solid var(--ct-atencao-borda);
+}
+
+.viagem-campos span {
+  font-size: var(--ct-text-label);
+  letter-spacing: 0;
+  text-transform: none;
+  margin-bottom: 6px;
+}
+
+.viagem-campos strong {
+  display: block;
+  font-size: 17px;
+  line-height: 1.3;
+  font-variant-numeric: tabular-nums;
+}
+
+.viagem-grafico {
+  padding: 20px;
+  border: 1px solid var(--ct-border);
+  border-radius: var(--ct-radius-control);
+}
+
+.viagem-grafico h3 {
+  font-family: var(--ct-font-display);
+  font-size: 17px;
+  font-weight: var(--ct-weight-strong);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.viagem .nota {
+  margin: 0;
+}
+
+.viagem-acoes {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+
+  padding-top: var(--ct-space-3);
+  border-top: 1px solid var(--ct-border);
+}
+
+
+/* RELATÓRIOS ---------------------------------------------- */
+
+.relatorio-acoes {
+  margin-bottom: 0;
+}
+
+/* Filtro segmentado: trilho neutro, opção marcada em superfície branca. */
+.relatorio-acoes .filtro {
+  background: var(--ct-canvas);
+  border-color: var(--ct-border);
+}
+
+.relatorio-acoes .filtro button {
+  min-height: 40px;
+  padding: 0 var(--ct-space-3);
+
+  font-size: var(--ct-text-body-sm);
+  font-weight: var(--ct-weight-label);
+  border: 1px solid transparent;
+}
+
+.relatorio-acoes .filtro button[aria-pressed="true"] {
+  background: var(--ct-surface);
+  color: var(--ct-text);
+  border-color: var(--ct-border-strong);
+}
+
+.relatorio-resumo {
+  gap: var(--ct-space-4);
+}
+
+.relatorio-resumo .card {
+  min-height: 0;
+}
+
+.relatorio-resumo .card strong {
+  margin: 12px 0 6px;
+
+  font-family: var(--ct-font-display);
+  font-size: 40px;
+  font-weight: var(--ct-weight-strong);
+  line-height: 1.05;
+  font-variant-numeric: tabular-nums;
+}
+
+.relatorio-resumo .card small {
+  font-size: var(--ct-text-label);
+}
+
+/* Borda na cor do status quando o número pede atenção (o número já está colorido). */
+.relatorio-resumo .card.destaque-atencao {
+  border-color: var(--ct-atencao-borda);
+}
+
+.relatorio-resumo .card.destaque-critico {
+  border-color: var(--ct-critico);
+}
+
+.relatorio-tabela .tabela-rolagem {
+  max-height: 560px;
+  overflow: auto;
+
+  border: 1px solid var(--ct-border);
+  border-radius: var(--ct-radius-control);
+}
+
+.relatorio-tabela .tabela-rolagem:focus-visible {
+  outline: var(--ct-focus-ring);
+  outline-offset: var(--ct-focus-offset);
+}
+
+.relatorio-tabela .tabela th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+
+  background: var(--ct-subtle);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+
+  padding: 12px var(--ct-space-3);
+}
+
+.relatorio-tabela .tabela td {
+  height: 48px;
+  padding: 0 var(--ct-space-3);
+  font-variant-numeric: tabular-nums;
+}
+
+.relatorio-tabela .tabela tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+/* Leitura fora da faixa: marca na borda esquerda da linha (o selo diz qual). */
+.relatorio-tabela .tabela tbody tr.atencao td:first-child {
+  box-shadow: inset 4px 0 0 var(--ct-atencao-borda);
+}
+
+.relatorio-tabela .tabela tbody tr.critico td:first-child {
+  box-shadow: inset 4px 0 0 var(--ct-critico);
+}
+
+
+/* RESPONSIVO ---------------------------------------------- */
+
+@media (max-width: 1050px) {
+
+  .viagem .viagem-campos {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 720px) {
+
+  .veiculo-card {
+    padding: 20px;
+  }
+
+  .relatorio-acoes .botao-icone {
+    width: 100%;
+  }
+
+  /* Quatro números em 2 x 2: o resumo cabe numa tela do celular. */
+  .relatorio-resumo {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .relatorio-resumo .card {
+    padding: var(--ct-space-3);
+  }
+
+  .relatorio-resumo .card strong {
+    font-size: 34px;
+  }
+
+  /* No celular a linha do tempo fica de pé: origem em cima, destino embaixo. */
+  .viagem .rota {
+    grid-template-columns: 1fr;
+    align-items: start;
+    gap: var(--ct-space-1);
+    padding: var(--ct-space-3);
+  }
+
+  .rota-ponta.destino {
+    align-items: flex-start;
+    text-align: left;
+  }
+
+  .rota-ponta.destino .rota-local {
+    flex-direction: row-reverse;
+  }
+
+  .rota-ponta.destino .rota-rotulo {
+    order: 2;
+  }
+
+  .rota-linha {
+    justify-content: flex-start;
+    height: auto;
+    min-height: 44px;
+    padding-left: 22px;
+  }
+
+  .rota-linha::before {
+    left: 6px;
+    right: auto;
+    top: 0;
+    bottom: 0;
+    border-top: 0;
+    border-left: 2px dashed var(--ct-border-strong);
+  }
+
+  .concluida .rota-linha::before {
+    border-top: 0;
+    border-left: 2px solid var(--ct-blue-700);
+  }
+
+  .rota-local {
+    font-size: 19px;
+  }
+}
+
+@media (max-width: 480px) {
+
+  .viagem .viagem-campos {
+    grid-template-columns: 1fr;
+  }
+
+  .viagem-acoes .botao-icone {
+    flex: 1;
+  }
+}

@@ -152,6 +152,27 @@ título e botão nunca peso 300/400; `letter-spacing` negativo só acima de 24 p
 - Mensagem da tela em caixa com ícone: vermelha para erro (texto da API), azul para orientação
   ("Esqueceu a senha?"). O aviso de sessão de 8 horas continua abaixo do formulário.
 
+### Veículos, viagens e relatórios implementados (`styles/painel/frota.css`)
+
+- **Gaveta** (`components/Gaveta.jsx`): `<dialog>` modal de 420 px à direita (largura toda no
+  celular), topo com título e X de 44 px, campos empilhados, rodapé com Cancelar e a ação. Entra em
+  280 ms com `ease-drawer`; sai na hora. Erro da API em caixa vermelha dentro da gaveta.
+- **Veículos**: contagem da frota + "Cadastrar veículo" no topo; cartão com a temperatura em
+  display (56 px) como maior elemento, umidade e última comunicação, perfil/dispositivo/sensor e as
+  ações (Ver no painel, Etiqueta QR; Remover sozinho na linha de baixo).
+- **Viagens**: linha do tempo origem → destino. Sem GPS não há posição real: a linha só diz a
+  situação (tracejada "Em trânsito", cheia "Encerrada"). No celular ela fica de pé. Quatro blocos
+  (início, duração, faixa registrada, tempo fora da faixa, este com borda de atenção quando houve
+  ocorrência), gráfico em caixa e rodapé com Remover à esquerda e Encerrar viagem à direita.
+- **Relatórios**: filtro segmentado (trilho neutro, opção marcada em branco), Baixar CSV como botão
+  secundário com ícone, KPIs em display com borda de status quando o número pede atenção (2 x 2 no
+  celular), tabela com cabeçalho fixo dentro de uma área rolável (560 px), linhas de 48 px e marca de
+  4 px na borda da linha fora da faixa.
+- Desvios do protótipo: sem a barra de progresso falsa do cartão do veículo (não há dado que ela
+  meça); selo "PLANEJADO" uma vez no fim da lista, não por viagem; sem paginação na tabela (a API
+  devolve até 500 leituras e a tabela rola); "Salvar" do protótipo continua "Cadastrar"/"Registrar"
+  (o nome da ação não muda); rótulos em 13 px/600 em vez de 12 px em caixa alta.
+
 ## 8. Acessibilidade
 
 - Contraste ≥ 4,5:1 em todo texto.
