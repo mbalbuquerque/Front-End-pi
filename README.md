@@ -108,6 +108,7 @@ scripts/enviar-site.sh     envio de dist/ para o Azure (usado pelo CI e pelo pub
 publicar.sh                publicação manual pela máquina local
 docs/ARQUITETURA.md        contrato técnico: estrutura, CSS, lib, hooks, regras
 docs/guia-de-uso.md        guia do usuário final, tela por tela (base do assistente do painel)
+docs/design-system.md      design system do redesign: tokens, tipografia, movimento, componentes
 ```
 
 ## 4. Como rodar
