@@ -18,6 +18,7 @@ const Veiculos = lazy(() => import("./pages/Veiculos/Veiculos.jsx"));
 const Sensores = lazy(() => import("./pages/Sensores/Sensores.jsx"));
 const Viagens = lazy(() => import("./pages/Viagens/Viagens.jsx"));
 const Configuracoes = lazy(() => import("./pages/Configuracoes/Configuracoes.jsx"));
+const Motorista = lazy(() => import("./pages/Motorista/Motorista.jsx"));
 
 // Telas demonstrativas (dados de exemplo, sem API e sem login, como no original).
 const Usuarios = lazy(() => import("./pages/Usuarios/Usuarios.jsx"));
@@ -56,6 +57,9 @@ export default function App() {
           <Route path="/viagens" element={<Viagens />} />
           <Route path="/configuracoes" element={<Configuracoes />} />
         </Route>
+
+        {/* Só o perfil motorista; ele também não entra nas rotas acima. */}
+        <Route path="/motorista" element={<RequireAuth perfil="motorista"><Motorista /></RequireAuth>} />
 
         <Route path="/usuarios" element={<Usuarios />} />
         <Route path="/auditoria" element={<Auditoria />} />

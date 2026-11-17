@@ -29,9 +29,10 @@ vi.mock("./pages/Auditoria/Auditoria.jsx", () => tela("Auditoria"));
 vi.mock("./pages/CadastroUsuario/CadastroUsuario.jsx", () => tela("CadastroUsuario"));
 vi.mock("./pages/Logistica/Logistica.jsx", () => tela("Logistica"));
 vi.mock("./pages/Monitoramento/Monitoramento.jsx", () => tela("Monitoramento"));
+vi.mock("./pages/Motorista/Motorista.jsx", () => tela("Motorista"));
 
 // A guarda de sessão tem teste próprio; aqui deixa passar.
-vi.mock("./components/RequireAuth.jsx", () => ({ default: () => <Outlet /> }));
+vi.mock("./components/RequireAuth.jsx", () => ({ default: ({ children }) => children ?? <Outlet /> }));
 
 async function abrir(caminho) {
   render(
@@ -59,7 +60,8 @@ describe("App - rotas", () => {
     ["/auditoria", "Auditoria"],
     ["/cadastro-usuario", "CadastroUsuario"],
     ["/logistica", "Logistica"],
-    ["/monitoramento", "Monitoramento"]
+    ["/monitoramento", "Monitoramento"],
+    ["/motorista", "Motorista"]
   ])("%s abre %s", async (caminho, nome) => {
     expect(await abrir(caminho)).toHaveTextContent(new RegExp(`^${nome}$`));
   });
