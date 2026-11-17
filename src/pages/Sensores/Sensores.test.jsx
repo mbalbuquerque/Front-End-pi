@@ -294,7 +294,7 @@ describe("Sensores - conectar pelo cabo", () => {
   it("sensor que não responde: fecha a porta e avisa", async () => {
     usb.comportamento.info = async () => null;
     await ate("inicio");
-    expect(await screen.findByText(/O sensor não respondeu\. Confira se ele está com o firmware/)).toBeInTheDocument();
+    expect(await screen.findByText(/O sensor não respondeu em 20 s\. Confira se ele está com o firmware/)).toBeInTheDocument();
     expect(usb.instancias[0].fechar).toHaveBeenCalled();
   });
 

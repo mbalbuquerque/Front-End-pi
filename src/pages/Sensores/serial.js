@@ -3,6 +3,21 @@
 // painel -> placa começa com "CT<", placa -> painel com "CT>".
 // O resto da serial é o log comum do sensor e é ignorado aqui.
 // Porte do site antigo: js/serial.js (mesmo comportamento, agora como módulo).
+//
+// Abrir a porta pode reiniciar a placa: no ESP32-C3 o controlador USB
+// Serial/JTAG reinicia o chip enquanto RTS está ativo com DTR inativo (a mesma
+// lógica do circuito de auto-reset com dois transistores; os dois ativos não
+// reiniciam). Depois do boot a placa passa segundos conectando ao Wi-Fi salvo,
+// e comando que chega nesse meio tempo se perde ou falha. Por isso o painel
+// espera a placa ficar pronta (linha CT>{"pronto":true,...} do fim do setup,
+// ou um "info" respondido) antes de mandar qualquer outro comando.
+
+// Tempo máximo esperando a placa ficar pronta depois de abrir a porta: boot,
+// 1 s de espera do setup e até 10 s tentando o Wi-Fi salvo.
+export const PRONTO_MS = 20000;
+
+// Intervalo entre os "info" enquanto espera a placa.
+const INFO_MS = 2000;
 
 // Lido na hora (e não no carregamento do módulo) para valer o navegador atual.
 export function serialDisponivel() {
@@ -22,6 +37,7 @@ export class SensorUsb {
     this.aoDesconectar = null;
     this.fimLeitura = null;
     this.fimEscrita = null;
+    this.pronta = false;        // viu a linha de prontidão desde que abriu
   }
 
 
@@ -30,6 +46,7 @@ export class SensorUsb {
 
     this.porta = await navigator.serial.requestPort();
     await this.porta.open({ baudRate: 115200 });
+    await this.soltarSinais();
 
     const codificador = new TextEncoderStream();
     this.fimEscrita = codificador.readable.pipeTo(this.porta.writable).catch(() => {});
@@ -42,6 +59,27 @@ export class SensorUsb {
         this.aoDesconectar();
       }
     });
+
+  }
+
+
+  // Deixa RTS e DTR inativos depois de abrir, em duas chamadas e com o RTS
+  // primeiro: assim a linha nunca passa por RTS ativo com DTR inativo, que é o
+  // estado que reinicia a placa. Se o próprio open já reiniciou a placa, isso
+  // não desfaz; a espera por "pronto" cobre esse caso. Navegador sem
+  // setSignals segue sem ele.
+  async soltarSinais() {
+
+    if (typeof this.porta.setSignals !== "function") {
+      return;
+    }
+
+    try {
+      await this.porta.setSignals({ requestToSend: false });
+      await this.porta.setSignals({ dataTerminalReady: false });
+    } catch {
+      // Porta não aceita mudar os sinais: segue com os que estão.
+    }
 
   }
 
@@ -92,11 +130,24 @@ export class SensorUsb {
       return;
     }
 
+    let mensagem;
+
     try {
-      this.responder(JSON.parse(linha.slice(inicio + 3)));
+      mensagem = JSON.parse(linha.slice(inicio + 3));
     } catch {
-      // Linha cortada no meio do log: ignora.
+      return;   // linha cortada no meio do log
     }
+
+    // Linha de prontidão não é resposta de comando: a placa acabou de (re)iniciar,
+    // e o comando em curso, se houver, se perdeu no boot. Quem esperava recebe
+    // null e pode mandar de novo.
+    if (mensagem && mensagem.pronto === true) {
+      this.pronta = true;
+      this.responder(null);
+      return;
+    }
+
+    this.responder(mensagem);
 
   }
 
@@ -134,12 +185,17 @@ export class SensorUsb {
   }
 
 
-  // A placa pode reiniciar ao abrir a porta: pergunta algumas vezes.
-  async info() {
+  // Espera a placa ficar pronta e devolve o info dela (null se passar de limiteMs).
+  // Pergunta "info" a cada 2 s: placa que não reiniciou ao abrir a porta não
+  // manda a linha de prontidão, mas responde o info. A linha de prontidão que
+  // chega no meio de uma pergunta corta a espera e o info sai de novo na hora.
+  async info(limiteMs = PRONTO_MS) {
 
-    for (let tentativa = 0; tentativa < 6; tentativa++) {
+    const fim = Date.now() + limiteMs;
 
-      const resposta = await this.enviar({ cmd: "info" }, 2000);
+    while (Date.now() < fim) {
+
+      const resposta = await this.enviar({ cmd: "info" }, Math.min(INFO_MS, fim - Date.now()));
 
       if (resposta && resposta.id) {
         return resposta;
@@ -152,20 +208,28 @@ export class SensorUsb {
   }
 
 
-  // A placa procura a rede (scan, até ~4 s), testa antes de gravar (até 25 s)
-  // e só então responde.
+  // A placa procura a rede (scan, até ~4 s, que ela repete se o rádio estiver
+  // ocupado), testa antes de gravar (até 25 s) e só então responde.
   configurar(comando) {
 
-    return this.enviar(comando, 45000);
+    return this.enviar(comando, 50000);
 
   }
 
 
   // Redes 2.4 GHz que a placa enxerga: { ok, redes: [{ ssid, rssi, canal, seguranca }] }.
   // Firmware antigo responde { ok: false, erro: "comando_desconhecido" }.
-  redes() {
+  // Scan recusado (rádio no meio de uma conexão, firmware antigo) vale uma
+  // segunda tentativa antes de mostrar o erro.
+  async redes() {
 
-    return this.enviar({ cmd: "redes" }, 15000);
+    const resposta = await this.enviar({ cmd: "redes" }, 20000);
+
+    if (resposta && resposta.ok === false && resposta.erro === "scan_falhou") {
+      return this.enviar({ cmd: "redes" }, 20000);
+    }
+
+    return resposta;
 
   }
 

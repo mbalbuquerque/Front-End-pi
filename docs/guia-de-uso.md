@@ -140,6 +140,7 @@ Requisitos:
 Passo a passo:
 1. Ligue o sensor no computador pelo cabo USB.
 2. Clique em **Conectar sensor pelo cabo** e escolha a porta do sensor na janela que o navegador abre.
+   Abrir a porta pode reiniciar o sensor: o painel mostra "Esperando o sensor ficar pronto..." e só manda a rede depois que o sensor avisa que terminou de iniciar (até 20 s). Não precisa clicar de novo nesse meio tempo.
 3. O painel mostra **SENSOR RECONHECIDO** com o ID e o firmware, e explica o que vai acontecer:
    - sensor novo: "será registrado na sua empresa com este ID" (há o campo opcional **Descrição**);
    - sensor já da empresa e configurado: "continua com a mesma chave. Informe só a rede nova.";
@@ -156,7 +157,8 @@ Se der errado, o painel mostra mensagens como:
 - "Senha errada para a rede ...": confira maiúsculas e minúsculas. Nada é gravado quando a rede falha; o sensor continua na rede anterior.
 - "O sensor não achou a rede ...": confira o nome exato e se o hotspot está ligado em 2.4 GHz.
 - "O sensor não conseguiu entrar na rede ... em 15 s": confira nome, senha, banda 2.4 GHz e deixe o celular perto do sensor.
-- "O sensor não respondeu. Confira se ele está com o firmware ColdTrack atualizado.": use um cabo de dados, feche a Arduino IDE e outras abas que usem o sensor, e confirme que o firmware ColdTrack está gravado (com "USB CDC On Boot" ligado na Arduino IDE).
+- "O sensor não respondeu em 20 s. Confira se ele está com o firmware ColdTrack atualizado.": use um cabo de dados, feche a Arduino IDE e outras abas que usem o sensor, e confirme que o firmware ColdTrack está gravado (com "USB CDC On Boot" ligado na Arduino IDE).
+- "O sensor não conseguiu procurar redes (scan_falhou)": o rádio do sensor estava ocupado; o painel já tentou duas vezes. Clique de novo em **Ver redes que o sensor enxerga**. Com o firmware 2026.11.16.3 ou mais novo isso não deve mais aparecer só porque o sensor estava conectando.
 - "O cabo foi desconectado...": ligue o sensor de novo e clique em **Conectar sensor pelo cabo**.
 - "O sensor ... está registrado em outra empresa.": peça para essa empresa remover o sensor antes.
 - "O sensor entrou na rede, mas nenhuma leitura chegou em 2 min.": confira se a rede tem internet (o hotspot precisa de dados móveis). Se o sensor foi removido ou ganhou chave nova, conecte pelo cabo de novo.
