@@ -176,6 +176,15 @@ primeiro), `horarioDe(leitura) -> Date`, `resumir(leituras) -> { total, media, m
 **`veiculo.js`** — `escolherVeiculo(search) -> { veiculos, veiculo, perfil, faixa }` (ordem:
 `?veiculo=` > salvo > primeiro; `veiculo` null sem cadastro), `decidirVeiculo(...)`, `lembrarVeiculo(id)`.
 
+**`push.js`** — alertas no celular (Web Push, padrão VAPID; issue #27 e a API em
+`projeto-integrador-4-periodo#75`). `suportaPush()`, `base64UrlParaBytes(chave)`,
+`estadoPush() -> "sem-suporte" | "negado" | "inativo" | "ativo"`, `ativarPush()` (pede a
+permissão, lê a chave pública em `GET /push/chave`, inscreve no `pushManager` do service worker com
+`userVisibleOnly: true` e manda `inscricao.toJSON()` para `POST /push/inscricao`; se a API recusar,
+cancela a inscrição local e repassa o erro) e `desativarPush()` (`DELETE /push/inscricao` com o
+`endpoint`, melhor esforço, e cancela no navegador). No dev não há service worker: ativar avisa em
+vez de travar. Usado pelo card `AlertasCelular` da tela de Configurações.
+
 **`armazenamento.js`** — `ler`, `gravar`, `remover`, `lerJSON(chave, padrao)`, `gravarJSON` (com try/catch).
 Único lugar que toca `localStorage`. Chaves em uso: `coldtrack.sessao`, `coldtrack.veiculo`
 (as do chat continuam as mesmas do `chat.js`).
@@ -313,7 +322,7 @@ export default function Relatorios() {
   (etiquetas QR impressas) responde 200 no Azure Storage e o React Router redireciona para
   `/dashboard?veiculo=X`. Rota limpa (`/dashboard`) chega pelo documento 404 (= `index.html`).
 - O site publicado é o conteúdo de `dist/` no container `$web` da conta `stcoldtrackweb7319`
-  (grupo `rg-coldtrack`). O workflow `publicar-site.yml` (push na `everson`) e o `publicar.sh`
+  (grupo `rg-coldtrack`). O workflow `publicar-site.yml` (push na `main`) e o `publicar.sh`
   (máquina local) rodam lint, testes e build e chamam `scripts/enviar-site.sh dist`, que:
   - envia `dist/assets/*` (nomes com hash) com `Cache-Control: public, max-age=31536000, immutable`;
   - envia o resto (`index.html`, cópias `*.html`, `sw.js`, `manifest.json`, `assets/icons/`) com
@@ -329,5 +338,17 @@ export default function Relatorios() {
   token e dados de empresa não ficam em disco para outra sessão ler. Sem rede, a tela continua com
   o que já estava carregada, sob a faixa que informa a hora desses dados; recarregar a página
   offline abre o shell, mas as telas ficam sem dados (erro do Azure) até a conexão voltar.
-- `public/sw.js`: suba `CACHE_NAME` (`coldtrack-v13` → `v14`...) quando mudar o service worker.
+- Alertas no celular (Web Push): o `sw.js` trata `push` (lê o JSON `{ titulo, corpo, url, tag,
+  status, deviceId }`; corpo inválido vira notificação genérica) e mostra a notificação com o ícone
+  do app, `tag` por sensor (o alerta novo substitui o anterior) e `requireInteraction` no crítico.
+  `notificationclick` foca a janela do painel já aberta e navega para a `url`, ou abre uma nova.
+  Só caminho relativo da própria origem é aceito; URL externa vira `/alertas`.
+- Teste real dos alertas (depois de publicar a API com as chaves VAPID e o site): no celular
+  (Android com Chrome, ou iPhone com iOS 16.4+ e o app adicionado à tela de início), entrar no
+  painel, **Configurações → Ativar alertas no celular** e permitir. Depois provocar uma mudança de
+  faixa num sensor da mesma empresa: na simulação do Wokwi, subir a temperatura do DHT22 acima da
+  faixa normal do perfil do veículo; ou enviar `POST /api/telemetria` com a chave de um sensor de
+  teste e uma temperatura fora da faixa, logo depois de uma leitura normal. A notificação chega uma
+  vez por mudança de faixa; tocar nela abre `/alertas?veiculo=<código>`.
+- `public/sw.js`: suba `CACHE_NAME` (`coldtrack-v14` → `v15`...) quando mudar o service worker.
   Ele só é registrado no build (`import.meta.env.PROD`).

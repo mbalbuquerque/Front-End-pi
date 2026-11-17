@@ -15,7 +15,7 @@
 | Suíte | Comando | Resultado |
 |---|---|---|
 | Lint | `npm run lint` | sem avisos |
-| Unitários | `npm test` | 158 passaram, 0 falharam (reexecutado em 08/11/2026 depois da revisão da documentação). Em 16/11/2026, com os testes de componente: 391 passaram (veja "Cobertura dos testes unitários") |
+| Unitários | `npm test` | 158 passaram, 0 falharam (reexecutado em 08/11/2026 depois da revisão da documentação). Em 16/11/2026, com os testes de componente (incluindo Home e ChatWidget): 424 passaram (veja "Cobertura dos testes unitários") |
 | Build | `npm run build` | ok |
 | E2E simulado (API simulada, build local) | `npm run test:e2e` | 206 passaram, 0 falharam, 18 pulados (os casos de 390 px e de impressão rodam só no projeto desktop, de propósito). Na execução completa, QA-ASSIST-10 (390 px) falhou uma vez, com a máquina sob carga, e passou ao ser repetido sozinho |
 | E2E real (site publicado + API de produção) | `npm run test:e2e:real` | 57 passaram, 0 falharam, 0 pulados (site publicado no commit `4d51edd`, chat com Azure OpenAI incluído) |
@@ -183,14 +183,14 @@ escopo). Os demais são só de desenvolvimento (`vite`, `esbuild`, `vitest`, `ti
 
 Medida com `npm run test:cobertura` (Vitest 2.1.9 com `@vitest/coverage-v8`; testes de componente
 com `@testing-library/react` e jsdom), em 16/11/2026, sobre todo o código de `src/` (exceto
-arquivos de teste e `main.jsx`). 391 testes unitários passaram.
+arquivos de teste e `main.jsx`). 424 testes unitários passaram.
 
 | Métrica | Antes (29,72%) | Medido agora | Piso no CI |
 |---|---|---|---|
-| Linhas | 29,72% | 81,70% | 81% |
-| Instruções | 29,72% | 81,70% | 81% |
-| Ramos | 91,72% | 93,87% | 93% |
-| Funções | 84,91% | 97,75% | 97% |
+| Linhas | 29,72% | 98,99% | 98% |
+| Instruções | 29,72% | 98,99% | 98% |
+| Ramos | 91,72% | 94,19% | 94% |
+| Funções | 84,91% | 98,53% | 98% |
 
 Antes desta etapa, as telas Dashboard, Sensores, Veículos, Viagens, Relatórios, Auditoria,
 Usuários, Logística, Monitoramento e Cadastro de usuário, o gráfico, a moldura do painel
@@ -199,9 +199,16 @@ linhas. Todos passaram a ter teste de componente com a API, a sessão e a rede s
 teste renderiza a tela, interage (digitar, filtrar, enviar formulário, confirmar, fechar diálogo)
 e confere o resultado na tela e nas chamadas à API.
 
-Sem teste de componente restam `Home` (página inicial pública) e `ChatWidget` (chat público),
-que juntos somam cerca de 1.100 linhas e continuam cobertos só pelo e2e; as telas do motorista
-são de outro integrante e não entram nesta medição.
+`Home` (página inicial pública) e `ChatWidget` (chat público), cerca de 1.100 linhas antes cobertas
+só pelo e2e, também têm teste de componente (`Home.test.jsx`, 18 casos; `ChatWidget.test.jsx`,
+15 casos), com a API e o `fetch` simulados:
+
+| Tela | Casos cobertos |
+|---|---|
+| `Home` | seções e título da aba; setas e pontos do carrossel dando a volta nas pontas; avanço automático a cada 6 s e parada com movimento reduzido; menu móvel; âncoras (rolagem suave, sem animação com movimento reduzido, clique com Ctrl, âncora na URL, âncora inexistente); cabeçalho opaco após 50 px; login embutido (campos vazios, só espaços, sucesso com `POST /login` e ida ao dashboard, credencial recusada, recusa sem lista de erros, falha de rede) |
+| `ChatWidget` | abrir/fechar com foco, Escape e ×; saudação uma só vez; chips de FAQ respondidos localmente sem chamar a API; campo livre em `POST /chat` com as fontes; histórico da pergunta anterior; falha da rota caindo no FAQ; FAQ sem resposta com aviso do WhatsApp; 429 por minuto (aviso da API) e 429 diário (FAQ); campo vazio; Manual e infográfico (sem duplicar, imagem ausente); resolução Sim/Não; avaliação (sem nota, com nota e comentário, acréscimo às já salvas, armazenamento indisponível); cancelamento do pedido ao sair da tela |
+
+As telas do motorista são de outro integrante e não entram nesta medição.
 
 Apoio nos testes (`src/testes/setup.js`): o jsdom não tem `<dialog>.showModal()`, `PointerEvent`
 nem `AbortSignal.any`, então o arquivo de preparação simula o essencial de cada um (atributo
@@ -209,7 +216,8 @@ nem `AbortSignal.any`, então o arquivo de preparação simula o essencial de ca
 
 O piso fica em `test.coverage.thresholds` de `vite.config.js` e o workflow `testes.yml` roda
 `npm run test:cobertura`, então o CI falha se a cobertura cair abaixo dele. O piso foi fixado logo
-abaixo do valor medido (não é meta). A meta de 60% de linhas da issue foi superada.
+abaixo do valor medido (não é meta). A meta de 60% de linhas da issue foi superada. Restam
+61 linhas sem cobertura (de 6.084).
 
 ## Estado offline (issue #13)
 

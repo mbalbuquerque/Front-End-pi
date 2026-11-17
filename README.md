@@ -1,5 +1,7 @@
 # ColdTrack Control
 
+English version: [README.en.md](README.en.md).
+
 Painel web do **ColdTrack Edge**, projeto integrador de monitoramento IoT da cadeia fria.
 Sensores ESP32-C3 instalados no baú dos veículos enviam temperatura, umidade e sinal Wi-Fi para
 uma API no Azure; o painel (React + Vite) mostra a situação de cada carga, os alertas fora da
@@ -78,7 +80,7 @@ demonstrativo de reserva (Normal até 15 °C, Atenção até 20 °C).
 | Build | Vite 5, PostCSS (`postcss-prefix-selector` para escopo do CSS por família) |
 | Testes | Vitest + jsdom (unitários), Playwright (e2e, Chromium desktop e Pixel 7) |
 | Qualidade | ESLint 9 (`--max-warnings 0`) |
-| PWA | `public/manifest.json`, `public/sw.js` (rede primeiro, registrado só no build) |
+| PWA | `public/manifest.json`, `public/sw.js` (rede primeiro, registrado só no build; alertas Web Push) |
 | Hospedagem | Azure Storage, site estático (container `$web`), publicação por GitHub Actions com OIDC |
 | Hardware | ESP32-C3, sensor DHT11 ou DHT22 (firmware no repositório do back-end) |
 | Serviços externos | API ColdTrack (Azure Functions; chat e assistente do painel com Azure OpenAI), ThingSpeak, Open-Meteo |
@@ -167,11 +169,12 @@ request; quando algum e2e falha, o relatório fica anexado à execução.
 
 ## 6. Deploy
 
-Fluxo de branches: o trabalho acontece na **`everson`**; quando uma etapa fica pronta, abre-se
-um pull request `everson` -> `main`. **A `everson` não pode ser apagada** (nem após o merge):
-o deploy e o login por OIDC no Azure dependem dela.
+Fluxo de branches: o trabalho acontece em branches criadas a partir da **`main`**, que entram
+por pull request com os testes verdes. A `everson` fica como reserva (o login por OIDC no Azure
+ainda a aceita) e não deve ser apagada. A proteção da `main` depende de um administrador; o
+comando está no [`CONTRIBUTING.md`](CONTRIBUTING.md).
 
-Cada push na branch **`everson`** dispara `.github/workflows/publicar-site.yml`:
+Cada push na branch **`main`** dispara `.github/workflows/publicar-site.yml`:
 
 1. `npm ci`, `npm run lint`, `npm test`, `npm run build` (para se algum falhar);
 2. login no Azure por OIDC (`azure/login`, sem senha guardada no repositório);
