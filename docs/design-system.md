@@ -173,6 +173,17 @@ título e botão nunca peso 300/400; `letter-spacing` negativo só acima de 24 p
   devolve até 500 leituras e a tabela rola); "Salvar" do protótipo continua "Cadastrar"/"Registrar"
   (o nome da ação não muda); rótulos em 13 px/600 em vez de 12 px em caixa alta.
 
+### Visão geral implementada (`pages/Dashboard`)
+
+- Cartão herói: rótulo "Carga atual" com o perfil real, pílula de status com ícone, temperatura em
+  Barlow Condensed 64–104 px (a maior coisa da tela) e a frase de status abaixo.
+- Régua de faixa (`ReguaFaixa.jsx` + `regua.js`): zonas calculadas da faixa da carga (só máximo:
+  segura, atenção, crítica; com mínimo: as cinco zonas), escala de 0 °C (ou abaixo, se preciso) até
+  máximo + 2 margens, esticada quando a leitura sai dela; marcador com o valor e legenda em texto.
+- Tiles de umidade, sinal Wi-Fi e sensor (selo Online/Sem contato com a hora do último contato).
+- Desvios do protótipo: sem "Ideal para uva", "MQTT/IoT Hub", "Abertura de porta" nem nome de
+  variedade; o gráfico, o risco térmico e o calor na rota continuam como estão (fase própria).
+
 ## 8. Acessibilidade
 
 - Contraste ≥ 4,5:1 em todo texto.
