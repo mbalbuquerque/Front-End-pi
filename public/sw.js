@@ -10,8 +10,12 @@
 // entram no cache; resposta da API (leituras, usuários, token) nunca entra, para
 // que dado de uma sessão não apareça para outra. Offline, a tela mostra a faixa
 // "Sem conexão" e as chamadas à API falham como falhariam sem service worker.
+//
+// Alertas no celular (Web Push): a API manda um push quando um sensor passa para
+// atenção ou crítico; o evento "push" mostra a notificação e o clique abre a tela
+// de alertas daquele veículo. Só caminho da própria origem é aberto.
 
-const CACHE_NAME = "coldtrack-v13";
+const CACHE_NAME = "coldtrack-v14";
 
 const APP_SHELL = ["/", "/index.html", "/manifest.json"];
 
@@ -126,5 +130,98 @@ self.addEventListener("fetch", event => {
       })
 
   );
+
+});
+
+
+// ---------------------------------------------------------------- alertas push
+
+const ICONE = "/assets/icons/icon-192.png";
+const URL_PADRAO = "/alertas";
+
+
+// Só caminho relativo da própria origem ("/alertas?veiculo=X"); URL externa,
+// "//host" ou "/\host" viram a tela de alertas.
+function urlInterna(url) {
+
+  if (typeof url !== "string" || !/^\/(?![/\\])/.test(url)) {
+    return URL_PADRAO;
+  }
+
+  const destino = new URL(url, self.location.origin);
+
+  return destino.origin === self.location.origin ? destino.pathname + destino.search : URL_PADRAO;
+
+}
+
+
+// Corpo do push em JSON ({ titulo, corpo, url, tag, status, deviceId }). Texto
+// solto ou corpo vazio ainda vira uma notificação genérica.
+function lerAlerta(dados) {
+
+  let alerta = {};
+
+  if (dados) {
+    try {
+      alerta = dados.json() || {};
+    } catch {
+      alerta = { corpo: dados.text() };
+    }
+  }
+
+  return {
+    titulo: typeof alerta.titulo === "string" && alerta.titulo ? alerta.titulo : "ColdTrack: alerta de temperatura",
+    corpo: typeof alerta.corpo === "string" ? alerta.corpo : "",
+    tag: typeof alerta.tag === "string" && alerta.tag ? alerta.tag : "coldtrack-alerta",
+    critico: alerta.status === "CRITICO",
+    url: urlInterna(alerta.url)
+  };
+
+}
+
+
+self.addEventListener("push", event => {
+
+  const alerta = lerAlerta(event.data);
+
+  // Mesma tag por sensor: o alerta novo substitui o anterior em vez de empilhar.
+  event.waitUntil(self.registration.showNotification(alerta.titulo, {
+    body: alerta.corpo,
+    icon: ICONE,
+    badge: ICONE,
+    tag: alerta.tag,
+    renotify: true,
+    requireInteraction: alerta.critico,
+    data: { url: alerta.url }
+  }));
+
+});
+
+
+async function abrirTela(url) {
+
+  const destino = new URL(url, self.location.origin).href;
+  const janelas = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
+  const janela = janelas.find(cliente => new URL(cliente.url).origin === self.location.origin);
+
+  if (!janela) {
+    return self.clients.openWindow(destino);
+  }
+
+  await janela.focus();
+
+  // navigate() só vale para janela controlada por este service worker.
+  return janela.navigate ? janela.navigate(destino).catch(() => janela) : janela;
+
+}
+
+
+self.addEventListener("notificationclick", event => {
+
+  event.notification.close();
+
+  const dados = event.notification.data || {};
+
+  event.waitUntil(abrirTela(urlInterna(dados.url)));
 
 });
