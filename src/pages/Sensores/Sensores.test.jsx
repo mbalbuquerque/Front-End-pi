@@ -30,6 +30,7 @@ vi.mock("./serial.js", () => ({
     conectar() { return usb.comportamento.conectar(); }
     info() { return usb.comportamento.info(); }
     configurar(comando) { return usb.comportamento.configurar(comando); }
+    redes() { return usb.comportamento.redes(); }
   }
 }));
 
@@ -83,7 +84,8 @@ beforeEach(() => {
   usb.comportamento = {
     conectar: async () => {},
     info: async () => ({ id: "ESP32-ABC", fw: "1.2", configurado: false }),
-    configurar: async () => ({ ok: true, rssi: -62 })
+    configurar: async () => ({ ok: true, rssi: -62 }),
+    redes: async () => ({ ok: true, redes: [] })
   };
   dispositivos = [
     { id: "esp32-b", descricao: "Baú da van", online: true, ultimoContato: "2026-11-16T19:40:12+00:00" },
@@ -334,15 +336,69 @@ describe("Sensores - conectar pelo cabo", () => {
     await userEvent.type(document.getElementById("formCabo").elements.ssid, "Hotspot");
     await userEvent.type(document.getElementById("formCabo").elements.senha, "senha-errada");
     fireEvent.submit(document.getElementById("formCabo"));
-    expect(await screen.findByText("Senha errada para a rede “Hotspot”. Confira e tente de novo.")).toBeInTheDocument();
+    expect(await screen.findByText("Senha errada para a rede “Hotspot”. Confira maiúsculas e minúsculas e tente de novo.")).toBeInTheDocument();
     expect(posts).toEqual([{ id: "esp32-abc", descricao: "Baú novo" }]);
     expect(comandos[0]).toEqual({ cmd: "config", ssid: "Hotspot", senha: "senha-errada", id: "esp32-abc", chave: "chave-1" });
 
     // Segunda tentativa: não registra de novo, reaproveita a chave.
     fireEvent.submit(document.getElementById("formCabo"));
-    expect(await screen.findByText(/não conseguiu entrar na rede “Hotspot” em 15 s/)).toBeInTheDocument();
+    expect(await screen.findByText(/não conseguiu entrar na rede “Hotspot” a tempo/)).toBeInTheDocument();
     expect(posts).toHaveLength(1);
     expect(comandos[1].chave).toBe("chave-1");
+  });
+
+  it("erro detalhado da placa: código novo com sinal, canal e motivo; ajuda abre o item certo", async () => {
+    respostas({ "POST /dispositivos": { chave: "k" } });
+    usb.comportamento.configurar = async () => ({ ok: false, erro: "rede_corporativa", motivo: 0, rssi: -67, canal: 1, seguranca: "enterprise" });
+    await ate("formulario");
+    await userEvent.type(document.getElementById("formCabo").elements.ssid, "Senac-Campus");
+    fireEvent.submit(document.getElementById("formCabo"));
+    const alerta = await screen.findByRole("alert");
+    expect(alerta).toHaveTextContent("A rede “Senac-Campus” pede login com usuário");
+    expect(alerta).toHaveTextContent("Sinal no sensor: Bom (-67 dBm), canal 1.");
+    expect(alerta).not.toHaveTextContent("motivo");
+    await userEvent.click(within(alerta).getByRole("link", { name: "Ver ajuda" }));
+    expect(document.getElementById("ajuda")).toHaveAttribute("open");
+    expect(document.getElementById("ajuda-corporativa")).toBeInTheDocument();
+  });
+
+  it("ver redes que o sensor enxerga: lista, marca a não suportada e preenche o nome ao escolher", async () => {
+    usb.comportamento.redes = async () => ({
+      ok: true,
+      redes: [
+        { ssid: "Hotspot do Joao", rssi: -48, canal: 6, seguranca: "wpa2" },
+        { ssid: "Campus-Login", rssi: -71, canal: 11, seguranca: "enterprise" }
+      ]
+    });
+    await ate("formulario");
+    await userEvent.click(screen.getByRole("button", { name: "Ver redes que o sensor enxerga" }));
+    await waitFor(() => expect(document.getElementById("tabelaRedes")).toBeInTheDocument());
+    const linhasRedes = within(document.getElementById("tabelaRedes").querySelector("tbody")).getAllByRole("row");
+    expect(linhasRedes).toHaveLength(2);
+    expect(linhasRedes[0]).toHaveTextContent("Hotspot do Joao");
+    expect(linhasRedes[0]).toHaveTextContent("Excelente (-48 dBm)");
+    expect(linhasRedes[0]).toHaveTextContent("WPA2");
+    expect(linhasRedes[1]).toHaveTextContent("Login (Enterprise): não suportada");
+    expect(within(linhasRedes[1]).queryByRole("button")).not.toBeInTheDocument();
+    await userEvent.click(within(linhasRedes[0]).getByRole("button", { name: "Usar esta rede" }));
+    expect(document.getElementById("formCabo").elements.ssid).toHaveValue("Hotspot do Joao");
+    expect(document.getElementById("formCabo").elements.senha).toHaveFocus();
+  });
+
+  it("ver redes: lista vazia, firmware antigo e sensor mudo", async () => {
+    await ate("formulario");
+    const botao = screen.getByRole("button", { name: "Ver redes que o sensor enxerga" });
+    await userEvent.click(botao);
+    expect(await screen.findByText(/não enxergou nenhuma rede de 2\.4 GHz/)).toBeInTheDocument();
+    usb.comportamento.redes = async () => ({ ok: false, erro: "comando_desconhecido" });
+    await userEvent.click(botao);
+    expect(await screen.findByText(/firmware antigo, que não lista redes/)).toBeInTheDocument();
+    usb.comportamento.redes = async () => null;
+    await userEvent.click(botao);
+    expect(await screen.findByText(/não respondeu à busca de redes/)).toBeInTheDocument();
+    usb.comportamento.redes = async () => ({ ok: false, erro: "scan_falhou" });
+    await userEvent.click(botao);
+    expect(await screen.findByText(/não conseguiu procurar redes \(scan_falhou\)/)).toBeInTheDocument();
   });
 
   it("sensor registrado em outra empresa (409) e falha genérica de registro", async () => {

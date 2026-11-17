@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 import {
   SEM_SINAL_MS,
   descreverSinal,
+  descreverRede,
   mensagemDeErro,
   situacaoDaPlaca,
   seloConexao,
@@ -68,7 +69,7 @@ describe("mensagemDeErro", () => {
 
   it("liga o código da placa ao item de ajuda", () => {
     expect(mensagemDeErro("senha", "Casa")).toEqual({
-      texto: "Senha errada para a rede “Casa”. Confira e tente de novo.",
+      texto: "Senha errada para a rede “Casa”. Confira maiúsculas e minúsculas e tente de novo.",
       ajuda: "senha"
     });
     expect(mensagemDeErro("tempo", "Casa").ajuda).toBe("rede");
@@ -78,6 +79,40 @@ describe("mensagemDeErro", () => {
   it("código desconhecido ou ausente", () => {
     expect(mensagemDeErro("xyz", "Casa").texto).toBe("O sensor recusou a configuração (xyz). Tente de novo.");
     expect(mensagemDeErro(undefined, "Casa").texto).toBe("O sensor recusou a configuração (sem motivo). Tente de novo.");
+  });
+
+  it("códigos novos da placa: cada um com texto próprio e ajuda", () => {
+    expect(mensagemDeErro("rede_nao_encontrada", "Campus").texto).toMatch(/só enxerga redes de 2\.4 GHz: rede só de 5 GHz/);
+    expect(mensagemDeErro("rede_corporativa", "Campus")).toMatchObject({ ajuda: "corporativa" });
+    expect(mensagemDeErro("rede_corporativa", "Campus").texto).toMatch(/pede login com usuário \(WPA-Enterprise/);
+    expect(mensagemDeErro("seguranca_incompativel", "Velha").texto).toMatch(/WEP ou WPA antigo/);
+    expect(mensagemDeErro("sinal_fraco", "Campus")).toMatchObject({ ajuda: "sinal" });
+    expect(mensagemDeErro("sinal_fraco", "Campus").texto).toMatch(/chega fraco no sensor/);
+    expect(mensagemDeErro("sem_ip", "Campus").texto).toMatch(/não entregou um endereço \(DHCP\)/);
+    expect(mensagemDeErro("tempo", "Campus").texto).toMatch(/a tempo/);
+  });
+
+  it("acrescenta sinal, canal e o motivo numérico quando a placa manda", () => {
+    expect(mensagemDeErro("sinal_fraco", "Campus", { erro: "sinal_fraco", motivo: 15, rssi: -86, canal: 11, seguranca: "wpa2" }).texto)
+      .toBe("O sinal da rede “Campus” chega fraco no sensor e a conexão não fechou. Aproxime o sensor do roteador ou do hotspot e tente de novo. Sinal no sensor: Fraco (-86 dBm), canal 11. (motivo 15)");
+    // Sem scan (rede não achada): só o motivo; motivo 0 não aparece.
+    expect(mensagemDeErro("tempo", "X", { motivo: 204 }).texto).toMatch(/ \(motivo 204\)$/);
+    expect(mensagemDeErro("rede_nao_encontrada", "X", { motivo: 0 }).texto).not.toMatch(/motivo/);
+    expect(mensagemDeErro("senha", "X", { rssi: -50 }).texto).toMatch(/Sinal no sensor: Excelente \(-50 dBm\)\.$/);
+  });
+
+});
+
+
+describe("descreverRede", () => {
+
+  it("nome legível da segurança e se o sensor consegue usar", () => {
+    expect(descreverRede({ seguranca: "wpa2" })).toEqual({ seguranca: "WPA2", compativel: true });
+    expect(descreverRede({ seguranca: "wpa2_wpa3" })).toEqual({ seguranca: "WPA2/WPA3", compativel: true });
+    expect(descreverRede({ seguranca: "aberta" })).toEqual({ seguranca: "Aberta", compativel: true });
+    expect(descreverRede({ seguranca: "enterprise" })).toEqual({ seguranca: "Login (Enterprise)", compativel: false });
+    expect(descreverRede({ seguranca: "wep" }).compativel).toBe(false);
+    expect(descreverRede({ seguranca: "nova" })).toEqual({ seguranca: "Outra", compativel: true });
   });
 
 });

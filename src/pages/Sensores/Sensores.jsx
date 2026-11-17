@@ -18,6 +18,7 @@ import { ehGestor } from "../../lib/sessao.js";
 import { SensorUsb, serialDisponivel } from "./serial.js";
 import {
   EXPLICACAO,
+  descreverRede,
   descreverSinal,
   mensagemDeErro,
   situacaoDaPlaca,
@@ -328,7 +329,7 @@ export default function Sensores() {
     }
 
     if (!resposta.ok) {
-      mostrarFormularioRede(mensagemDeErro(resposta.erro, ssid), ssid);
+      mostrarFormularioRede(mensagemDeErro(resposta.erro, ssid, resposta), ssid);
       return;
     }
 
@@ -383,6 +384,15 @@ export default function Sensores() {
     if (etapa.current === minhaEtapa) {
       setCabo(atual => ({ ...atual, semLeitura: true }));
     }
+
+  }
+
+
+  // Redes que o sensor enxerga (scan na placa); null = não respondeu.
+  async function verRedes() {
+
+    const usb = sensorUsb.current;
+    return usb ? usb.redes() : null;
 
   }
 
@@ -485,6 +495,7 @@ export default function Sensores() {
               aoConectar={conectarPeloCabo}
               aoEnviar={enviarConfiguracao}
               aoCancelar={cancelarCabo}
+              aoVerRedes={verRedes}
             />
           </article>
         )}
@@ -640,7 +651,7 @@ function Mensagem({ erro, abrirAjuda }) {
 }
 
 
-function PainelCabo({ cabo, abrirAjuda, aoConectar, aoEnviar, aoCancelar }) {
+function PainelCabo({ cabo, abrirAjuda, aoConectar, aoEnviar, aoCancelar, aoVerRedes }) {
 
   if (cabo.etapa === "inicio") {
 
@@ -682,7 +693,7 @@ function PainelCabo({ cabo, abrirAjuda, aoConectar, aoEnviar, aoCancelar }) {
   }
 
   if (cabo.etapa === "testando") {
-    return <div className="estado">Testando a rede “{cabo.ssid}” no sensor. Isso leva até 15 s…</div>;
+    return <div className="estado">Testando a rede “{cabo.ssid}” no sensor. Isso leva até 30 s…</div>;
   }
 
   if (cabo.etapa === "formulario") {
@@ -693,6 +704,7 @@ function PainelCabo({ cabo, abrirAjuda, aoConectar, aoEnviar, aoCancelar }) {
         abrirAjuda={abrirAjuda}
         aoEnviar={aoEnviar}
         aoCancelar={aoCancelar}
+        aoVerRedes={aoVerRedes}
       />
     );
   }
@@ -732,16 +744,23 @@ function PainelCabo({ cabo, abrirAjuda, aoConectar, aoEnviar, aoCancelar }) {
 
 // Remontado a cada exibição (key): senha em branco, "mostrar senha" desmarcado,
 // foco no nome da rede, como o formulário recriado do original.
-function FormularioRede({ cabo, abrirAjuda, aoEnviar, aoCancelar }) {
+function FormularioRede({ cabo, abrirAjuda, aoEnviar, aoCancelar, aoVerRedes }) {
 
   const { situacao, info, erro, rede } = cabo;
 
   const ssidRef = useRef(null);
+  const senhaRef = useRef(null);
   const [mostrarSenha, setMostrarSenha] = useState(false);
 
   useEffect(() => {
     ssidRef.current.focus();
   }, []);
+
+  // Escolheu uma rede da lista: preenche o nome e passa para a senha.
+  function usarRede(ssid) {
+    ssidRef.current.value = ssid;
+    senhaRef.current.focus();
+  }
 
   function enviar(evento) {
     evento.preventDefault();
@@ -766,7 +785,7 @@ function FormularioRede({ cabo, abrirAjuda, aoEnviar, aoCancelar }) {
         <label className="campo"><span>Nome da rede Wi-Fi</span>
           <input ref={ssidRef} name="ssid" maxLength={32} required defaultValue={rede || ""} placeholder="Hotspot do celular" /></label>
         <label className="campo"><span>Senha da rede</span>
-          <input name="senha" type={mostrarSenha ? "text" : "password"} maxLength={63} autoComplete="new-password" /></label>
+          <input ref={senhaRef} name="senha" type={mostrarSenha ? "text" : "password"} maxLength={63} autoComplete="new-password" /></label>
         <button type="submit" className="botao">{situacao === "trocar-rede" ? "Trocar rede" : "Conectar sensor"}</button>
       </form>
 
@@ -784,10 +803,96 @@ function FormularioRede({ cabo, abrirAjuda, aoEnviar, aoCancelar }) {
 
       <Mensagem erro={erro} abrirAjuda={abrirAjuda} />
 
+      <RedesVistas aoVerRedes={aoVerRedes} aoUsar={usarRede} />
+
       <div className="acoes-item">
         <button type="button" className="botao secundario" id="cancelarCabo" onClick={aoCancelar}>Cancelar</button>
       </div>
     </>
+  );
+
+}
+
+
+// "Ver redes que o sensor enxerga": o scan é feito na placa, então a lista
+// mostra o que o rádio dela alcança (só 2.4 GHz), não o que o computador vê.
+function RedesVistas({ aoVerRedes, aoUsar }) {
+
+  const [busca, setBusca] = useState({ estado: "parado" });
+
+  async function buscar() {
+
+    setBusca({ estado: "buscando" });
+
+    const resposta = await aoVerRedes();
+
+    if (!resposta) {
+      setBusca({ estado: "erro", texto: "O sensor não respondeu à busca de redes. Confira o cabo e tente de novo." });
+    } else if (!resposta.ok) {
+      setBusca({
+        estado: "erro",
+        texto: resposta.erro === "comando_desconhecido"
+          ? "Este sensor está com um firmware antigo, que não lista redes. Atualize o firmware para usar esta busca."
+          : `O sensor não conseguiu procurar redes (${resposta.erro || "sem motivo"}). Tente de novo.`
+      });
+    } else {
+      setBusca({ estado: "ok", redes: resposta.redes || [] });
+    }
+
+  }
+
+  return (
+    <section className="redes-vistas" aria-label="Redes que o sensor enxerga">
+      <div className="acoes-item">
+        <button type="button" className="botao secundario" id="verRedes" onClick={buscar} disabled={busca.estado === "buscando"}>
+          Ver redes que o sensor enxerga
+        </button>
+      </div>
+
+      {busca.estado === "buscando" && <div className="estado">Procurando redes de 2.4 GHz perto do sensor…</div>}
+
+      {busca.estado === "erro" && <p className="erro-form" role="alert">{busca.texto}</p>}
+
+      {busca.estado === "ok" && busca.redes.length === 0 && (
+        <div className="estado">
+          O sensor não enxergou nenhuma rede de 2.4 GHz. Aproxime o sensor do roteador ou ligue o hotspot do celular em 2.4 GHz.
+        </div>
+      )}
+
+      {busca.estado === "ok" && busca.redes.length > 0 && (
+        <>
+          <p>
+            Redes de 2.4 GHz que chegam no sensor, da mais forte para a mais fraca.{" "}
+            Rede que não aparece aqui o sensor não alcança (ou é só de 5 GHz).
+          </p>
+          <div className="tabela-wrap">
+            <table className="tabela" id="tabelaRedes">
+              <thead>
+                <tr><th>Rede</th><th>Sinal</th><th>Canal</th><th>Segurança</th><th aria-label="Ação"></th></tr>
+              </thead>
+              <tbody>
+                {busca.redes.map(rede => {
+                  const { seguranca, compativel } = descreverRede(rede);
+                  return (
+                    <tr key={`${rede.ssid}-${rede.canal}`}>
+                      <td>{rede.ssid}</td>
+                      <td>{descreverSinal(rede.rssi)}</td>
+                      <td>{rede.canal}</td>
+                      <td>{compativel ? seguranca : <span className="status critico">{seguranca}: não suportada</span>}</td>
+                      <td>
+                        {compativel && (
+                          <button type="button" className="botao secundario" onClick={() => aoUsar(rede.ssid)}>Usar esta rede</button>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </>
+      )}
+    </section>
   );
 
 }
@@ -856,7 +961,22 @@ function Ajuda({ ajudaRef }) {
         <dd>Confira maiúsculas e minúsculas. Nada é gravado quando a rede falha: o sensor continua na rede anterior.</dd>
 
         <dt id="ajuda-rede">Rede não encontrada ou demorou demais</dt>
-        <dd>O sensor só enxerga redes de 2.4 GHz. Confira o nome exato da rede e deixe o celular perto do sensor.</dd>
+        <dd>
+          O sensor só enxerga redes de 2.4 GHz. Confira o nome exato da rede e deixe o celular perto do sensor.{" "}
+          Com o cabo ligado, “Ver redes que o sensor enxerga” mostra o que chega até ele.
+        </dd>
+
+        <dt id="ajuda-corporativa">Rede da faculdade ou da empresa com login</dt>
+        <dd>
+          Rede que pede usuário além da senha (WPA-Enterprise, 802.1X) não funciona no sensor.{" "}
+          Use o hotspot do celular ou uma rede de visitantes com senha simples.
+        </dd>
+
+        <dt id="ajuda-sinal">Sinal fraco</dt>
+        <dd>
+          Abaixo de -80 dBm a conexão costuma falhar no meio e parecer senha errada. Aproxime o sensor do roteador{" "}
+          ou do celular; em prédio com vários pontos de acesso, o sensor escolhe o de sinal mais forte.
+        </dd>
 
         <dt id="ajuda-online">Entrou na rede mas nunca ficou ONLINE</dt>
         <dd>

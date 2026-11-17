@@ -180,6 +180,49 @@ describe("SensorUsb", () => {
   });
 
 
+  it("configurar espera até 45 s (scan + teste de até 25 s na placa)", async () => {
+
+    vi.useFakeTimers();
+    const porta = criarPorta();
+    instalarSerial(porta);
+
+    const usb = new SensorUsb();
+    await usb.conectar();
+
+    let resposta = "pendente";
+    usb.configurar({ cmd: "wifi", ssid: "Campus", senha: "12345678" }).then(r => { resposta = r; });
+
+    await vi.advanceTimersByTimeAsync(44000);
+    expect(resposta).toBe("pendente");
+    await vi.advanceTimersByTimeAsync(1500);
+    expect(resposta).toBeNull();
+
+    vi.useRealTimers();
+    await usb.fechar();
+
+  });
+
+
+  it("redes pede a lista à placa e devolve a resposta", async () => {
+
+    const porta = criarPorta(linha => linha.includes('"redes"')
+      ? 'log comum\nCT>{"ok":true,"redes":[{"ssid":"Campus","rssi":-61,"canal":6,"seguranca":"wpa2"}]}\n'
+      : null);
+    instalarSerial(porta);
+
+    const usb = new SensorUsb();
+    await usb.conectar();
+
+    const resposta = await usb.redes();
+
+    expect(porta.escrito).toEqual(['CT<{"cmd":"redes"}\n']);
+    expect(resposta).toEqual({ ok: true, redes: [{ ssid: "Campus", rssi: -61, canal: 6, seguranca: "wpa2" }] });
+
+    await usb.fechar();
+
+  });
+
+
   it("cabo tirado: quem esperava resposta recebe null", async () => {
 
     const porta = criarPorta();
