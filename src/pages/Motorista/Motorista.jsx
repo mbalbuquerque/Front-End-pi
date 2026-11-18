@@ -3,14 +3,15 @@
 // Somente leitura: nenhum campo de digitação e nenhum toque necessário enquanto
 // dirige. Atualiza sozinha a cada 20 s (GET /motorista).
 //
-// Alerta: quando a carga piora (normal -> atenção -> crítico) o celular vibra,
-// toca um bipe (depois de "Ativar alertas") e mostra uma notificação; o aviso
-// fica na tela até a carga voltar ao normal. A tela fica acesa (Wake Lock).
+// Alerta: quando a carga piora (normal -> atenção -> crítico) o aviso aparece e
+// fica na tela até a carga voltar ao normal. Com os alertas ligados (um botão só,
+// "Ativar alertas", useAlertasMotorista) o celular também vibra, toca um bipe e
+// mostra uma notificação. A tela fica acesa (Wake Lock).
 // Sem internet, a faixa do topo diz de que hora é a última leitura e o valor
 // fica marcado como antigo.
 //
-// Alertas push (AlertasPushMotorista): inscrevem o celular para receber, com a
-// tela fechada, só os alertas do veículo vinculado; o toque abre esta tela.
+// O mesmo botão inscreve o celular no Web Push: com a tela fechada chegam só os
+// alertas do veículo vinculado, e o toque abre esta tela.
 
 import { useEffect, useRef, useState } from "react";
 import Icone from "../../components/Icone.jsx";
@@ -25,8 +26,7 @@ import { UPDATE_INTERVAL } from "../../lib/config.js";
 import { useOnline } from "../../lib/conectividade.js";
 import { formatarHora, formatarTemp, formatarUmidade } from "../../lib/formatar.js";
 import { falhaDoSensor } from "../../lib/sensorFalha.js";
-import { criarSom, notificar, pedirPermissaoDeNotificacao, vibrar } from "./alerta.js";
-import AlertasPushMotorista from "./AlertasPushMotorista.jsx";
+import AlertasMotorista, { DicaSom } from "./AlertasMotorista.jsx";
 import {
   STATUS_MOTORISTA,
   descreverFaixa,
@@ -37,6 +37,7 @@ import {
   proximoAlerta,
   statusDaTela
 } from "./motorista.js";
+import { useAlertasMotorista } from "./useAlertasMotorista.js";
 import "../../styles/motorista/motorista.css";
 
 const TELA_ACESA = {
@@ -70,8 +71,8 @@ export default function Motorista() {
 
   const [alerta, setAlerta] = useState(null);
   const alertaAnterior = useRef(null);
-  const som = useRef(null);
-  const [alertasAtivos, setAlertasAtivos] = useState(false);
+  const alertas = useAlertasMotorista();
+  const { disparar } = alertas;
 
   usePolling(async sinal => {
 
@@ -103,24 +104,13 @@ export default function Motorista() {
 
     if (deveDisparar(alertaAnterior.current, novo)) {
       const info = STATUS_MOTORISTA[novo];
-      vibrar(novo);
-      som.current?.tocar(novo);
-      notificar(`Carga em ${info.texto}`, info.frase);
+      disparar(novo, `Carga em ${info.texto}`, info.frase);
     }
 
     alertaAnterior.current = novo;
     setAlerta(novo);
 
-  }, [status]);
-
-  async function ativarAlertas() {
-
-    som.current = som.current || criarSom();
-    som.current.ativar();
-    setAlertasAtivos(true);
-    await pedirPermissaoDeNotificacao();
-
-  }
+  }, [status, disparar]);
 
   const leitura = dados?.leitura || null;
   const minutos = leitura ? minutosDesde(leitura.medidoEm, agora) : null;
@@ -160,6 +150,8 @@ export default function Motorista() {
           <Icone nome="sair" tamanho={20} />
         </button>
       </header>
+
+      <DicaSom alertas={alertas} />
 
       <main className="conteudo">
 
@@ -255,18 +247,7 @@ export default function Motorista() {
           </>
         )}
 
-        {alertasAtivos ? (
-          <p className="alertas-ligados" id="alertasLigados" role="status">
-            <Icone nome="ok" tamanho={22} />
-            Alertas com som ligados nesta tela.
-          </p>
-        ) : (
-          <button type="button" className="ativar-alertas" id="ativarAlertas" onClick={ativarAlertas}>
-            Ativar alertas (som e notificação)
-          </button>
-        )}
-
-        <AlertasPushMotorista />
+        <AlertasMotorista alertas={alertas} />
 
       </main>
 

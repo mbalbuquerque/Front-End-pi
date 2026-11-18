@@ -16,6 +16,9 @@ import {
 
 const ROTA_MOTORISTA = /func-coldtrack-7319\.azurewebsites\.net\/api\/motorista(\?|$)/;
 
+// Chave pública VAPID de teste (65 bytes), não é a de produção.
+const CHAVE_TESTE = "BEl62iUYgUivxIkv69yViEuiBIa-Ib9-SkvMeAtA3LFgDzkrxZJjSgSnfckjBJuBkr3qBUYIHBQFLXYp5Nksh8U";
+
 const CORS = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "Authorization, Content-Type",
@@ -36,25 +39,84 @@ async function simularMotorista(page, estado) {
 }
 
 
-// Celular simulado: vibração e notificação gravam o que foi pedido.
+// Celular simulado: vibração, som, notificação e Web Push gravam o que foi pedido.
+// A permissão e a inscrição do push ficam no sessionStorage para sobreviver ao
+// reload, como no celular. O service worker real fica bloqueado nos e2e.
 async function simularCelular(page) {
 
   await page.addInitScript(() => {
-    window.__celular = { vibracoes: [], notificacoes: [] };
+    window.__celular = { vibracoes: [], notificacoes: [], bipes: 0, inscricoes: 0 };
     navigator.vibrate = padrao => {
       window.__celular.vibracoes.push(padrao);
       return true;
     };
-    let permissao = "default";
+    const permissao = () => sessionStorage.getItem("__permissao") || "default";
     function Notificacao(titulo) {
       window.__celular.notificacoes.push(titulo);
     }
-    Object.defineProperty(Notificacao, "permission", { get: () => permissao });
+    Object.defineProperty(Notificacao, "permission", { get: permissao });
     Notificacao.requestPermission = async () => {
-      permissao = "granted";
-      return permissao;
+      sessionStorage.setItem("__permissao", "granted");
+      return "granted";
     };
     window.Notification = Notificacao;
+
+    // Som: conta os bipes tocados (o AudioContext só nasce depois de um toque).
+    window.AudioContext = function AudioContextFalso() {
+      const no = () => ({
+        connect: () => {},
+        start: () => { window.__celular.bipes += 1; },
+        stop: () => {},
+        frequency: {},
+        gain: {}
+      });
+      return { currentTime: 0, destination: {}, resume: async () => {}, createOscillator: no, createGain: no };
+    };
+
+    window.PushManager = function PushManager() {};
+    const ENDPOINT = "https://fcm.googleapis.com/fcm/send/teste-e2e";
+    const inscricao = () => (sessionStorage.getItem("__inscricao") ? {
+      endpoint: ENDPOINT,
+      toJSON: () => ({ endpoint: ENDPOINT, keys: { p256dh: "p", auth: "a" } }),
+      unsubscribe: async () => {
+        sessionStorage.removeItem("__inscricao");
+        return true;
+      }
+    } : null);
+    const registro = {
+      pushManager: {
+        getSubscription: async () => inscricao(),
+        subscribe: async () => {
+          window.__celular.inscricoes += 1;
+          sessionStorage.setItem("__inscricao", "1");
+          return inscricao();
+        }
+      },
+      showNotification: async titulo => {
+        window.__celular.notificacoes.push(titulo);
+      }
+    };
+    Object.defineProperty(navigator, "serviceWorker", {
+      configurable: true,
+      value: {
+        getRegistration: async () => registro,
+        register: async () => registro,
+        ready: Promise.resolve(registro),
+        addEventListener: () => {}
+      }
+    });
+  });
+
+  // API do push (chave pública de teste, inscrição), sem sair para o Azure.
+  await page.route(/func-coldtrack-7319\.azurewebsites\.net\/api\/push\//, route => {
+    const pedido = route.request();
+    if (pedido.method() === "OPTIONS") {
+      return route.fulfill({ status: 204, headers: CORS });
+    }
+    if (pedido.url().endsWith("/push/chave")) {
+      return route.fulfill({ json: { chave: CHAVE_TESTE }, headers: CORS });
+    }
+    return route.fulfill({ status: pedido.method() === "DELETE" ? 204 : 201, json: {}, headers: CORS });
   });
 
 }
@@ -190,8 +252,12 @@ test.describe("QA-MOTORISTA tela", () => {
     await page.goto("/motorista");
 
     await expect(page.locator("#statusMotorista")).toHaveText("NORMAL");
-    await page.getByRole("button", { name: "Ativar alertas (som e notificação)" }).click();
+    // Um botão só: notificação, push, som e vibração.
+    await expect(page.getByRole("button", { name: /Ativar alertas/ })).toHaveCount(1);
+    await page.getByRole("button", { name: "Ativar alertas" }).click();
     await expect(page.locator("#ativarAlertas")).toHaveCount(0);
+    await expect(page.locator("#alertasLigados")).toHaveText("Alertas ligados, também com a tela fechada.");
+    expect(await page.evaluate(() => window.__celular.inscricoes)).toBe(1);
 
     estado.status = "CRITICO";
     await page.clock.fastForward(20000);
@@ -199,6 +265,7 @@ test.describe("QA-MOTORISTA tela", () => {
     await expect(page.locator("#tempMotorista")).toHaveText("17.5 °C");
     await expect.poll(() => page.evaluate(() => window.__celular.vibracoes.length)).toBe(1);
     await expect.poll(() => page.evaluate(() => window.__celular.notificacoes)).toEqual(["Carga em CRÍTICO"]);
+    expect(await page.evaluate(() => window.__celular.bipes)).toBe(3);
 
     // Continua crítico: não vibra de novo a cada atualização.
     await page.clock.fastForward(20000);
@@ -209,6 +276,50 @@ test.describe("QA-MOTORISTA tela", () => {
     await page.clock.fastForward(20000);
     await expect(page.locator("#statusMotorista")).toHaveText("NORMAL");
     await expect(page.locator("#avisoMotorista")).toHaveCount(0);
+
+  });
+
+  test("recarregar não desliga os alertas: notifica na hora e o som volta no primeiro toque", async ({ page }) => {
+
+    const estado = { status: "NORMAL" };
+    await simularCelular(page);
+    await page.clock.install();
+    await simularMotorista(page, estado);
+    await page.goto("/motorista");
+    await page.getByRole("button", { name: "Ativar alertas" }).click();
+    await expect(page.locator("#alertasLigados")).toBeVisible();
+
+    await page.reload();
+    await expect(page.locator("#statusMotorista")).toHaveText("NORMAL");
+    await expect(page.locator("#alertasLigados")).toHaveText("Alertas ligados, também com a tela fechada.");
+    await expect(page.locator("#ativarAlertas")).toHaveCount(0);
+    const dica = page.locator("#dicaSom");
+    await expect(dica).toHaveText("Toque na tela para ligar o som e a vibração.");
+
+    // Sem toque ainda: a notificação sai, o som não.
+    estado.status = "CRITICO";
+    await page.clock.fastForward(20000);
+    await expect(page.locator("#avisoMotorista")).toContainText("CRÍTICO");
+    await expect.poll(() => page.evaluate(() => window.__celular.notificacoes)).toEqual(["Carga em CRÍTICO"]);
+    expect(await page.evaluate(() => window.__celular.bipes)).toBe(0);
+
+    // Primeiro toque em qualquer lugar: a dica some e o próximo alerta toca.
+    await page.locator("#tempMotorista").click();
+    await expect(dica).toHaveCount(0);
+    estado.status = "NORMAL";
+    await page.clock.fastForward(20000);
+    await expect(page.locator("#avisoMotorista")).toHaveCount(0);
+    estado.status = "ATENCAO";
+    await page.clock.fastForward(20000);
+    await expect(page.locator("#avisoMotorista")).toContainText("ATENÇÃO");
+    await expect.poll(() => page.evaluate(() => window.__celular.bipes)).toBe(1);
+
+    // Desativar: grava a escolha e cancela a inscrição; depois do reload segue desligado.
+    await page.getByRole("button", { name: "Desativar" }).click();
+    await expect(page.getByRole("button", { name: "Ativar alertas" })).toBeVisible();
+    await page.reload();
+    await expect(page.getByRole("button", { name: "Ativar alertas" })).toBeVisible();
+    await expect(dica).toHaveCount(0);
 
   });
 
@@ -251,6 +362,7 @@ test.describe("QA-MOTORISTA tela", () => {
     await page.setViewportSize({ width: 360, height: 740 });
     await page.goto("/motorista");
     await expect(page.locator("#statusMotorista")).toHaveText("NORMAL");
+    await expect(page.locator("#ativarAlertas")).toBeVisible();
 
     const medidas = await page.evaluate(() => {
       const px = (seletor, prop) => parseFloat(getComputedStyle(document.querySelector(seletor))[prop]);

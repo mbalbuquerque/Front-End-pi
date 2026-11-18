@@ -502,7 +502,27 @@ body.tela-sem-sinal { --tinta: var(--ct-offline-bg); --cor: var(--ct-offline); }
 }
 
 
-/* ALERTAS PUSH: inscrição do celular para receber com a tela fechada */
+/* DICA DO SOM: depois de recarregar, até o primeiro toque na página (sem animação) */
+
+.dica-som {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  padding: 8px 16px;
+
+  background: var(--ct-blue-50);
+  color: var(--ct-blue-700);   /* 5,9:1 sobre blue-50 */
+
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.4;
+  text-align: center;
+}
+
+
+/* ALERTAS: um botão só (notificação com a tela fechada, som e vibração) */
 
 .alertas-push {
   display: grid;

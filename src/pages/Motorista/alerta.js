@@ -3,8 +3,31 @@
 // permissão) simplesmente não vibra, não toca ou não notifica, e a tela segue
 // mostrando o aviso.
 //
-// O alerta push da empresa (Configurações -> Alertas no celular) é do operador
-// e do gestor; o motorista recebe este alerta enquanto a página está aberta.
+// Um botão só ("Ativar alertas", useAlertasMotorista) liga este alerta local e o
+// Web Push do celular. A escolha fica gravada neste aparelho (CHAVE_ALERTAS),
+// então sobrevive a recarregar a página.
+
+import { ler, gravar } from "../../lib/armazenamento.js";
+
+export const CHAVE_ALERTAS = "coldtrack.motorista.alertas";
+
+// true (ligou), false (desligou) ou null (nunca escolheu neste aparelho).
+// Sem armazenamento (modo privado) a leitura é null e a gravação é ignorada.
+export function lerPreferenciaAlertas() {
+
+  const valor = ler(CHAVE_ALERTAS);
+
+  return valor === "1" ? true : valor === "0" ? false : null;
+
+}
+
+
+export function gravarPreferenciaAlertas(ligado) {
+
+  gravar(CHAVE_ALERTAS, ligado ? "1" : "0");
+
+}
+
 
 const PADRAO_VIBRACAO = {
   ATENCAO: [300, 150, 300],
@@ -30,7 +53,8 @@ export function vibrar(nivel) {
 
 
 // O navegador só deixa tocar som depois de um toque na página: ativar() é
-// chamado pelo botão "Ativar alertas" e cria o AudioContext ali.
+// chamado pelo botão "Ativar alertas" ou, depois de recarregar, pelo primeiro
+// toque em qualquer lugar da tela, e cria o AudioContext ali.
 export function criarSom() {
 
   let contexto = null;
