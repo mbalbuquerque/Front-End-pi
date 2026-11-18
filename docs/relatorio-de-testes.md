@@ -250,6 +250,20 @@ bloqueado (`serviceWorkers: "block"`, para a API simulada funcionar), então est
 
 Nenhum outro defeito de funcionamento foi encontrado.
 
+## Alerta push no celular real (issue #11)
+
+Testado em 17/11/2026 num celular Android, com a conta de motorista, o PWA fechado por completo
+e sem restrição de bateria para o navegador. A leitura que disparou o alerta veio de um sensor
+de teste temporário (`teste-push7`, leituras marcadas como `origem: simulador`), porque a placa
+real fica acima de 30 °C no ambiente e o push só sai quando a faixa piora; o sensor de teste foi
+removido logo depois. A API registrou "2 de 2 aceitos" às 21:27 e a notificação chegou com o app
+fechado. Antes disso nenhum push funcionava em produção: o `VAPID_SUBJECT` tinha um caminho na URL
+e a biblioteca recusava a assinatura (corrigido na API, PR #110, que também envia `Urgency: high`).
+
+![Notificação recebida com o app fechado](evidencias/2026-11-17-push-celular-notificacao.png)
+
+![Tela do motorista aberta ao tocar na notificação](evidencias/2026-11-17-push-celular-tela-motorista.png)
+
 ## Limitações conhecidas
 
 - **Fontes na recusa do chat:** para pergunta fora do assunto, a rota `/chat` recusa
