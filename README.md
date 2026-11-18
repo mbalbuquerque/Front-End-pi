@@ -80,7 +80,7 @@ demonstrativo de reserva (Normal até 15 °C, Atenção até 20 °C).
 | Build | Vite 5, PostCSS (`postcss-prefix-selector` para escopo do CSS por família) |
 | Testes | Vitest + jsdom (unitários), Playwright (e2e, Chromium desktop e Pixel 7) |
 | Qualidade | ESLint 9 (`--max-warnings 0`) |
-| PWA | `public/manifest.json`, `public/sw.js` (rede primeiro, registrado só no build; alertas Web Push) |
+| PWA | `public/manifest.json` (o app instalado abre em `/login`, que leva a sessão à tela do perfil), `public/sw.js` (rede primeiro, registrado só no build; alertas Web Push) |
 | Hospedagem | Azure Storage, site estático (container `$web`), publicação por GitHub Actions com OIDC |
 | Hardware | ESP32-C3, sensor DHT11 ou DHT22 (firmware no repositório do back-end) |
 | Serviços externos | API ColdTrack (Azure Functions; chat e assistente do painel com Azure OpenAI), ThingSpeak, Open-Meteo |
