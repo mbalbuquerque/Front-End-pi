@@ -193,8 +193,10 @@ permissão, lê a chave pública em `GET /push/chave`, inscreve no `pushManager`
 cancela a inscrição local e repassa o erro) e `desativarPush()` (`DELETE /push/inscricao` com o
 `endpoint`, melhor esforço, e cancela no navegador). No dev não há service worker: ativar avisa em
 vez de travar. O hook `useAlertasPush` guarda o estado (`verificando`, ocupado, erro) e é usado
-pelo card `AlertasCelular` da tela de Configurações (operador e gestor) e pelo bloco
-`AlertasPushMotorista` da tela do motorista. A API manda ao motorista só os alertas do veículo
+pelo card `AlertasCelular` da tela de Configurações (operador e gestor) e, na tela do motorista,
+por `useAlertasMotorista`: um botão só (**Ativar alertas**) pede a permissão, inscreve o Web Push e
+liga o som e a vibração locais; a escolha fica no `localStorage` (`coldtrack.motorista.alertas`) e,
+depois de recarregar, o primeiro toque na página rearma o som (o navegador exige um gesto). A API manda ao motorista só os alertas do veículo
 vinculado a ele, com `url` `/motorista` (`projeto-integrador-4-periodo#88`).
 
 **`armazenamento.js`** — `ler`, `gravar`, `remover`, `lerJSON(chave, padrao)`, `gravarJSON` (com try/catch).
@@ -372,7 +374,7 @@ export default function Relatorios() {
   faixa normal do perfil do veículo; ou enviar `POST /api/telemetria` com a chave de um sensor de
   teste e uma temperatura fora da faixa, logo depois de uma leitura normal. A notificação chega uma
   vez por mudança de faixa; tocar nela abre `/alertas?veiculo=<código>`. Motorista: entrar com a
-  conta de motorista, tocar em **Ativar alertas no celular** na tela `/motorista`, fechar o
+  conta de motorista, tocar em **Ativar alertas** na tela `/motorista`, fechar o
   navegador e provocar a mudança de faixa no sensor do veículo dele (chega, e o toque abre
   `/motorista`) e no sensor de outro veículo (não chega).
 - `public/sw.js`: suba `CACHE_NAME` (`coldtrack-v14` → `v15`...) quando mudar o service worker.

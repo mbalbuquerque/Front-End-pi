@@ -22,7 +22,8 @@ const alerta = vi.hoisted(() => ({
   vibrar: vi.fn(),
   notificar: vi.fn(),
   pedirPermissaoDeNotificacao: vi.fn(async () => "granted"),
-  som: { ativar: vi.fn(), tocar: vi.fn() }
+  som: { ativar: vi.fn(), tocar: vi.fn() },
+  preferencia: null
 }));
 
 vi.mock("../../hooks/useSessao.jsx", () => ({ useSessao: () => sessao }));
@@ -35,7 +36,9 @@ vi.mock("./alerta.js", () => ({
   vibrar: alerta.vibrar,
   notificar: alerta.notificar,
   pedirPermissaoDeNotificacao: alerta.pedirPermissaoDeNotificacao,
-  criarSom: () => alerta.som
+  criarSom: () => alerta.som,
+  lerPreferenciaAlertas: () => alerta.preferencia,
+  gravarPreferenciaAlertas: valor => { alerta.preferencia = valor; }
 }));
 // A rodada roda ao abrir; as próximas, quando o teste chama atualizar().
 vi.mock("../../hooks/usePolling.js", () => ({
@@ -88,6 +91,8 @@ beforeEach(() => {
   rede.online = true;
   tela.estado = "ativa";
   api.api.mockResolvedValue(resposta());
+  alerta.preferencia = null;
+  push.estadoPush.mockResolvedValue("inativo");
 });
 
 afterEach(() => {
@@ -173,11 +178,15 @@ describe("Motorista", () => {
 
   it("normal -> crítico -> normal: alerta ao piorar, aviso fica até voltar", async () => {
     await abrir();
-    await userEvent.click(screen.getByRole("button", { name: "Ativar alertas (som e notificação)" }));
+    // Um botão só: som, vibração, permissão e Web Push juntos.
+    expect(screen.getAllByRole("button", { name: /Ativar alertas/ })).toHaveLength(1);
+    await userEvent.click(screen.getByRole("button", { name: "Ativar alertas" }));
     expect(alerta.som.ativar).toHaveBeenCalled();
-    expect(alerta.pedirPermissaoDeNotificacao).toHaveBeenCalled();
-    expect(screen.queryByRole("button", { name: "Ativar alertas (som e notificação)" })).not.toBeInTheDocument();
-    expect(document.getElementById("alertasLigados")).toHaveTextContent("Alertas com som ligados nesta tela.");
+    expect(push.ativarPush).toHaveBeenCalledTimes(1);
+    expect(alerta.preferencia).toBe(true);
+    expect(screen.queryByRole("button", { name: "Ativar alertas" })).not.toBeInTheDocument();
+    expect(document.getElementById("alertasLigados")).toHaveTextContent("Alertas ligados, também com a tela fechada.");
+    expect(document.getElementById("dicaSom")).toBeNull();
 
     api.api.mockResolvedValue(resposta("CRITICO"));
     await atualizar();
@@ -201,11 +210,12 @@ describe("Motorista", () => {
     expect(alerta.vibrar).toHaveBeenCalledTimes(1);
   });
 
-  it("atenção sem ativar os alertas: vibra e notifica, sem som", async () => {
+  it("atenção com os alertas desligados: só o aviso na tela", async () => {
     api.api.mockResolvedValue(resposta("ATENCAO"));
     await abrir();
     expect(screen.getByRole("alert")).toHaveTextContent("ATENÇÃO");
-    expect(alerta.vibrar).toHaveBeenCalledWith("ATENCAO");
+    expect(alerta.vibrar).not.toHaveBeenCalled();
+    expect(alerta.notificar).not.toHaveBeenCalled();
     expect(alerta.som.tocar).not.toHaveBeenCalled();
   });
 
@@ -268,14 +278,37 @@ describe("Motorista", () => {
     expect(screen.getByText("Carregando a leitura do veículo…")).toBeInTheDocument();
   });
 
-  it("alerta local e push convivem: ativar o push não tira o botão do alerta local", async () => {
+  it("recarregou com os alertas ligados: continua ligado, dica até o primeiro toque", async () => {
+    alerta.preferencia = true;
+    push.estadoPush.mockResolvedValue("ativo");
     await abrir();
-    expect(screen.getByRole("heading", { name: "Alertas com a tela fechada" })).toBeInTheDocument();
-    await userEvent.click(screen.getByRole("button", { name: "Ativar alertas no celular" }));
-    expect(push.ativarPush).toHaveBeenCalledTimes(1);
-    expect(await screen.findByText("Alertas ativos neste celular.")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Ativar alertas (som e notificação)" })).toBeInTheDocument();
-    expect(alerta.som.ativar).not.toHaveBeenCalled();
+    expect(document.getElementById("alertasLigados")).toHaveTextContent("Alertas ligados, também com a tela fechada.");
+    expect(document.getElementById("dicaSom")).toHaveTextContent("Toque na tela para ligar o som e a vibração.");
+
+    api.api.mockResolvedValue(resposta("CRITICO"));
+    await atualizar();
+    expect(alerta.notificar).toHaveBeenCalledWith("Carga em CRÍTICO", expect.any(String));
+    expect(alerta.som.tocar).not.toHaveBeenCalled();
+
+    await userEvent.click(document.getElementById("tempMotorista"));
+    expect(alerta.som.ativar).toHaveBeenCalledTimes(1);
+    expect(document.getElementById("dicaSom")).toBeNull();
+  });
+
+  it("Desativar: cancela o push e para de vibrar e notificar", async () => {
+    alerta.preferencia = true;
+    push.estadoPush.mockResolvedValue("ativo");
+    await abrir();
+    await userEvent.click(screen.getByRole("button", { name: "Desativar" }));
+    expect(push.desativarPush).toHaveBeenCalledTimes(1);
+    expect(alerta.preferencia).toBe(false);
+    expect(await screen.findByRole("button", { name: "Ativar alertas" })).toBeInTheDocument();
+
+    api.api.mockResolvedValue(resposta("CRITICO"));
+    await atualizar();
+    expect(screen.getByRole("alert")).toHaveTextContent("CRÍTICO");
+    expect(alerta.vibrar).not.toHaveBeenCalled();
+    expect(alerta.notificar).not.toHaveBeenCalled();
   });
 
   it("Sair chama o sair da sessão; indicador da tela acesa", async () => {
