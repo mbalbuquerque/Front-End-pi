@@ -6,9 +6,18 @@ import { HOST_API, entrarComo, expect, respostaMotorista, simularApi, test } fro
 
 const DESDE = "2026-11-17T14:02:20+00:00";
 
-// Hora local esperada na tela (o navegador do teste usa o fuso da máquina).
+// Momento esperado na tela, pela regra de formatarMomento (o navegador do teste
+// usa o fuso da máquina): só a hora no mesmo dia, "dd/mm hh:mm" em outro dia.
+// Calculado no relógio da página para o teste não vencer quando a data passa.
 async function horaLocal(page) {
-  return page.evaluate(desde => new Date(desde).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }), DESDE);
+  return page.evaluate(desde => {
+    const data = new Date(desde);
+    const hora = data.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+    if (data.toDateString() === new Date().toDateString()) {
+      return hora;
+    }
+    return `${data.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" })} ${hora}`;
+  }, DESDE);
 }
 
 // Sobrepõe as duas rotas do simularApi; `estado.sensor` decide a próxima resposta.
