@@ -10,6 +10,7 @@ import AcessoLayout from "../../components/AcessoLayout.jsx";
 import { useSessao } from "../../hooks/useSessao.jsx";
 import { useTitulo } from "../../hooks/useTitulo.js";
 import { postPublico } from "../../lib/api.js";
+import { limparCodigo, limparRecuperacao } from "../../lib/doisFatores.js";
 import { lerSessao, rotaInicial } from "../../lib/sessao.js";
 
 
@@ -202,18 +203,6 @@ export default function Login() {
     </AcessoLayout>
   );
 
-}
-
-
-// Só dígitos, no máximo 6: aceita colar "123 456" ou "123-456".
-function limparCodigo(texto) {
-  return texto.replace(/\D/g, "").slice(0, 6);
-}
-
-
-// Código de recuperação: 8 caracteres (a1b2c3d4), sem espaço nem traço.
-function limparRecuperacao(texto) {
-  return texto.replace(/[^0-9a-z]/gi, "").toLowerCase().slice(0, 8);
 }
 
 
