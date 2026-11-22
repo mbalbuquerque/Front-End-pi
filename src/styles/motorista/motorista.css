@@ -263,6 +263,9 @@ input:focus-visible {
   line-height: 1.2;
 }
 
+.aviso-critico { --st: var(--st-critico); }
+.aviso-atencao { --st: var(--st-atencao); }
+
 .aviso-critico,
 .aviso-atencao {
   background: var(--st);
@@ -359,7 +362,7 @@ input:focus-visible {
   margin: 4px 0;
 
   color: #ffffff;
-  font-size: clamp(76px, 24vw, 128px);
+  font-size: clamp(96px, 27vw, 128px);
   font-weight: 800;
   line-height: 1;
   font-variant-numeric: tabular-nums;
@@ -569,7 +572,7 @@ input:focus-visible {
   right: auto;
   left: 0;
 
-  background: transparent;
+  background: rgba(224, 242, 254, 0.9);
   color: var(--ct-blue-700);
 
   transform: translateY(4px);
@@ -1205,25 +1208,51 @@ input:focus-visible {
     align-items: start;
   }
 
+  /* Viagem e Perfil: cartões em duas colunas. */
+  .painel-duplo {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    align-items: start;
+  }
+
+  .painel-duplo > .botao-sair {
+    grid-column: 1 / -1;
+  }
+
 }
 
 @media (orientation: landscape) and (max-height: 520px) {
 
   body {
-    --altura-abas: 56px;
+    --altura-abas: 52px;
   }
 
+  /* Topo numa linha só: veículo e aba lado a lado. */
   .topo {
-    min-height: 48px;
+    min-height: 40px;
     padding: 4px 16px;
   }
 
+  .topo-textos {
+    flex-direction: row-reverse;
+    justify-content: flex-end;
+    align-items: baseline;
+    gap: 12px;
+  }
+
   .topo-titulo {
-    font-size: 19px;
+    font-size: 18px;
   }
 
   .conteudo {
-    padding-top: 12px;
+    gap: 10px;
+    padding-top: 8px;
+  }
+
+  .painel-aba,
+  .agora-grade,
+  .agora-lado {
+    gap: 10px;
   }
 
   .aba {
@@ -1231,8 +1260,49 @@ input:focus-visible {
     gap: 8px;
   }
 
+  /* Aviso persistente numa faixa baixa, para o status caber sem rolar. */
+  .aviso {
+    align-items: center;
+    padding: 8px 14px;
+  }
+
+  .aviso .ct-icone {
+    width: 22px;
+    height: 22px;
+  }
+
+  .aviso-texto {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0 10px;
+  }
+
+  .aviso strong {
+    font-size: 19px;
+  }
+
+  .bloco-status {
+    gap: 6px;
+    padding: 12px;
+  }
+
+  .pilula-status {
+    min-height: 36px;
+    padding: 4px 14px 4px 10px;
+  }
+
+  .rotulo-status {
+    font-size: 19px;
+  }
+
   .temperatura {
-    font-size: clamp(64px, 22vh, 112px);
+    margin: 0;
+    font-size: clamp(56px, 18vh, 96px);
+  }
+
+  .frase {
+    padding: 6px 10px;
   }
 
   .grafico-area {

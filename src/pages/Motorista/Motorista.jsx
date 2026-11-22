@@ -184,7 +184,7 @@ export default function Motorista() {
                 minutos={minutos}
               />
             </div>
-            <div className="painel-aba" id="painelViagem" hidden={aba !== "viagem"}>
+            <div className="painel-aba painel-duplo" id="painelViagem" hidden={aba !== "viagem"}>
               <AbaViagem dados={dados} agora={agora} />
             </div>
             <div className="painel-aba" id="painelHistorico" hidden={aba !== "historico"}>
@@ -193,7 +193,7 @@ export default function Motorista() {
           </>
         )}
 
-        <div className="painel-aba" id="painelPerfil" hidden={aba !== "perfil"}>
+        <div className="painel-aba painel-duplo" id="painelPerfil" hidden={aba !== "perfil"}>
           <AbaPerfil dados={dados} alertas={alertas} telaAcesa={telaAcesa} />
         </div>
 
