@@ -85,6 +85,18 @@ describe("Configurações", () => {
     expect(screen.getByTestId("conexao")).toHaveTextContent("true");
   });
 
+  it("todo perfil vê a verificação em duas etapas; totpAtivo da sessão define o estado", async () => {
+    sessao.usuario = OPERADOR;
+    const { unmount } = abrir();
+    expect(await screen.findByRole("heading", { name: "Verificação em duas etapas" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Ativar verificação em duas etapas" })).toBeInTheDocument();
+    unmount();
+
+    sessao.usuario = { ...GESTOR, totpAtivo: true };
+    abrir();
+    expect(await screen.findByText(/Verificação em duas etapas ativa/)).toBeInTheDocument();
+  });
+
   it("só o gestor vê a opção de excluir a empresa", async () => {
     respostas({});
     sessao.usuario = OPERADOR;

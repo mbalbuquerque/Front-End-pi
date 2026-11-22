@@ -13,6 +13,7 @@ import { UPDATE_INTERVAL } from "../../lib/config.js";
 import { carregarPerfis, descreverCritico, descreverNormal, faixaDoPerfil } from "../../lib/faixas.js";
 import { ehGestor, nomeDoPerfil } from "../../lib/sessao.js";
 import AlertasCelular from "./AlertasCelular.jsx";
+import DoisFatores from "./DoisFatores.jsx";
 import ExcluirEmpresa from "./ExcluirEmpresa.jsx";
 import Secao from "./Secao.jsx";
 
@@ -103,6 +104,7 @@ export default function Configuracoes() {
         {!dados ? <Carregando /> : (
           <>
             <MinhaConta usuario={usuario} />
+            <DoisFatores ativo={typeof usuario?.totpAtivo === "boolean" ? usuario.totpAtivo : null} />
             <AlertasCelular />
             <FaixasTemperatura perfis={dados.perfis} conectado={dados.conectado} />
             <SensoresComunicacao dispositivos={dados.dispositivos} conectado={dados.conectado} />
