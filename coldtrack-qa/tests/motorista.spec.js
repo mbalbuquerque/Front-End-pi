@@ -290,7 +290,8 @@ test.describe("QA-MOTORISTA tela", () => {
     await page.goto("/motorista");
     await page.getByRole("button", { name: "Perfil" }).click();
     await page.getByRole("button", { name: "Ativar alertas" }).click();
-    await expect(page.locator("#alertasLigados")).toBeVisible();
+    // Espera a inscrição do push terminar antes de recarregar.
+    await expect(page.locator("#alertasLigados")).toHaveText("Alertas ligados, também com a tela fechada.");
 
     await page.reload();
     await expect(page.locator("#statusMotorista")).toHaveText("NORMAL");
