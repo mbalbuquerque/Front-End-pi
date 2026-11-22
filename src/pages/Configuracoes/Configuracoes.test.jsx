@@ -85,12 +85,17 @@ describe("Configurações", () => {
     expect(screen.getByTestId("conexao")).toHaveTextContent("true");
   });
 
-  it("todo perfil vê a verificação em duas etapas; totpAtivo da sessão define o estado", async () => {
+  it("a verificação em duas etapas só aparece quando a API informa totpAtivo", async () => {
     sessao.usuario = OPERADOR;
     const { unmount } = abrir();
-    expect(await screen.findByRole("heading", { name: "Verificação em duas etapas" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Ativar verificação em duas etapas" })).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "Minha conta" })).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Verificação em duas etapas" })).not.toBeInTheDocument();
     unmount();
+
+    sessao.usuario = { ...OPERADOR, totpAtivo: false };
+    const segundo = abrir();
+    expect(await screen.findByRole("button", { name: "Ativar verificação em duas etapas" })).toBeInTheDocument();
+    segundo.unmount();
 
     sessao.usuario = { ...GESTOR, totpAtivo: true };
     abrir();

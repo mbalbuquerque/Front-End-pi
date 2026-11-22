@@ -104,7 +104,9 @@ export default function Configuracoes() {
         {!dados ? <Carregando /> : (
           <>
             <MinhaConta usuario={usuario} />
-            <DoisFatores ativo={typeof usuario?.totpAtivo === "boolean" ? usuario.totpAtivo : null} />
+            {/* Só aparece quando a API já tem o 2FA (o usuário da sessão traz totpAtivo);
+                antes disso os botões chamariam rotas que ainda não existem. */}
+            {typeof usuario?.totpAtivo === "boolean" && <DoisFatores ativo={usuario.totpAtivo} />}
             <AlertasCelular />
             <FaixasTemperatura perfis={dados.perfis} conectado={dados.conectado} />
             <SensoresComunicacao dispositivos={dados.dispositivos} conectado={dados.conectado} />
