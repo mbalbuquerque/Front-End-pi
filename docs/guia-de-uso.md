@@ -39,6 +39,8 @@ Para o operador, esses controles simplesmente não aparecem. Se algo estiver fal
 
 Mensagens possíveis: "Informe um e-mail válido.", "Informe sua senha." e "Sem conexão com o servidor. Confira a internet e tente de novo."
 
+**Com verificação em duas etapas.** Se você ativou a verificação (veja "Verificação em duas etapas" em Configurações), depois de **Entrar** a tela pede o **Código do aplicativo autenticador**: abra o aplicativo no celular, digite os 6 dígitos do ColdTrack (pode colar) e clique em **Confirmar**. Sem o celular, toque em **Usar código de recuperação** e digite um dos 8 caracteres que você guardou; cada um entra uma vez só. **Voltar** recomeça pelo e-mail e senha. Código errado, vencido ou já usado mostra a mesma mensagem; depois de muitas tentativas, a tela pede para aguardar alguns minutos. Esta etapa vale por 5 minutos: passou disso, volte e entre de novo.
+
 **Esqueceu a senha?** O painel orienta: "Peça ao gestor da sua equipe para definir uma senha nova." O gestor faz isso em Configurações (veja a seção Configurações).
 
 **Cadastrar empresa.** Na página inicial há o link "Empresa nova? Cadastre sua empresa". A tela **Cadastrar empresa** cria o acesso da transportadora e você entra como gestor. Preencha todos os campos:
@@ -262,6 +264,14 @@ Depois da troca aparece "Senha trocada. Os outros aparelhos conectados saem da c
 3. Aparece "Alertas ativos neste aparelho.". Para parar, toque em **Desativar**.
 
 Tocar na notificação abre a tela **Alertas** do veículo daquele sensor. Notificações bloqueadas: a tela explica como liberar no navegador. O alerta sai só na mudança de faixa (de Normal para Atenção, por exemplo), não a cada leitura.
+
+**Verificação em duas etapas.** Além da senha, o login pede um código de 6 dígitos que muda a cada 30 segundos num aplicativo autenticador (Google Authenticator, Microsoft Authenticator ou outro). Vale para gestor e operador; o motorista ainda não tem essa opção na tela dele.
+1. Clique em **Ativar verificação em duas etapas**.
+2. No aplicativo, adicione uma conta lendo o **QR Code** da tela. Sem câmera, digite a chave que aparece embaixo dele. O QR é desenhado no próprio navegador; a chave não passa por nenhum outro site.
+3. Digite o código de 6 dígitos do aplicativo e clique em **Confirmar e ativar**.
+4. Aparecem **10 códigos de recuperação**, **uma vez só**. Guarde-os em lugar seguro, longe do celular: use **Copiar** ou **Baixar .txt**, e só então clique em **Já guardei os códigos**. Cada código substitui o do aplicativo uma única vez, caso você perca o celular.
+
+Para desligar, clique em **Desativar**, digite a **Senha atual** e um código do aplicativo e clique em **Desativar verificação**. Sem o celular e sem os códigos de recuperação, não há como passar da segunda etapa do login pelo painel: por isso guarde os códigos.
 
 **Faixas de temperatura.** Tabela com **Perfil de carga**, **Normal**, **Atenção** e **Crítico** de cada perfil (veja a próxima seção).
 

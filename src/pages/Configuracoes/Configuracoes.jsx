@@ -13,6 +13,7 @@ import { UPDATE_INTERVAL } from "../../lib/config.js";
 import { carregarPerfis, descreverCritico, descreverNormal, faixaDoPerfil } from "../../lib/faixas.js";
 import { ehGestor, nomeDoPerfil } from "../../lib/sessao.js";
 import AlertasCelular from "./AlertasCelular.jsx";
+import DoisFatores from "./DoisFatores.jsx";
 import ExcluirEmpresa from "./ExcluirEmpresa.jsx";
 import Secao from "./Secao.jsx";
 
@@ -103,6 +104,9 @@ export default function Configuracoes() {
         {!dados ? <Carregando /> : (
           <>
             <MinhaConta usuario={usuario} />
+            {/* Só aparece quando a API já tem o 2FA (o usuário da sessão traz totpAtivo);
+                antes disso os botões chamariam rotas que ainda não existem. */}
+            {typeof usuario?.totpAtivo === "boolean" && <DoisFatores ativo={usuario.totpAtivo} />}
             <AlertasCelular />
             <FaixasTemperatura perfis={dados.perfis} conectado={dados.conectado} />
             <SensoresComunicacao dispositivos={dados.dispositivos} conectado={dados.conectado} />

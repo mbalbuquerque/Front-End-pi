@@ -112,6 +112,20 @@ describe("api()", () => {
     desfazer();
   });
 
+  it("sessaoNo401: false trata 401 como erro comum e mantém a sessão", async () => {
+    const aoExpirar = vi.fn();
+    const desfazer = definirAoExpirar(aoExpirar);
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(resposta(401, { erros: ["Código inválido."] })));
+
+    const falha = await api("/2fa/ativar", { metodo: "POST", corpo: { codigo: "1" }, sessaoNo401: false }).catch(e => e);
+
+    expect(falha.message).toBe("Código inválido.");
+    expect(falha.status).toBe(401);
+    expect(localStorage.getItem(CHAVE_SESSAO)).not.toBeNull();
+    expect(aoExpirar).not.toHaveBeenCalled();
+    desfazer();
+  });
+
   it("sem sessão não manda Authorization", async () => {
     localStorage.clear();
     const fetch = vi.fn().mockResolvedValue(resposta(200, {}));

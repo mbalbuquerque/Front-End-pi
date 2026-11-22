@@ -174,6 +174,97 @@
 }
 
 
+/* VERIFICAÇÃO EM DUAS ETAPAS --------------------------------- */
+
+.dois-fatores-acoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.dois-fatores-qr,
+.dois-fatores-codigos {
+  display: grid;
+  gap: var(--ct-space-3);
+}
+
+.dois-fatores-qr > p,
+.dois-fatores-passos {
+  margin: 0;
+
+  color: var(--ct-text);
+  font-size: var(--ct-text-body-sm);
+  font-weight: var(--ct-weight-label);
+  line-height: var(--ct-leading-label);
+}
+
+.dois-fatores-passos {
+  display: grid;
+  gap: var(--ct-space-1);
+  padding-left: 1.4em;
+}
+
+/* QR com fundo branco e margem própria: lido por qualquer câmera, também no tema escuro. */
+.dois-fatores-codigo-qr svg {
+  display: block;
+  width: 200px;
+  height: 200px;
+
+  border: 1px solid var(--ct-border);
+  border-radius: var(--ct-radius-control);
+}
+
+.dois-fatores-segredo,
+.codigos-recuperacao code {
+  font-family: var(--ct-font-mono);
+  font-size: var(--ct-text-body);
+  font-weight: var(--ct-weight-label);
+  color: var(--ct-text);
+  overflow-wrap: anywhere;
+}
+
+.dois-fatores-segredo {
+  padding: 2px 6px;
+  background: var(--ct-subtle);
+  border-radius: var(--ct-radius-control);
+}
+
+.tela-config .campo-codigo input {
+  max-width: 220px;
+
+  font-family: var(--ct-font-mono);
+  font-size: 20px;
+  font-weight: var(--ct-weight-label);
+  letter-spacing: 0.2em;
+}
+
+.dois-fatores-alerta {
+  padding: 12px 16px;
+
+  background: var(--ct-atencao-bg);
+  border-radius: var(--ct-radius-control);
+  color: var(--ct-text);
+  font-weight: var(--ct-weight-label);
+}
+
+.codigos-recuperacao {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, max-content));
+  gap: var(--ct-space-2) var(--ct-space-5);
+
+  margin: 0;
+  padding: var(--ct-space-3) var(--ct-space-3) var(--ct-space-3) 2.4em;
+
+  background: var(--ct-subtle);
+  border: 1px solid var(--ct-border);
+  border-radius: var(--ct-radius-card);
+
+  color: var(--ct-muted);
+  font-size: var(--ct-text-body-sm);
+  font-weight: var(--ct-weight-label);
+}
+
+
 /* TABELAS (faixas e usuários) -------------------------------- */
 
 .config-tabela {
