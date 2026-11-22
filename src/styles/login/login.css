@@ -275,6 +275,33 @@ body {
   text-decoration: underline;
 }
 
+/* Link em forma de botão (verificação em duas etapas): alvo de toque de 44 px. */
+.link-botao {
+  align-self: flex-start;
+
+  min-height: var(--ct-touch);
+  padding: 0 var(--ct-space-1);
+
+  border: 0;
+  border-radius: var(--ct-radius-control);
+  background: transparent;
+
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.acesso-secundario .link-botao {
+  align-self: auto;
+}
+
+/* Campo do código: dígitos espaçados, fáceis de conferir com o aplicativo. */
+.campo-codigo input {
+  font-family: var(--ct-font-mono);
+  font-size: 20px;
+  font-weight: var(--ct-weight-label);
+  letter-spacing: 0.2em;
+}
+
 .link:focus-visible,
 .senha-mostrar:focus-visible,
 .botao-primario:focus-visible,
