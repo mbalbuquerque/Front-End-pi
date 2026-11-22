@@ -25,7 +25,10 @@ export function definirAoExpirar(funcao) {
 }
 
 
-export async function api(caminho, { metodo = "GET", corpo, signal } = {}) {
+// sessaoNo401: false para rotas em que 401 significa "código errado", não sessão
+// vencida (ex.: /2fa/ativar e /2fa/desativar). Aí o 401 vira erro comum, com a
+// mensagem da API, e o usuário continua logado.
+export async function api(caminho, { metodo = "GET", corpo, signal, sessaoNo401 = true } = {}) {
 
   const sessao = lerSessao();
 
@@ -39,7 +42,7 @@ export async function api(caminho, { metodo = "GET", corpo, signal } = {}) {
     ...(signal ? { signal } : {})
   });
 
-  if (response.status === 401) {
+  if (response.status === 401 && sessaoNo401) {
     limparSessao();
     aoExpirar();
     throw new Error("Sessão encerrada.");
