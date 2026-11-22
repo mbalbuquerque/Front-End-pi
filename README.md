@@ -34,7 +34,7 @@ Objetivos:
 - apresentar a conectividade Wi-Fi (RSSI) e a situação de cada sensor;
 - registrar viagens e mostrar a condição da carga em cada trajeto;
 - gerar relatórios por período, com exportação CSV;
-- separar o que o gestor e o operador logístico podem fazer;
+- separar o que o gestor, o operador logístico e o motorista podem fazer (o motorista vê só o veículo dele, numa tela própria para o celular);
 - oferecer atendimento automatizado aos visitantes, com encaminhamento ao desenvolvedor;
 - manter a interface responsiva e testada automaticamente.
 
@@ -316,6 +316,7 @@ Limitações:
 | [`docs/ARQUITETURA.md`](docs/ARQUITETURA.md) | contrato técnico: estrutura, CSS, `src/lib`, hooks, componentes, regras |
 | [`docs/guia-de-uso.md`](docs/guia-de-uso.md) | guia do usuário final, tela por tela |
 | [`docs/relatorio-de-testes.md`](docs/relatorio-de-testes.md) | resultados dos testes (unitários, e2e simulado e real) |
+| [`docs/design/motorista/`](docs/design/motorista/) | telas do motorista geradas no Stitch e design system usado no redesign |
 | [`coldtrack-qa/README.md`](coldtrack-qa/README.md) | suíte e2e: casos, apoio e como rodar |
 | [`coldtrack-qa/real/README.md`](coldtrack-qa/real/README.md) | suíte e2e real contra produção (regras de segurança) |
 | [Back-end: README](https://github.com/mbalbuquerque/projeto-integrador-4-periodo#readme) | API, firmware, infraestrutura |
@@ -327,11 +328,11 @@ Limitações:
 
 ## 11. Equipe do Projeto Integrador
 
-- Antonio Henzo
+- Enzo Antônio
 - Everson
-- Emerson Luiz
+- Emmanuel Luís
 - Gabriel Eduardo
-- José Alanberg
+- José Allamberg
 - Marcelo Barbosa
 
 O desenvolvimento envolve hardware, IoT, Front-End, Back-End, integração, documentação e testes.
