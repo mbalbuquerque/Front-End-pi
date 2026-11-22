@@ -11,8 +11,9 @@ import {
 
 // Tela do motorista (/motorista): login e rotas por perfil, cadastro do motorista
 // pelo gestor, os estados da carga, alerta normal -> crítico -> normal e modo
-// offline. A API é simulada (apoio.js); nada sai para o Azure. O relógio da página
-// é controlado (page.clock) para a atualização de 20 s acontecer na hora.
+// offline, e as abas (os alertas ficam na aba Perfil, issue #80). A API é simulada
+// (apoio.js); nada sai para o Azure. O relógio da página é controlado (page.clock)
+// para a atualização de 20 s acontecer na hora.
 
 const ROTA_MOTORISTA = /func-coldtrack-7319\.azurewebsites\.net\/api\/motorista(\?|$)/;
 
@@ -235,7 +236,7 @@ test.describe("QA-MOTORISTA tela", () => {
       await page.clock.fastForward(20000);
       await expect(page.locator("#statusMotorista")).toHaveText(texto);
       await expect(page.locator("#blocoStatus")).toHaveClass(classe);
-      // Fundo da tela tingido pelo status.
+      // A raiz da tela leva a classe do status.
       await expect(page.locator(".escopo-motorista")).toHaveClass(new RegExp(`tela-${classe.source}`));
     }
 
@@ -252,6 +253,7 @@ test.describe("QA-MOTORISTA tela", () => {
     await page.goto("/motorista");
 
     await expect(page.locator("#statusMotorista")).toHaveText("NORMAL");
+    await page.getByRole("button", { name: "Perfil" }).click();
     // Um botão só: notificação, push, som e vibração.
     await expect(page.getByRole("button", { name: /Ativar alertas/ })).toHaveCount(1);
     await page.getByRole("button", { name: "Ativar alertas" }).click();
@@ -286,8 +288,10 @@ test.describe("QA-MOTORISTA tela", () => {
     await page.clock.install();
     await simularMotorista(page, estado);
     await page.goto("/motorista");
+    await page.getByRole("button", { name: "Perfil" }).click();
     await page.getByRole("button", { name: "Ativar alertas" }).click();
-    await expect(page.locator("#alertasLigados")).toBeVisible();
+    // Espera a inscrição do push terminar antes de recarregar.
+    await expect(page.locator("#alertasLigados")).toHaveText("Alertas ligados, também com a tela fechada.");
 
     await page.reload();
     await expect(page.locator("#statusMotorista")).toHaveText("NORMAL");
@@ -315,9 +319,11 @@ test.describe("QA-MOTORISTA tela", () => {
     await expect.poll(() => page.evaluate(() => window.__celular.bipes)).toBe(1);
 
     // Desativar: grava a escolha e cancela a inscrição; depois do reload segue desligado.
+    await page.getByRole("button", { name: "Perfil" }).click();
     await page.getByRole("button", { name: "Desativar" }).click();
     await expect(page.getByRole("button", { name: "Ativar alertas" })).toBeVisible();
     await page.reload();
+    await page.getByRole("button", { name: "Perfil" }).click();
     await expect(page.getByRole("button", { name: "Ativar alertas" })).toBeVisible();
     await expect(dica).toHaveCount(0);
 
@@ -362,6 +368,14 @@ test.describe("QA-MOTORISTA tela", () => {
     await page.setViewportSize({ width: 360, height: 740 });
     await page.goto("/motorista");
     await expect(page.locator("#statusMotorista")).toHaveText("NORMAL");
+    // Status, temperatura e faixa da carga cabem na primeira tela, sem rolar.
+    const dobra = await page.evaluate(() => ["#statusMotorista", "#tempMotorista", "#faixaCarga"]
+      .map(sel => document.querySelector(sel).getBoundingClientRect().bottom));
+    dobra.forEach(base => expect(base).toBeLessThanOrEqual(740 - 68));
+    await expect(page.locator("#reguaMotorista")).toBeVisible();
+    await expect(page.getByText("Use com o celular no suporte.")).toBeVisible();
+
+    await page.getByRole("button", { name: "Perfil" }).click();
     await expect(page.locator("#ativarAlertas")).toBeVisible();
 
     const medidas = await page.evaluate(() => {
@@ -372,6 +386,7 @@ test.describe("QA-MOTORISTA tela", () => {
         corpo: px("#faixaCarga", "fontSize"),
         peso: px("#faixaCarga", "fontWeight"),
         aviso: px(".aviso-suporte", "fontSize"),
+        abas: [...document.querySelectorAll(".abas button")].map(b => b.getBoundingClientRect().height),
         botao: document.querySelector("#ativarAlertas").getBoundingClientRect().height,
         sair: document.querySelector("#botaoSair").getBoundingClientRect().height,
         transicoes: [...document.querySelectorAll(".escopo-motorista *")]
@@ -387,11 +402,12 @@ test.describe("QA-MOTORISTA tela", () => {
     expect(medidas.aviso).toBeGreaterThanOrEqual(17);
     expect(medidas.botao).toBeGreaterThanOrEqual(56);
     expect(medidas.sair).toBeGreaterThanOrEqual(56);
+    expect(medidas.abas).toHaveLength(4);
+    medidas.abas.forEach(altura => expect(altura).toBeGreaterThanOrEqual(44));
     // Tela do motorista não anima: dado novo troca no lugar.
     expect(medidas.transicoes).toBe(0);
-    await expect(page.locator("#reguaMotorista")).toBeVisible();
-    await expect(page.getByText("Use com o celular no suporte.")).toBeVisible();
-    await expect(page.locator("input, textarea")).toHaveCount(0);
+    // Campo de digitação só na troca de senha do Perfil, fechada até ser aberta.
+    await expect(page.locator("input:visible, textarea:visible")).toHaveCount(0);
 
   });
 

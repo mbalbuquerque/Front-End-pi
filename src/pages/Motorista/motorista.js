@@ -140,3 +140,217 @@ export function partesTemperatura(texto) {
   return { valor: texto.slice(0, espaco), unidade: texto.slice(espaco + 1) };
 
 }
+
+
+// ---------------------------------------------------------
+// HISTÓRICO DA ÚLTIMA HORA (GET /motorista, campo `historico`)
+// ---------------------------------------------------------
+// A API manda as leituras da última hora, da mais antiga para a mais nova.
+// Campo novo: API antiga não manda nada, e cada função abaixo devolve um
+// resultado vazio para a tela esconder o gráfico ou mostrar uma frase.
+
+// Variação abaixo disto (em °C) é "estável": o DHT11 oscila 0,1 a 0,2 °C.
+export const LIMIAR_TENDENCIA = 0.3;
+
+// Janela da tendência e menor intervalo que vale medir.
+const JANELA_TENDENCIA_MIN = 10;
+const TENDENCIA_MINIMA_MIN = 2;
+
+
+function quando(ponto) {
+
+  return Date.parse(ponto?.medidoEm);
+
+}
+
+
+// Pontos válidos (temperatura numérica e horário), do mais antigo ao mais novo.
+export function pontosDoHistorico(historico) {
+
+  if (!Array.isArray(historico)) {
+    return [];
+  }
+
+  return historico
+    .filter(p => typeof p?.temperatura === "number" && !Number.isNaN(quando(p)))
+    .sort((a, b) => quando(a) - quando(b));
+
+}
+
+
+// Últimos `minutos` antes do ponto mais novo (não do relógio: sem sinal, o
+// gráfico continua mostrando o que chegou por último).
+export function ultimosMinutos(historico, minutos) {
+
+  const pontos = pontosDoHistorico(historico);
+
+  if (pontos.length === 0) {
+    return [];
+  }
+
+  const limite = quando(pontos[pontos.length - 1]) - minutos * 60000;
+
+  return pontos.filter(p => quando(p) >= limite);
+
+}
+
+
+function decimal(valor) {
+
+  return Math.abs(valor).toFixed(1);
+
+}
+
+
+// { direcao: "subindo" | "caindo" | "estavel", delta, minutos, texto } comparando
+// o ponto mais novo com o de ~10 min antes; null com menos de 2 min de dados.
+export function tendencia(historico) {
+
+  const pontos = pontosDoHistorico(historico);
+
+  if (pontos.length < 2) {
+    return null;
+  }
+
+  const ultimo = pontos[pontos.length - 1];
+  const alvo = quando(ultimo) - JANELA_TENDENCIA_MIN * 60000;
+
+  // O ponto mais antigo dentro da janela (ou o primeiro, se a janela for maior que o histórico).
+  const base = pontos.find(p => quando(p) >= alvo) || pontos[0];
+  const minutos = Math.round((quando(ultimo) - quando(base)) / 60000);
+
+  if (minutos < TENDENCIA_MINIMA_MIN) {
+    return null;
+  }
+
+  const delta = Math.round((ultimo.temperatura - base.temperatura) * 10) / 10;
+
+  if (Math.abs(delta) < LIMIAR_TENDENCIA) {
+    return { direcao: "estavel", delta, minutos, texto: `estável em ${minutos} min` };
+  }
+
+  return delta > 0
+    ? { direcao: "subindo", delta, minutos, texto: `subindo +${decimal(delta)} °C em ${minutos} min` }
+    : { direcao: "caindo", delta, minutos, texto: `caindo −${decimal(delta)} °C em ${minutos} min` };
+
+}
+
+
+// Frase curta de cada mudança de status na lista "Alertas da viagem".
+export const FRASE_MUDANCA = {
+  NORMAL: "Voltou para a faixa",
+  ATENCAO: "Perto do limite",
+  CRITICO: "Fora da faixa"
+};
+
+
+// Mudanças de status no histórico, a mais nova primeiro:
+// [{ status, temperatura, medidoEm }]. O primeiro ponto entra só se já
+// começou fora do normal. Com `desde` (início da viagem), ignora o que veio antes.
+export function alertasDoHistorico(historico, desde = null) {
+
+  const inicio = Date.parse(desde);
+
+  const pontos = pontosDoHistorico(historico)
+    .filter(p => STATUS_MOTORISTA[p.status] && p.status !== "SEM_SINAL")
+    .filter(p => Number.isNaN(inicio) || quando(p) >= inicio);
+
+  const mudancas = [];
+
+  pontos.forEach((p, i) => {
+    const anterior = i === 0 ? "NORMAL" : pontos[i - 1].status;
+    if (p.status !== anterior) {
+      mudancas.push({ status: p.status, temperatura: p.temperatura, medidoEm: p.medidoEm });
+    }
+  });
+
+  return mudancas.reverse();
+
+}
+
+
+// { minima, maxima, media, total } das temperaturas; null sem pontos.
+export function resumoDoHistorico(historico) {
+
+  const temps = pontosDoHistorico(historico).map(p => p.temperatura);
+
+  if (temps.length === 0) {
+    return null;
+  }
+
+  return {
+    minima: Math.min(...temps),
+    maxima: Math.max(...temps),
+    media: temps.reduce((a, b) => a + b, 0) / temps.length,
+    total: temps.length
+  };
+
+}
+
+
+// "3 h 40 min" desde o início da viagem; null sem início válido ou no futuro.
+export function tempoDeViagem(inicio, agora = Date.now()) {
+
+  const minutos = minutosDesde(inicio, agora);
+
+  if (minutos === null || Date.parse(inicio) > agora) {
+    return null;
+  }
+
+  if (minutos < 60) {
+    return `${minutos} min`;
+  }
+
+  const horas = Math.floor(minutos / 60);
+  const resto = minutos % 60;
+
+  return resto ? `${horas} h ${resto} min` : `${horas} h`;
+
+}
+
+
+// "há 20 s" no chip do status (segundos até 1 min; depois, como haQuanto).
+export function haQuantoCurto(medidoEm, agora = Date.now()) {
+
+  const instante = Date.parse(medidoEm);
+
+  if (Number.isNaN(instante)) {
+    return "";
+  }
+
+  const segundos = Math.max(0, Math.round((agora - instante) / 1000));
+
+  return segundos < 60 ? `há ${segundos} s` : haQuanto(Math.floor(segundos / 60));
+
+}
+
+
+// "Ideal entre 10 e 13 °C" ou "Ideal até 15 °C".
+export function frasePerfil(faixa) {
+
+  if (!faixa) {
+    return "";
+  }
+
+  return faixa.min == null
+    ? `Ideal até ${faixa.max} °C`
+    : `Ideal entre ${faixa.min} e ${faixa.max} °C`;
+
+}
+
+
+// "João Silva" -> "JS"; "mario" -> "M"; vazio -> "".
+export function iniciais(nome) {
+
+  const partes = String(nome || "").trim().split(/\s+/).filter(Boolean);
+
+  if (partes.length === 0) {
+    return "";
+  }
+
+  const primeira = partes[0][0];
+  const ultima = partes.length > 1 ? partes[partes.length - 1][0] : "";
+
+  return `${primeira}${ultima}`.toUpperCase();
+
+}

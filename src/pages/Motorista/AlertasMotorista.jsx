@@ -1,24 +1,50 @@
-// Bloco "Alertas" da tela do motorista: um botão só (issue #75). "Ativar alertas"
+// Cartão "Alertas no celular" da aba Perfil: um botão só (issue #75). "Ativar alertas"
 // liga a notificação (também com a tela fechada, pelo Web Push), o som e a
 // vibração; "Desativar" desliga tudo e a tela fica só com o aviso visual.
 // O estado vem de useAlertasMotorista (Motorista.jsx), que também dispara o alerta.
+// "Testar" mostra como o aviso chega; as linhas de baixo dizem se a tela fica
+// acesa (Wake Lock) e se o som já foi liberado.
 // A API só manda ao motorista os alertas do veículo vinculado a ele, e o toque
 // na notificação abre /motorista.
 
 import Icone from "../../components/Icone.jsx";
 
 
-export default function AlertasMotorista({ alertas }) {
+// Estado da tela acesa (Wake Lock) em uma palavra, para a linha do cartão.
+const TELA_ACESA = {
+  ativa: { texto: "Ligada", classe: "ok", apoio: "Evita que a tela apague no suporte." },
+  recusada: { texto: "Desligada", classe: "neutro", apoio: "O celular pode apagar a tela." },
+  indisponivel: { texto: "Indisponível", classe: "neutro", apoio: "Este navegador não permite." }
+};
 
-  const { ligado, estadoPush, ocupado, erro, ativar, desativar } = alertas;
+
+export default function AlertasMotorista({ alertas, telaAcesa }) {
+
+  const { ligado, somArmado, estadoPush, ocupado, erro, ativar, desativar, testar } = alertas;
 
   if (estadoPush === "verificando") {
     return null;
   }
 
+  const tela = TELA_ACESA[telaAcesa];
+
+  let som = { texto: "Desligados", classe: "neutro", apoio: "Ligam junto com os alertas." };
+  if (ligado) {
+    som = somArmado
+      ? { texto: "Ligados", classe: "ok", apoio: "Deixe o volume alto na cabine." }
+      : { texto: "Esperando toque", classe: "neutro", apoio: "Toque na tela uma vez para liberar o som." };
+  }
+
   return (
-    <section className="alertas-push" id="alertasMotorista" aria-labelledby="tituloAlertas">
-      <h2 id="tituloAlertas">Alertas</h2>
+    <section className="cartao alertas-push" id="alertasMotorista" aria-labelledby="tituloAlertas">
+      <h2 className="rotulo-cartao" id="tituloAlertas">Alertas no celular</h2>
+
+      <div className="ajuste">
+        <span className="ajuste-texto">
+          <strong>Alertas de temperatura</strong>
+          Som, vibração e notificação quando a carga sair da faixa.
+        </span>
+      </div>
 
       {ligado ? (
         <>
@@ -28,19 +54,21 @@ export default function AlertasMotorista({ alertas }) {
               ? "Alertas ligados, também com a tela fechada."
               : "Alertas ligados com esta tela aberta."}
           </p>
-          <button type="button" className="desativar-push" id="desativarAlertas" disabled={ocupado !== null}
-            onClick={desativar}>
-            {ocupado === "desativando" ? "Desativando…" : "Desativar"}
-          </button>
+          <div className="alertas-acoes">
+            <button type="button" className="botao-contorno" id="testarAlertas" onClick={testar}>
+              Testar
+            </button>
+            <button type="button" className="botao-contorno" id="desativarAlertas" disabled={ocupado !== null}
+              onClick={desativar}>
+              {ocupado === "desativando" ? "Desativando…" : "Desativar"}
+            </button>
+          </div>
         </>
       ) : (
-        <>
-          <p>Som, vibração e notificação quando a carga sair da faixa.</p>
-          <button type="button" className="ativar-alertas" id="ativarAlertas" disabled={ocupado !== null}
-            onClick={ativar}>
-            {ocupado === "ativando" ? "Ativando…" : "Ativar alertas"}
-          </button>
-        </>
+        <button type="button" className="ativar-alertas" id="ativarAlertas" disabled={ocupado !== null}
+          onClick={ativar}>
+          {ocupado === "ativando" ? "Ativando…" : "Ativar alertas"}
+        </button>
       )}
 
       {estadoPush === "sem-suporte" && (
@@ -60,6 +88,24 @@ export default function AlertasMotorista({ alertas }) {
       )}
 
       {erro && <p className="erro-push" id="erroPush" role="alert">{erro}</p>}
+
+      {tela && (
+        <div className="ajuste">
+          <span className="ajuste-texto">
+            <strong>Tela sempre acesa</strong>
+            {tela.apoio}
+          </span>
+          <span className={`pilula-estado ${tela.classe}`} id="telaAcesa">{tela.texto}</span>
+        </div>
+      )}
+
+      <div className="ajuste">
+        <span className="ajuste-texto">
+          <strong>Som e vibração</strong>
+          {som.apoio}
+        </span>
+        <span className={`pilula-estado ${som.classe}`} id="somVibracao">{som.texto}</span>
+      </div>
     </section>
   );
 

@@ -74,6 +74,16 @@ export function useAlertasMotorista() {
 
   }, []);
 
+  // "Testar" (aba Perfil): mostra como chega o aviso, sem depender da carga.
+  function testar() {
+
+    armarSom();
+    vibrar("ATENCAO");
+    som.current.tocar("ATENCAO");
+    notificar("Teste de alerta", "Assim chega o aviso quando a carga sair da faixa.");
+
+  }
+
   async function ativar() {
 
     // Ainda dentro do toque no botão: o som já fica liberado.
@@ -108,6 +118,7 @@ export function useAlertasMotorista() {
     erro: push.erro,
     ativar,
     desativar,
+    testar,
     disparar
   };
 
