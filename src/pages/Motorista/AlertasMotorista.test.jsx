@@ -1,4 +1,4 @@
-// Bloco "Alertas" da tela do motorista (um botão só, issue #75) e a dica do som:
+// Cartão "Alertas no celular" (aba Perfil) (um botão só, issue #75) e a dica do som:
 // cada estado vindo de useAlertasMotorista, passado por props.
 
 import { render, screen } from "@testing-library/react";
@@ -15,6 +15,7 @@ function alertas(extra = {}) {
     erro: null,
     ativar: vi.fn(),
     desativar: vi.fn(),
+    testar: vi.fn(),
     ...extra
   };
 }
@@ -30,7 +31,7 @@ describe("AlertasMotorista", () => {
   it("desligado: um botão só, \"Ativar alertas\"", async () => {
     const estado = alertas();
     render(<AlertasMotorista alertas={estado} />);
-    expect(screen.getByRole("heading", { name: "Alertas" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Alertas no celular" })).toBeInTheDocument();
     expect(screen.getByText("Som, vibração e notificação quando a carga sair da faixa.")).toBeInTheDocument();
     expect(screen.getAllByRole("button")).toHaveLength(1);
     await userEvent.click(screen.getByRole("button", { name: "Ativar alertas" }));
@@ -49,6 +50,31 @@ describe("AlertasMotorista", () => {
     expect(screen.queryByRole("button", { name: "Ativar alertas" })).not.toBeInTheDocument();
     await userEvent.click(screen.getByRole("button", { name: "Desativar" }));
     expect(estado.desativar).toHaveBeenCalledTimes(1);
+  });
+
+  it("ligado: Testar chama o teste do aviso", async () => {
+    const estado = alertas({ ligado: true, estadoPush: "ativo", somArmado: true });
+    render(<AlertasMotorista alertas={estado} telaAcesa="ativa" />);
+    await userEvent.click(screen.getByRole("button", { name: "Testar" }));
+    expect(estado.testar).toHaveBeenCalledTimes(1);
+    expect(document.getElementById("somVibracao")).toHaveTextContent("Ligados");
+  });
+
+  it("linhas da tela acesa e do som: estado sempre em texto", () => {
+    const { rerender } = render(<AlertasMotorista alertas={alertas()} telaAcesa="ativa" />);
+    expect(document.getElementById("telaAcesa")).toHaveTextContent("Ligada");
+    expect(document.getElementById("somVibracao")).toHaveTextContent("Desligados");
+
+    rerender(<AlertasMotorista alertas={alertas({ ligado: true })} telaAcesa="recusada" />);
+    expect(document.getElementById("telaAcesa")).toHaveTextContent("Desligada");
+    expect(screen.getByText("O celular pode apagar a tela.")).toBeInTheDocument();
+    expect(document.getElementById("somVibracao")).toHaveTextContent("Esperando toque");
+
+    rerender(<AlertasMotorista alertas={alertas()} telaAcesa="indisponivel" />);
+    expect(document.getElementById("telaAcesa")).toHaveTextContent("Indisponível");
+
+    rerender(<AlertasMotorista alertas={alertas()} />);
+    expect(document.getElementById("telaAcesa")).toBeNull();
   });
 
   it("ligado sem push (servidor recusou): vale com a tela aberta e mostra o erro", () => {

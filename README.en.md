@@ -37,7 +37,7 @@ Goals:
 - show the Wi-Fi connectivity (RSSI) and the situation of each sensor;
 - record trips and show the cargo condition on each route;
 - generate reports by period, with CSV export;
-- separate what the manager and the logistics operator can do;
+- separate what the manager, the logistics operator and the driver can do (the driver only sees their own vehicle, on a phone-first screen);
 - offer automated support to visitors, with hand-off to the developer;
 - keep the interface responsive and automatically tested.
 
@@ -318,6 +318,7 @@ Limitations:
 | [`docs/ARQUITETURA.md`](docs/ARQUITETURA.md) | technical contract: structure, CSS, `src/lib`, hooks, components, rules |
 | [`docs/guia-de-uso.md`](docs/guia-de-uso.md) | end-user guide, screen by screen |
 | [`docs/relatorio-de-testes.md`](docs/relatorio-de-testes.md) | test results (unit, mocked e2e and real) |
+| [`docs/design/motorista/`](docs/design/motorista/) | driver screens generated in Stitch and the design system used in the redesign |
 | [`coldtrack-qa/README.md`](coldtrack-qa/README.md) | e2e suite: cases, support and how to run |
 | [`coldtrack-qa/real/README.md`](coldtrack-qa/real/README.md) | real e2e suite against production (safety rules) |
 | [Back end: README](https://github.com/mbalbuquerque/projeto-integrador-4-periodo#readme) | API, firmware, infrastructure ([English version](https://github.com/mbalbuquerque/projeto-integrador-4-periodo/blob/main/README.en.md)) |
@@ -329,11 +330,11 @@ Limitations:
 
 ## 11. Integrative Project team
 
-- Antonio Henzo
+- Enzo Antônio
 - Everson
-- Emerson Luiz
+- Emmanuel Luís
 - Gabriel Eduardo
-- José Alanberg
+- José Allamberg
 - Marcelo Barbosa
 
 The development involves hardware, IoT, front end, back end, integration, documentation and tests.
