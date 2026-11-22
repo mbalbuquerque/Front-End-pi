@@ -3,7 +3,7 @@
 // - "painel" (padrão): cartão herói da Visão Geral, com valor sobre o marcador,
 //   escala e legenda em texto (a cor nunca é a única pista);
 // - "motorista": tela do celular no suporte, barra grossa com os limites
-//   embaixo; decorativa para leitor de tela (a faixa e o valor já estão em
+//   embaixo e o valor numa bolha sobre o marcador; decorativa para leitor de tela (a faixa e o valor já estão em
 //   texto logo acima).
 // A escala de cada variante é calculada em lib/regua.js.
 
@@ -88,7 +88,11 @@ function ReguaMotorista({ faixa, temperatura, id }) {
           ))}
         </span>
         {regua.marcador !== null && (
-          <span className="regua-marcador" style={{ left: `${regua.marcador}%` }} />
+          <span className="regua-marcador" style={{ left: `${regua.marcador}%` }}>
+            <span className={`regua-bolha${regua.marcador < 15 ? " inicio" : regua.marcador > 85 ? " fim" : ""}`}>
+              {formatarTemp(temperatura)}
+            </span>
+          </span>
         )}
       </div>
       <div className="regua-limites">

@@ -45,8 +45,17 @@ describe("ReguaFaixa, variante motorista", () => {
     expect(regua).toHaveAttribute("aria-hidden", "true");
     expect(regua.querySelectorAll(".zona")).toHaveLength(5);
     expect(regua.querySelector(".regua-marcador")).toHaveStyle({ left: "50%" });
+    expect(regua.querySelector(".regua-bolha")).toHaveTextContent("11.5 °C");
+    expect(regua.querySelector(".regua-bolha")).not.toHaveClass("inicio");
     expect([...regua.querySelectorAll(".regua-limites span")].map(s => s.textContent))
       .toEqual(["7 °C", "10 °C", "13 °C", "16 °C"]);
+  });
+
+  it("valor perto das pontas: a bolha encosta na borda", () => {
+    const { container, rerender } = render(<ReguaFaixa variante="motorista" faixa={FAIXA} temperatura={-5} />);
+    expect(container.querySelector(".regua-bolha")).toHaveClass("inicio");
+    rerender(<ReguaFaixa variante="motorista" faixa={FAIXA} temperatura={40} />);
+    expect(container.querySelector(".regua-bolha")).toHaveClass("fim");
   });
 
   it("sem leitura: sem marcador; faixa inválida: nada na tela", () => {
