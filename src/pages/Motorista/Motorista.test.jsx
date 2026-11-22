@@ -8,7 +8,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { renderizarNaRota } from "../../testes/apoio.jsx";
 import Motorista from "./Motorista.jsx";
 
-const sessao = vi.hoisted(() => ({ usuario: null, sair: vi.fn() }));
+const sessao = vi.hoisted(() => ({ usuario: null, sair: vi.fn(), entrar: vi.fn() }));
 const api = vi.hoisted(() => ({ api: vi.fn() }));
 const rede = vi.hoisted(() => ({ online: true }));
 const tela = vi.hoisted(() => ({ estado: "ativa" }));
@@ -78,6 +78,19 @@ async function atualizar() {
   });
 }
 
+// Leituras da última hora, uma por minuto, terminando agora.
+function historico(temps) {
+  return temps.map((temperatura, i) => ({
+    temperatura,
+    status: temperatura > 16 ? "CRITICO" : temperatura > 13 ? "ATENCAO" : "NORMAL",
+    medidoEm: new Date(Date.now() - (temps.length - 1 - i) * 60000).toISOString()
+  }));
+}
+
+async function irPara(aba) {
+  await userEvent.click(screen.getByRole("button", { name: aba }));
+}
+
 async function abrir() {
   renderizarNaRota(<Motorista />, "/motorista");
   await act(async () => {});
@@ -93,6 +106,7 @@ beforeEach(() => {
   api.api.mockResolvedValue(resposta());
   alerta.preferencia = null;
   push.estadoPush.mockResolvedValue("inativo");
+  window.scrollTo = vi.fn();
 });
 
 afterEach(() => {
@@ -120,11 +134,16 @@ describe("Motorista", () => {
     expect(document.querySelector(".escopo-motorista")).toHaveClass("tela-normal");
     expect(document.querySelectorAll("#reguaMotorista .zona")).toHaveLength(5);
     expect(document.querySelector("#reguaMotorista .regua-marcador")).not.toBeNull();
-    expect(document.getElementById("faixaCarga")).toHaveTextContent("Manga: de 10 a 13 °C");
-    expect(document.getElementById("ultimaLeitura")).toHaveTextContent(/^às \d{2}:\d{2} · há 1 min$/);
-    expect(screen.getByText("Petrolina → Suape")).toBeInTheDocument();
-    expect(screen.getByText("Manga Tommy")).toBeInTheDocument();
-    expect(screen.getByText("87.0 %")).toBeInTheDocument();
+    expect(document.getElementById("faixaCarga")).toHaveTextContent("Ideal entre 10 e 13 °C");
+    expect(screen.getByText("Faixa da carga · Manga")).toBeInTheDocument();
+    expect(document.querySelector("#reguaMotorista .regua-bolha")).toHaveTextContent("11.8 °C");
+    expect(document.getElementById("ultimaLeitura")).toHaveTextContent(/^\d{2}:\d{2}$/);
+    expect(document.getElementById("ultimaLeituraHa")).toHaveTextContent("há 1 min");
+    expect(document.getElementById("haQuanto")).toHaveTextContent("há 1 min");
+    expect(document.getElementById("viagemMotorista")).toHaveTextContent("Petrolina (origem)");
+    expect(document.getElementById("viagemMotorista")).toHaveTextContent("Suape (destino)");
+    expect(document.getElementById("cargaViagem")).toHaveTextContent("Carga: Manga Tommy");
+    expect(document.getElementById("umidadeMotorista")).toHaveTextContent("87.0 %");
     expect(document.getElementById("veiculoMotorista")).toHaveTextContent("CT-001 · Baú refrigerado");
     expect(screen.queryByRole("alert")).not.toBeInTheDocument();
     expect(document.getElementById("seloAntigo")).toBeNull();
@@ -164,20 +183,25 @@ describe("Motorista", () => {
     expect(document.getElementById("statusMotorista")).toHaveTextContent("SEM SINAL");
     expect(document.getElementById("tempMotorista")).toHaveTextContent("--");
     expect(document.querySelector("#reguaMotorista .regua-marcador")).toBeNull();
-    expect(document.getElementById("ultimaLeitura")).toHaveTextContent("nenhuma ainda");
+    expect(document.getElementById("ultimaLeitura")).toHaveTextContent("--:--");
+    expect(document.getElementById("ultimaLeituraHa")).toHaveTextContent("nenhuma ainda");
+    expect(document.getElementById("haQuanto")).toBeNull();
     expect(screen.getByText("Nenhuma viagem em curso.")).toBeInTheDocument();
-    expect(screen.getByText("--", { selector: "dd" })).toBeInTheDocument();
+    expect(document.getElementById("tempoViagem")).toBeNull();
+    expect(document.getElementById("umidadeMotorista")).toHaveTextContent("--");
   });
 
   it("API sem faixa da carga: sem régua, resto da tela igual", async () => {
     api.api.mockResolvedValue({ ...resposta(), faixa: null });
     await abrir();
     expect(document.getElementById("reguaMotorista")).toBeNull();
+    expect(document.getElementById("faixaCarga")).toBeNull();
     expect(document.getElementById("tempMotorista")).toHaveTextContent("11.8 °C");
   });
 
   it("normal -> crítico -> normal: alerta ao piorar, aviso fica até voltar", async () => {
     await abrir();
+    await irPara("Perfil");
     // Um botão só: som, vibração, permissão e Web Push juntos.
     expect(screen.getAllByRole("button", { name: /Ativar alertas/ })).toHaveLength(1);
     await userEvent.click(screen.getByRole("button", { name: "Ativar alertas" }));
@@ -190,6 +214,7 @@ describe("Motorista", () => {
 
     api.api.mockResolvedValue(resposta("CRITICO"));
     await atualizar();
+    // O aviso aparece em qualquer aba (aqui, no Perfil).
     expect(screen.getByRole("alert")).toHaveTextContent("CRÍTICO");
     expect(alerta.vibrar).toHaveBeenCalledWith("CRITICO");
     expect(alerta.som.tocar).toHaveBeenCalledWith("CRITICO");
@@ -299,6 +324,7 @@ describe("Motorista", () => {
     alerta.preferencia = true;
     push.estadoPush.mockResolvedValue("ativo");
     await abrir();
+    await irPara("Perfil");
     await userEvent.click(screen.getByRole("button", { name: "Desativar" }));
     expect(push.desativarPush).toHaveBeenCalledTimes(1);
     expect(alerta.preferencia).toBe(false);
@@ -311,11 +337,12 @@ describe("Motorista", () => {
     expect(alerta.notificar).not.toHaveBeenCalled();
   });
 
-  it("Sair chama o sair da sessão; indicador da tela acesa", async () => {
+  it("Sair da conta chama o sair da sessão; indicador da tela acesa", async () => {
     tela.estado = "indisponivel";
     await abrir();
-    expect(document.getElementById("telaAcesa")).toHaveTextContent("este navegador não permite");
-    await userEvent.click(screen.getByRole("button", { name: "Sair" }));
+    expect(document.getElementById("telaAcesa")).toHaveTextContent("Indisponível");
+    await irPara("Perfil");
+    await userEvent.click(screen.getByRole("button", { name: "Sair da conta" }));
     expect(sessao.sair).toHaveBeenCalled();
   });
 
@@ -360,6 +387,202 @@ describe("Motorista - sensor em falha (#52)", () => {
     await abrir();
     expect(document.getElementById("falhaSensorMotorista")).toBeNull();
     expect(document.getElementById("tempMotorista")).not.toHaveClass("antiga");
+  });
+
+});
+
+
+describe("Motorista - abas (#80)", () => {
+
+  it("abre em Agora; trocar de aba muda o título e a aba ativa, e a atualização não volta para Agora", async () => {
+    await abrir();
+    const nav = screen.getByRole("navigation", { name: "Seções da tela do motorista" });
+    expect(nav.querySelectorAll("button")).toHaveLength(4);
+    expect(screen.getByRole("button", { name: "Agora" })).toHaveAttribute("aria-current", "page");
+    expect(document.getElementById("tituloAba")).toHaveTextContent("Agora");
+    expect(document.getElementById("painelViagem")).not.toBeVisible();
+
+    await irPara("Viagem");
+    expect(screen.getByRole("button", { name: "Viagem" })).toHaveAttribute("aria-current", "page");
+    expect(screen.getByRole("button", { name: "Agora" })).not.toHaveAttribute("aria-current");
+    expect(document.getElementById("tituloAba")).toHaveTextContent("Viagem");
+    expect(document.getElementById("painelAgora")).not.toBeVisible();
+    expect(document.getElementById("painelViagem")).toBeVisible();
+    expect(window.scrollTo).toHaveBeenCalledWith(0, 0);
+
+    await atualizar();
+    expect(screen.getByRole("button", { name: "Viagem" })).toHaveAttribute("aria-current", "page");
+
+    await irPara("Histórico");
+    expect(document.getElementById("painelHistorico")).toBeVisible();
+  });
+
+  it("sem dados ainda, o Perfil continua acessível (Sair)", async () => {
+    api.api.mockRejectedValue(Object.assign(new Error("nenhum veículo"), { status: 404 }));
+    await abrir();
+    await irPara("Perfil");
+    expect(document.getElementById("estadoMotorista")).toBeNull();
+    expect(document.getElementById("veiculoPerfil")).toHaveTextContent("CT-001");
+    expect(screen.getByRole("button", { name: "Sair da conta" })).toBeVisible();
+  });
+
+});
+
+
+describe("Motorista - histórico da última hora (#80)", () => {
+
+  it("Agora: mini gráfico dos últimos 30 min e tendência subindo", async () => {
+    const temps = Array.from({ length: 31 }, (_, i) => 11 + i * 0.1);
+    api.api.mockResolvedValue(resposta("NORMAL", 0, { historico: historico(temps) }));
+    await abrir();
+    const grafico = document.getElementById("graficoAgora");
+    expect(grafico).toHaveTextContent("Últimos 30 min");
+    expect(grafico.querySelector("[role=img]")).toHaveAttribute("aria-label", expect.stringContaining("máxima 14.0 °C"));
+    expect(grafico).toHaveTextContent("ATENÇÃO 13 °C");
+    expect(grafico).toHaveTextContent("CRÍTICO 16 °C");
+    expect(grafico).toHaveTextContent("ATENÇÃO 10 °C");
+    expect(grafico).toHaveTextContent("CRÍTICO 7 °C");
+    expect(grafico).toHaveTextContent("FAIXA SEGURA (10–13 °C)");
+    expect(document.getElementById("tendencia")).toHaveTextContent("subindo +1.0 °C em 10 min");
+    expect(document.getElementById("tendencia")).toHaveClass("subindo");
+  });
+
+  it("faixa só com máximo e sem faixa: limites de cima só, ou nenhum", async () => {
+    api.api.mockResolvedValue(resposta("NORMAL", 0, {
+      faixa: { nome: "Congelado", min: null, max: 15, margem: 5 },
+      historico: historico([12, 12, 12])
+    }));
+    await abrir();
+    const grafico = document.getElementById("graficoAgora");
+    expect(grafico).toHaveTextContent("FAIXA SEGURA (até 15 °C)");
+    expect(grafico).not.toHaveTextContent("CRÍTICO 10 °C");
+    expect(document.getElementById("tendencia")).toHaveTextContent("estável em 2 min");
+    cleanup();
+
+    api.api.mockResolvedValue(resposta("NORMAL", 0, { faixa: null, historico: historico([12, 11]) }));
+    await abrir();
+    expect(document.getElementById("graficoAgora")).not.toHaveTextContent("FAIXA SEGURA");
+    expect(document.getElementById("tendencia")).toBeNull();
+  });
+
+  it("Viagem: tempo de viagem e alertas da viagem, o mais novo primeiro", async () => {
+    api.api.mockResolvedValue(resposta("NORMAL", 0, { historico: historico([12, 14, 14.5, 17, 12.5]) }));
+    await abrir();
+    expect(document.getElementById("tempoViagem")).toHaveTextContent("em viagem há 13 h");
+    const itens = [...document.querySelectorAll("#alertasViagem .alerta-item")];
+    expect(itens.map(i => i.querySelector(".alerta-status").textContent)).toEqual(["NORMAL", "CRÍTICO", "ATENÇÃO"]);
+    expect(itens[1]).toHaveTextContent("17.0 °C");
+    expect(itens[1]).toHaveTextContent("Fora da faixa");
+    expect(itens[1]).toHaveClass("critico");
+    expect(document.getElementById("alertasViagem")).toHaveTextContent("3 registros");
+  });
+
+  it("Viagem: um registro só, e nenhuma mudança na hora", async () => {
+    api.api.mockResolvedValue(resposta("ATENCAO", 0, { historico: historico([14, 14.2]) }));
+    await abrir();
+    expect(document.getElementById("alertasViagem")).toHaveTextContent("1 registro");
+    cleanup();
+
+    api.api.mockResolvedValue(resposta("NORMAL", 0, { historico: historico([12, 12.2]) }));
+    await abrir();
+    expect(document.getElementById("alertasViagem")).toHaveTextContent("Nenhuma mudança de status na última hora.");
+  });
+
+  it("Histórico: gráfico da hora com mínima, máxima e média", async () => {
+    api.api.mockResolvedValue(resposta("NORMAL", 0, { historico: historico([10, 12, 14]) }));
+    await abrir();
+    await irPara("Histórico");
+    expect(document.getElementById("graficoHistorico")).toBeVisible();
+    const resumo = document.getElementById("resumoHora");
+    expect(resumo).toHaveTextContent("Mínima10.0 °C");
+    expect(resumo).toHaveTextContent("Máxima14.0 °C");
+    expect(resumo).toHaveTextContent("Média12.0 °C");
+    expect(document.getElementById("historicoMotorista")).toHaveTextContent("3 leituras");
+  });
+
+  it("Histórico com uma leitura só", async () => {
+    api.api.mockResolvedValue(resposta("NORMAL", 0, { historico: historico([12]) }));
+    await abrir();
+    expect(document.getElementById("historicoMotorista")).toHaveTextContent("1 leitura");
+    expect(document.getElementById("graficoAgora")).toBeNull();
+  });
+
+  it("API sem o campo historico: sem gráfico nem tendência, frases no lugar", async () => {
+    await abrir();
+    expect(document.getElementById("graficoAgora")).toBeNull();
+    expect(document.getElementById("tendencia")).toBeNull();
+    expect(document.getElementById("alertasViagem")).toHaveTextContent("A lista aparece quando o servidor enviar o histórico da última hora.");
+    expect(document.getElementById("historicoMotorista")).toHaveTextContent("O histórico aparece quando o servidor enviar as leituras da última hora.");
+    expect(document.getElementById("graficoHistorico")).toBeNull();
+  });
+
+});
+
+
+describe("Motorista - perfil (#80)", () => {
+
+  it("nome, iniciais, empresa, veículo e perfil de carga", async () => {
+    sessao.usuario = { ...sessao.usuario, nome: "Mario Souza", empresa: "Transportes Vale Frio" };
+    await abrir();
+    await irPara("Perfil");
+    expect(document.getElementById("tituloAba")).toHaveTextContent("Perfil");
+    expect(document.querySelector(".avatar")).toHaveTextContent("MS");
+    expect(document.getElementById("nomeMotorista")).toHaveTextContent("Mario Souza");
+    expect(screen.getByText("Motorista", { selector: ".pilula-papel" })).toBeVisible();
+    expect(screen.getByText("Transportes Vale Frio")).toBeVisible();
+    expect(document.getElementById("veiculoPerfil")).toHaveTextContent("CT-001 · Baú refrigerado");
+    expect(document.getElementById("veiculoPerfil")).toHaveTextContent("Manga: de 10 a 13 °C");
+    expect(screen.getByText("Para trocar de veículo, fale com o gestor.")).toBeVisible();
+    expect(document.getElementById("telaAcesa")).toHaveTextContent("Ligada");
+  });
+
+  it("sem empresa e sem veículo na sessão nem na API", async () => {
+    sessao.usuario = { id: "x", nome: "Ana", perfil: "motorista" };
+    api.api.mockReturnValue(new Promise(() => {}));
+    await abrir();
+    await irPara("Perfil");
+    expect(document.getElementById("veiculoPerfil")).toHaveTextContent("Nenhum veículo vinculado");
+    expect(document.querySelector(".perfil-empresa")).toBeNull();
+    expect(document.querySelector(".avatar")).toHaveTextContent("A");
+  });
+
+  it("ajuda: os quatro status em texto", async () => {
+    await abrir();
+    await irPara("Perfil");
+    await userEvent.click(screen.getByText("Ajuda: como ler a tela"));
+    const ajuda = document.querySelector("#ajudaTela .ajuda");
+    expect([...ajuda.querySelectorAll("dt")].map(d => d.textContent)).toEqual(["NORMAL", "ATENÇÃO", "CRÍTICO", "SEM SINAL"]);
+  });
+
+  it("Testar dispara o aviso de teste", async () => {
+    alerta.preferencia = true;
+    push.estadoPush.mockResolvedValue("ativo");
+    await abrir();
+    await irPara("Perfil");
+    await userEvent.click(screen.getByRole("button", { name: "Testar" }));
+    expect(alerta.notificar).toHaveBeenCalledWith("Teste de alerta", expect.any(String));
+  });
+
+  it("trocar senha: POST /senha, guarda o token novo; erro aparece", async () => {
+    const atualizado = { ...sessao.usuario };
+    api.api.mockImplementation(async caminho => (caminho === "/senha" ? { token: "novo", usuario: atualizado } : resposta()));
+    await abrir();
+    await irPara("Perfil");
+    await userEvent.click(screen.getByText("Trocar senha", { selector: "summary span" }));
+    await userEvent.type(screen.getByLabelText("Senha atual"), "antiga123");
+    await userEvent.type(screen.getByLabelText("Nova senha (mín. 8)"), "nova12345");
+    await userEvent.click(screen.getByRole("button", { name: "Trocar senha" }));
+    expect(api.api).toHaveBeenCalledWith("/senha", { metodo: "POST", corpo: { atual: "antiga123", nova: "nova12345" } });
+    expect(sessao.entrar).toHaveBeenCalledWith("novo", atualizado);
+    expect(document.getElementById("okSenha")).toHaveTextContent("Senha trocada.");
+
+    api.api.mockImplementation(async caminho => {
+      if (caminho === "/senha") throw new Error("Senha atual incorreta.");
+      return resposta();
+    });
+    await userEvent.click(screen.getByRole("button", { name: "Trocar senha" }));
+    expect(document.getElementById("erroSenha")).toHaveTextContent("Senha atual incorreta.");
+    expect(document.getElementById("okSenha")).toBeNull();
   });
 
 });
