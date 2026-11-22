@@ -70,6 +70,15 @@ describe("useAlertasMotorista", () => {
     expect(celular.notificar).toHaveBeenCalledWith("Carga em CRÍTICO", "frase");
   });
 
+  it("testar: arma o som, vibra, toca e notifica mesmo desligado", async () => {
+    const { result } = await abrir();
+    act(() => result.current.testar());
+    expect(celular.som.ativar).toHaveBeenCalledTimes(1);
+    expect(celular.vibrar).toHaveBeenCalledWith("ATENCAO");
+    expect(celular.som.tocar).toHaveBeenCalledWith("ATENCAO");
+    expect(celular.notificar).toHaveBeenCalledWith("Teste de alerta", expect.stringContaining("sair da faixa"));
+  });
+
   it("sem Web Push: liga som e vibração e ainda pede a permissão de notificação", async () => {
     push.ativarPush.mockResolvedValue("sem-suporte");
     const { result } = await abrir("sem-suporte");
