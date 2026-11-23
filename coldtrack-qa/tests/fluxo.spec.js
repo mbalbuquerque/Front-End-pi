@@ -1,4 +1,4 @@
-import { abrirMenu, expect, test } from "./apoio.js";
+import { abrirMenu, entrarComo, expect, simularApi, test } from "./apoio.js";
 
 // Testes para as telas descritas no fluxo atual; falhas apontam regressões ou diferenças de implementação.
 test('QA-001: login abre com formulário', async ({ page }) => {
@@ -30,46 +30,32 @@ test('QA-004: botão Cadastrar empresa navega para cadastro', async ({ page }) =
   await expect(page.locator('#formCadastro')).toBeVisible();
 });
 
-test('QA-005: CPF inválido é rejeitado', async ({ page }) => {
-  await page.goto('/cadastro-usuario');
-  await page.locator('#nome').fill('Maria da Silva');
-  await page.locator('#cpf').fill('11111111111');
-  await page.locator('#email').fill('maria@empresa.com');
-  await page.locator('#funcao').fill('Operadora');
-  await page.locator('#perfil').selectOption('operador');
-  await page.locator('#cadastroForm button[type=submit]').click();
-  await expect(page.locator('#mensagem')).toContainText(/CPF inválido|CPF válido/i);
-});
+// Telas antigas com dados de exemplo foram retiradas: o endereço leva à tela real.
+for (const [antiga, destino, alvo] of [
+  ['/usuarios', /\/configuracoes#painelUsuarios$/, '#painelUsuarios'],
+  ['/cadastro-usuario', /\/configuracoes#painelUsuarios$/, '#painelUsuarios'],
+  ['/logistica', /\/viagens$/, 'h1'],
+  ['/auditoria', /\/dashboard$/, 'h1'],
+  ['/usuarios.html', /\/configuracoes(#painelUsuarios)?$/, '#painelUsuarios']
+]) {
+  test(`QA-005: ${antiga} leva à tela real`, async ({ page }) => {
+    await entrarComo(page, 'gestor');
+    await simularApi(page);
+    await page.goto(antiga);
+    await expect(page).toHaveURL(destino);
+    await expect(page.locator(alvo).first()).toBeVisible();
+  });
+}
 
-test('QA-006: cadastro preenchido não cria conta sem API', async ({ page }) => {
-  await page.goto('/cadastro-usuario');
-  await page.locator('#nome').fill('Maria da Silva');
-  await page.locator('#cpf').fill('52998224725'); // CPF matematicamente válido, fictício para teste
-  await page.locator('#email').fill('maria@empresa.com');
-  await page.locator('#funcao').fill('Operadora');
-  await page.locator('#perfil').selectOption('operador');
-  await page.locator('#cadastroForm button[type=submit]').click();
-  await expect(page.locator('#mensagem')).toContainText(/API|integração/i);
-});
-
-test('QA-007: gestão de usuários exibe dados demonstrativos', async ({ page }) => {
-  await page.goto('/usuarios');
-  await expect(page.locator('#usuariosTabela tr')).toHaveCount(4);
-});
-
-test('QA-008: pesquisa filtra usuários', async ({ page }) => {
-  await page.goto('/usuarios');
-  await page.locator('#pesquisa').fill('Ana Oliveira');
-  await expect(page.locator('#usuariosTabela tr')).toHaveCount(1);
-  await expect(page.locator('#usuariosTabela')).toContainText('Ana Oliveira');
-});
-
-test('QA-009: link Auditoria abre a tela', async ({ page }) => {
-  await page.goto('/usuarios');
+test('QA-009: Usuários no menu abre a gestão real de usuários', async ({ page }) => {
+  await entrarComo(page, 'gestor');
+  await simularApi(page);
+  await page.goto('/dashboard');
   await abrirMenu(page);
-  await page.locator('a[href="/auditoria"]').click();
-  await expect(page).toHaveURL(/\/auditoria(\?|$)/);
-  await expect(page.locator('body')).toContainText(/Auditoria/i);
+  await page.getByRole('navigation', { name: 'Menu principal' }).getByRole('link', { name: 'Usuários' }).click();
+  await expect(page).toHaveURL(/\/configuracoes#painelUsuarios$/);
+  await expect(page.locator('#painelUsuarios')).toBeVisible();
+  await expect(page.locator('body')).not.toContainText(/Ana Oliveira|empresa-exemplo|DADOS DEMONSTRATIVOS/i);
 });
 
 test('QA-010: dashboard sem sessão volta para o login', async ({ page }) => {

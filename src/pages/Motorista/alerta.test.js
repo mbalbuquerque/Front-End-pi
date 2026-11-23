@@ -1,13 +1,39 @@
 // Alerta local do celular: vibração, som e notificação, todos melhor esforço.
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { criarSom, notificar, pedirPermissaoDeNotificacao, vibrar } from "./alerta.js";
+import {
+  CHAVE_ALERTAS,
+  criarSom,
+  gravarPreferenciaAlertas,
+  lerPreferenciaAlertas,
+  notificar,
+  pedirPermissaoDeNotificacao,
+  vibrar
+} from "./alerta.js";
 
 afterEach(() => {
   vi.unstubAllGlobals();
   delete navigator.vibrate;
   delete window.AudioContext;
   delete window.webkitAudioContext;
+});
+
+
+describe("preferência dos alertas (sobrevive a recarregar)", () => {
+
+  afterEach(() => localStorage.clear());
+
+  it("null sem escolha; true e false depois de gravar", () => {
+    expect(lerPreferenciaAlertas()).toBeNull();
+    gravarPreferenciaAlertas(true);
+    expect(localStorage.getItem(CHAVE_ALERTAS)).toBe("1");
+    expect(lerPreferenciaAlertas()).toBe(true);
+    gravarPreferenciaAlertas(false);
+    expect(lerPreferenciaAlertas()).toBe(false);
+    localStorage.setItem(CHAVE_ALERTAS, "outra coisa");
+    expect(lerPreferenciaAlertas()).toBeNull();
+  });
+
 });
 
 

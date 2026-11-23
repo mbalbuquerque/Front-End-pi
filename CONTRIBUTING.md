@@ -37,6 +37,8 @@ gh api -X PUT repos/mbalbuquerque/Front-End-pi/branches/main/protection --input 
 EOF
 ```
 
+Estado em 23/11/2026: ainda sem proteção, porque a conta de quem desenvolve tem só permissão de escrita; o dono precisa rodar o comando.
+
 O nome em `contexts` é o do job do `testes.yml`; se ele for renomeado, a lista precisa acompanhar.
 A API e o firmware estão no repositório
 [projeto-integrador-4-periodo](https://github.com/mbalbuquerque/projeto-integrador-4-periodo), com fluxo igual.

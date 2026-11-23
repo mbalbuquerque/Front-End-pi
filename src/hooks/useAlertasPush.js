@@ -4,6 +4,7 @@
 // estado:  "verificando" | "sem-suporte" | "negado" | "inativo" | "ativo"
 // ocupado: null | "ativando" | "desativando"
 // erro:    mensagem da última ação que falhou, ou null
+// ativar() e desativar() devolvem o estado novo (null se a ação falhou).
 
 import { useEffect, useState } from "react";
 import { ativarPush, desativarPush, estadoPush } from "../lib/push.js";
@@ -37,9 +38,12 @@ export function useAlertasPush() {
     setOcupado(rotulo);
 
     try {
-      setEstado(await acao());
+      const novo = await acao();
+      setEstado(novo);
+      return novo;
     } catch (falha) {
       setErro(falha.message);
+      return null;
     } finally {
       setOcupado(null);
     }

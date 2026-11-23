@@ -14,8 +14,14 @@
 // Alertas no celular (Web Push): a API manda um push quando um sensor passa para
 // atenção ou crítico; o evento "push" mostra a notificação e o clique abre a tela
 // de alertas daquele veículo. Só caminho da própria origem é aberto.
+//
+// Publicação nova (issue #69): o sw.js novo assume na hora (skipWaiting +
+// clients.claim), apaga os caches das versões anteriores e busca a navegação
+// (index.html) sempre na rede primeiro, para a aba não montar um index.html
+// antigo que aponta para pedaços que a publicação já apagou. Pedaço com hash que
+// sumiu do servidor (404) ainda sai da cópia guardada, se houver.
 
-const CACHE_NAME = "coldtrack-v14";
+const CACHE_NAME = "coldtrack-v15";
 
 const APP_SHELL = ["/", "/index.html", "/manifest.json"];
 
@@ -73,13 +79,12 @@ self.addEventListener("install", event => {
 // Apaga os caches antigos (coldtrack-v11 e anteriores guardavam as páginas .html).
 self.addEventListener("activate", event => {
 
-  event.waitUntil(
+  event.waitUntil(Promise.all([
     caches.keys().then(chaves => Promise.all(
       chaves.filter(chave => chave !== CACHE_NAME).map(chave => caches.delete(chave))
-    ))
-  );
-
-  self.clients.claim();
+    )),
+    self.clients.claim()
+  ]));
 
 });
 
@@ -99,14 +104,26 @@ self.addEventListener("fetch", event => {
     return;
   }
 
+  // Rede primeiro para tudo, navegação inclusive: o index.html sai do servidor
+  // com Cache-Control no-cache (scripts/enviar-site.sh), então é revalidado.
   event.respondWith(
 
     fetch(pedido)
-      .then(resposta => {
+      .then(async resposta => {
 
         if (resposta.ok) {
           const copia = resposta.clone();
           caches.open(CACHE_NAME).then(cache => cache.put(pedido, copia));
+          return resposta;
+        }
+
+        // Pedaço com hash de uma publicação anterior (o servidor responde 404
+        // com o index.html): a cópia guardada ainda serve a aba antiga.
+        if (url.pathname.startsWith("/assets/")) {
+          const guardada = await caches.match(pedido, { ignoreVary: true });
+          if (guardada) {
+            return guardada;
+          }
         }
 
         return resposta;

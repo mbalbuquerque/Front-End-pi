@@ -3,6 +3,7 @@ import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import App from "./App.jsx";
 import { AuthProvider } from "./hooks/useSessao.jsx";
+import { instalarRecargaDeVersao } from "./lib/versao.js";
 // Fontes servidas pelo próprio site (CSP font-src 'self'): Inter no corpo,
 // Barlow Condensed nos títulos e números. Só o subconjunto latino (cobre o
 // português); cada peso só baixa quando é usado.
@@ -15,6 +16,9 @@ import "@fontsource/barlow-condensed/latin-600.css";
 import "@fontsource/barlow-condensed/latin-700.css";
 import "./styles/tokens.css";
 import "./styles/base.css";
+
+// Pedaço de uma publicação anterior que sumiu do servidor: recarrega uma vez.
+instalarRecargaDeVersao();
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>

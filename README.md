@@ -34,7 +34,7 @@ Objetivos:
 - apresentar a conectividade Wi-Fi (RSSI) e a situação de cada sensor;
 - registrar viagens e mostrar a condição da carga em cada trajeto;
 - gerar relatórios por período, com exportação CSV;
-- separar o que o gestor e o operador logístico podem fazer;
+- separar o que o gestor, o operador logístico e o motorista podem fazer (o motorista vê só o veículo dele, numa tela própria para o celular);
 - oferecer atendimento automatizado aos visitantes, com encaminhamento ao desenvolvedor;
 - manter a interface responsiva e testada automaticamente.
 
@@ -59,7 +59,7 @@ fonte dos dados do painel; a especificação das rotas está no
 [Swagger da API](https://func-coldtrack-7319.azurewebsites.net/api/docs) (OpenAPI 3.0) e, em texto, em
 [`docs/api.md`](https://github.com/mbalbuquerque/projeto-integrador-4-periodo/blob/main/docs/api.md) do back-end.
 
-A tela **Monitoramento** é uma demonstração separada que lê o canal público do ThingSpeak
+A tela **Monitoramento** (só com login) mostra as leituras do canal público do ThingSpeak
 (`3515173`: field1 temperatura, field2 umidade, field3 RSSI); o ThingSpeak não faz parte do
 caminho dos dados do painel. O **Dashboard** usa a previsão da Open-Meteo para estimar o calor
 na rota Petrolina a Suape.
@@ -80,7 +80,7 @@ demonstrativo de reserva (Normal até 15 °C, Atenção até 20 °C).
 | Build | Vite 5, PostCSS (`postcss-prefix-selector` para escopo do CSS por família) |
 | Testes | Vitest + jsdom (unitários), Playwright (e2e, Chromium desktop e Pixel 7) |
 | Qualidade | ESLint 9 (`--max-warnings 0`) |
-| PWA | `public/manifest.json`, `public/sw.js` (rede primeiro, registrado só no build; alertas Web Push) |
+| PWA | `public/manifest.json` (o app instalado abre em `/login`, que leva a sessão à tela do perfil), `public/sw.js` (rede primeiro, registrado só no build; alertas Web Push) |
 | Hospedagem | Azure Storage, site estático (container `$web`), publicação por GitHub Actions com OIDC |
 | Hardware | ESP32-C3, sensor DHT11 ou DHT22 (firmware no repositório do back-end) |
 | Serviços externos | API ColdTrack (Azure Functions; chat e assistente do painel com Azure OpenAI), ThingSpeak, Open-Meteo |
@@ -155,7 +155,7 @@ cp .env.example .env.local
 - **Unitários (Vitest):** regras sem tela em `src/lib` e em `src/pages/*/` (leituras,
   faixas, sessão, API, formatação, CSV, sensores, viagens, etiqueta, chat, plano B do chat e assistente do painel).
 - **E2E (Playwright):** `coldtrack-qa/tests`, em Desktop Chrome e Mobile Chrome. Cobrem as
-  telas públicas e demonstrativas, o chat (com a rota `/chat` simulada), o assistente do painel (rota `/assistente` simulada), os redirecionamentos das URLs antigas e as telas
+  telas públicas, o chat (com a rota `/chat` simulada), o assistente do painel (rota `/assistente` simulada), os redirecionamentos das URLs antigas e as telas
   logadas como gestor e como operador. A API e os serviços de terceiros são simulados: nenhum
   teste acessa o Azure. Detalhes em [`coldtrack-qa/README.md`](coldtrack-qa/README.md).
 
@@ -208,8 +208,10 @@ bash publicar.sh
 | `/sensores` | situação dos sensores; conexão pelo cabo USB e registro manual só para gestor | logado |
 | `/viagens` | viagens e condição da carga em cada trajeto | logado |
 | `/configuracoes` | conta, troca de senha, faixas, sensores; usuários só para gestor | logado |
-| `/usuarios`, `/auditoria`, `/cadastro-usuario`, `/logistica` | telas demonstrativas (dados de exemplo) | público |
-| `/monitoramento` | leitura do canal público do ThingSpeak | público |
+| `/usuarios`, `/cadastro-usuario` | redirecionam para a seção Usuários de `/configuracoes` (telas de exemplo retiradas) | sim |
+| `/logistica` | redireciona para `/viagens` (tela de exemplo retirada) | sim |
+| `/auditoria` | redireciona para `/dashboard` (a API não tem registro de auditoria) | sim |
+| `/monitoramento` | leitura do canal público do ThingSpeak | sim |
 
 Rota logada sem sessão vai para `/login`. Rota desconhecida volta para `/`.
 
@@ -303,8 +305,7 @@ O que o Front-End faz:
 
 Limitações:
 
-- Usuários, Auditoria, Cadastro de usuário e Gestão Logística continuam demonstrativos, com
-  dados de exemplo e sem persistência.
+- Não há tela de auditoria: a API ainda não registra um histórico de eventos para consulta.
 - As avaliações do chat ficam no navegador de quem avaliou.
 
 ## 10. Documentação
@@ -315,6 +316,7 @@ Limitações:
 | [`docs/ARQUITETURA.md`](docs/ARQUITETURA.md) | contrato técnico: estrutura, CSS, `src/lib`, hooks, componentes, regras |
 | [`docs/guia-de-uso.md`](docs/guia-de-uso.md) | guia do usuário final, tela por tela |
 | [`docs/relatorio-de-testes.md`](docs/relatorio-de-testes.md) | resultados dos testes (unitários, e2e simulado e real) |
+| [`docs/design/motorista/`](docs/design/motorista/) | telas do motorista geradas no Stitch e design system usado no redesign |
 | [`coldtrack-qa/README.md`](coldtrack-qa/README.md) | suíte e2e: casos, apoio e como rodar |
 | [`coldtrack-qa/real/README.md`](coldtrack-qa/real/README.md) | suíte e2e real contra produção (regras de segurança) |
 | [Back-end: README](https://github.com/mbalbuquerque/projeto-integrador-4-periodo#readme) | API, firmware, infraestrutura |
@@ -326,11 +328,11 @@ Limitações:
 
 ## 11. Equipe do Projeto Integrador
 
-- Antonio Henzo
+- Enzo Antônio
 - Everson
-- Emerson Luiz
+- Emmanuel Luís
 - Gabriel Eduardo
-- José Alanberg
+- José Allamberg
 - Marcelo Barbosa
 
 O desenvolvimento envolve hardware, IoT, Front-End, Back-End, integração, documentação e testes.

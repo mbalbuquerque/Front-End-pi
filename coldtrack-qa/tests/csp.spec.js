@@ -4,9 +4,9 @@ import { entrarComo, expect, simularApi, test } from "./apoio.js";
 // Roda contra o build (vite preview); no dev a CSP não é injetada.
 
 const ROTAS = [
-  "/", "/login", "/cadastro", "/cadastro-usuario",
+  "/", "/login", "/cadastro",
   "/dashboard", "/alertas", "/relatorios", "/veiculos", "/sensores", "/viagens", "/configuracoes",
-  "/usuarios", "/auditoria", "/logistica", "/monitoramento"
+  "/monitoramento"
 ];
 
 

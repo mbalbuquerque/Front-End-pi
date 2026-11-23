@@ -4,7 +4,7 @@
 // Porte do site antigo: configuracoes.html + js/configuracoes.js.
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Carregando } from "../../components/Estado.jsx";
 import PainelLayout from "../../components/PainelLayout.jsx";
 import { useSessao } from "../../hooks/useSessao.jsx";
@@ -13,6 +13,7 @@ import { UPDATE_INTERVAL } from "../../lib/config.js";
 import { carregarPerfis, descreverCritico, descreverNormal, faixaDoPerfil } from "../../lib/faixas.js";
 import { ehGestor, nomeDoPerfil } from "../../lib/sessao.js";
 import AlertasCelular from "./AlertasCelular.jsx";
+import DoisFatores from "./DoisFatores.jsx";
 import ExcluirEmpresa from "./ExcluirEmpresa.jsx";
 import Secao from "./Secao.jsx";
 
@@ -73,6 +74,18 @@ export default function Configuracoes() {
 
   }, []);
 
+  // "Usuários" no menu abre /configuracoes#painelUsuarios: rola até a seção
+  // quando ela aparece (o roteador não rola sozinho para a âncora).
+  const { hash } = useLocation();
+
+  useEffect(() => {
+
+    if (dados && hash) {
+      document.getElementById(hash.slice(1))?.scrollIntoView?.({ block: "start" });
+    }
+
+  }, [dados, hash]);
+
   return (
     <PainelLayout
       titulo="Configurações"
@@ -91,6 +104,9 @@ export default function Configuracoes() {
         {!dados ? <Carregando /> : (
           <>
             <MinhaConta usuario={usuario} />
+            {/* Só aparece quando a API já tem o 2FA (o usuário da sessão traz totpAtivo);
+                antes disso os botões chamariam rotas que ainda não existem. */}
+            {typeof usuario?.totpAtivo === "boolean" && <DoisFatores ativo={usuario.totpAtivo} />}
             <AlertasCelular />
             <FaixasTemperatura perfis={dados.perfis} conectado={dados.conectado} />
             <SensoresComunicacao dispositivos={dados.dispositivos} conectado={dados.conectado} />
@@ -358,7 +374,7 @@ function PainelUsuarios({ eu, aoRedefinir, aoTrocarVeiculo }) {
       larga
       id="painelUsuarios"
       titulo="Usuários"
-      apoio={<p>Quem acessa o painel. Operador acompanha a carga; gestor também cadastra sensores, veículos, viagens e usuários. Motorista só vê, no celular, a temperatura do veículo vinculado a ele.</p>}
+      apoio={<p>Quem acessa o painel. Operador acompanha a carga; gestor também cadastra sensores, veículos, viagens e usuários. Motorista só vê, no celular, a temperatura do veículo vinculado a ele: ele entra pela mesma tela de login (<code>/login</code>), com o e-mail e a senha criados aqui, e cai direto na tela do motorista (<code>/motorista</code>).</p>}
     >
       <div className="tabela-wrap config-tabela">
         <table className="tabela tabela-usuarios">
@@ -404,6 +420,13 @@ function PainelUsuarios({ eu, aoRedefinir, aoTrocarVeiculo }) {
           <label className="campo"><span>Veículo do motorista</span>
             <SeletorFrota veiculos={veiculos} />
           </label>
+        )}
+        {perfilNovo === "motorista" && (
+          <p className="nota" id="dicaMotorista">
+            Passe ao motorista o e-mail e a senha inicial. No celular, ele abre o site em <strong>/login</strong> e
+            vai direto para a tela do motorista (<strong>/motorista</strong>), com a temperatura deste veículo.
+            O gestor não abre essa tela: ela é só do perfil motorista.
+          </p>
         )}
         <label className="campo"><span>Senha inicial (mín. 8)</span><input name="senha" type="password" autoComplete="new-password" required /></label>
         <button type="submit" className="botao">Criar usuário</button>

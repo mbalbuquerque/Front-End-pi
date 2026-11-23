@@ -39,6 +39,8 @@ Para o operador, esses controles simplesmente não aparecem. Se algo estiver fal
 
 Mensagens possíveis: "Informe um e-mail válido.", "Informe sua senha." e "Sem conexão com o servidor. Confira a internet e tente de novo."
 
+**Com verificação em duas etapas.** Se você ativou a verificação (veja "Verificação em duas etapas" em Configurações), depois de **Entrar** a tela pede o **Código do aplicativo autenticador**: abra o aplicativo no celular, digite os 6 dígitos do ColdTrack (pode colar) e clique em **Confirmar**. Sem o celular, toque em **Usar código de recuperação** e digite um dos 8 caracteres que você guardou; cada um entra uma vez só. **Voltar** recomeça pelo e-mail e senha. Código errado, vencido ou já usado mostra a mesma mensagem; depois de muitas tentativas, a tela pede para aguardar alguns minutos. Esta etapa vale por 5 minutos: passou disso, volte e entre de novo.
+
 **Esqueceu a senha?** O painel orienta: "Peça ao gestor da sua equipe para definir uma senha nova." O gestor faz isso em Configurações (veja a seção Configurações).
 
 **Cadastrar empresa.** Na página inicial há o link "Empresa nova? Cadastre sua empresa". A tela **Cadastrar empresa** cria o acesso da transportadora e você entra como gestor. Preencha todos os campos:
@@ -51,7 +53,7 @@ Depois do cadastro você é levado direto à tela Sensores para conectar o prime
 
 **Duração da sessão.** O login vale por 8 horas. Quando a sessão vence, o painel volta sozinho para a tela de login e você entra de novo. Para encerrar manualmente, use o botão **Sair** no rodapé do menu lateral (no celular, dentro de **Mais**).
 
-**Menu lateral.** Um menu só, em dois grupos: **Operação** (Visão geral, Veículos, Sensores, Viagens, Alertas, Relatórios) e **Gestão** (Logística, Usuários, Auditoria, Monitoramento ThingSpeak, Configurações). No celular o menu fica embaixo, com Visão geral, Alertas, Sensores, Viagens e **Mais** (que abre o resto do menu e o botão Sair). No topo de cada tela há um indicador de conexão: "Conectando...", "Azure conectado" ou "Sem conexão com Azure", e a hora da última atualização recebida. Se aparecer "Sem conexão com Azure", os dados voltam na próxima atualização (20 s).
+**Menu lateral.** Um menu só, em dois grupos: **Operação** (Visão geral, Veículos, Sensores, Viagens, Alertas, Relatórios) e **Gestão** (Usuários, que só o gestor vê e abre a seção de usuários de Configurações; Monitoramento ThingSpeak; Configurações). No celular o menu fica embaixo, com Visão geral, Alertas, Sensores, Viagens e **Mais** (que abre o resto do menu e o botão Sair). No topo de cada tela há um indicador de conexão: "Conectando...", "Azure conectado" ou "Sem conexão com Azure", e a hora da última atualização recebida. Se aparecer "Sem conexão com Azure", os dados voltam na próxima atualização (20 s).
 
 ## Dashboard
 
@@ -263,6 +265,14 @@ Depois da troca aparece "Senha trocada. Os outros aparelhos conectados saem da c
 
 Tocar na notificação abre a tela **Alertas** do veículo daquele sensor. Notificações bloqueadas: a tela explica como liberar no navegador. O alerta sai só na mudança de faixa (de Normal para Atenção, por exemplo), não a cada leitura.
 
+**Verificação em duas etapas.** Além da senha, o login pede um código de 6 dígitos que muda a cada 30 segundos num aplicativo autenticador (Google Authenticator, Microsoft Authenticator ou outro). Vale para gestor e operador; o motorista ainda não tem essa opção na tela dele.
+1. Clique em **Ativar verificação em duas etapas**.
+2. No aplicativo, adicione uma conta lendo o **QR Code** da tela. Sem câmera, digite a chave que aparece embaixo dele. O QR é desenhado no próprio navegador; a chave não passa por nenhum outro site.
+3. Digite o código de 6 dígitos do aplicativo e clique em **Confirmar e ativar**.
+4. Aparecem **10 códigos de recuperação**, **uma vez só**. Guarde-os em lugar seguro, longe do celular: use **Copiar** ou **Baixar .txt**, e só então clique em **Já guardei os códigos**. Cada código substitui o do aplicativo uma única vez, caso você perca o celular.
+
+Para desligar, clique em **Desativar**, digite a **Senha atual** e um código do aplicativo e clique em **Desativar verificação**. Sem o celular e sem os códigos de recuperação, não há como passar da segunda etapa do login pelo painel: por isso guarde os códigos.
+
 **Faixas de temperatura.** Tabela com **Perfil de carga**, **Normal**, **Atenção** e **Crítico** de cada perfil (veja a próxima seção).
 
 **Sensores e comunicação.** Quantidade de sensores registrados, intervalo de envio (20 s), acesso por chave própria e o fato de o sensor guardar leituras sem sinal (até 500 na memória do sensor).
@@ -351,9 +361,9 @@ Tela do celular para quem está dirigindo, feita para bater o olho com o celular
 
 A tela atualiza sozinha a cada 20 s e fica acesa enquanto está aberta (nos navegadores que permitem). Sem leitura há mais de 5 min, o status vira **SEM SINAL** e o último valor ganha o selo **LEITURA ANTIGA**.
 
-**Alertas.** Antes de sair, toque uma vez em **Ativar alertas (som e notificação)** e permita as notificações: o navegador só deixa tocar som depois de um toque na página. Quando a carga piora (de Normal para Atenção, ou para Crítico), o celular vibra, toca um bipe curto e mostra uma notificação. Um aviso fica no topo da tela até a carga voltar ao Normal; se o sensor ficar sem sinal nesse meio-tempo, o aviso continua. O alerta não se repete a cada atualização enquanto a carga segue fora da faixa. Esses alertas funcionam com a tela do motorista aberta (mesmo com outro aplicativo, como o mapa, na frente).
+**Alertas.** Antes de sair, toque uma vez em **Ativar alertas** e permita as notificações. Esse botão liga tudo de uma vez: notificação (também com a tela fechada), som e vibração. A escolha fica guardada no celular: ao reabrir ou recarregar a tela, os alertas continuam ligados e as notificações seguem chegando; como o navegador só deixa tocar som depois de um toque na página, aparece no topo a dica **Toque na tela para ligar o som e a vibração** até o primeiro toque em qualquer lugar. Quando a carga piora (de Normal para Atenção, ou para Crítico), o celular vibra, toca um bipe curto e mostra uma notificação. Um aviso fica no topo da tela até a carga voltar ao Normal; se o sensor ficar sem sinal nesse meio-tempo, o aviso continua. O alerta não se repete a cada atualização enquanto a carga segue fora da faixa. Esses alertas funcionam com a tela do motorista aberta (mesmo com outro aplicativo, como o mapa, na frente).
 
-**Alertas com a tela fechada.** No bloco **Alertas com a tela fechada**, toque em **Ativar alertas no celular** e permita as notificações. A partir daí o celular recebe a notificação mesmo com o navegador fechado ou a tela bloqueada, **só do veículo vinculado a você**: o sensor de outro veículo da empresa não avisa. Se o gestor trocar o seu veículo, os alertas passam a ser do veículo novo sem precisar ativar de novo. Tocar na notificação abre a tela do motorista. **Desativar** para de receber neste celular; sair da conta também apaga a inscrição. No iPhone (iOS 16.4 ou mais novo), o ColdTrack precisa estar adicionado à tela de início (Compartilhar → Adicionar à Tela de Início) e o botão é tocado por lá. O alerta local (vibração e bipe) continua valendo com a tela aberta; os dois podem ficar ligados ao mesmo tempo.
+**Alertas com a tela fechada.** O mesmo botão **Ativar alertas** inscreve o celular. A partir daí ele recebe a notificação mesmo com o navegador fechado ou a tela bloqueada, **só do veículo vinculado a você**: o sensor de outro veículo da empresa não avisa. Se o gestor trocar o seu veículo, os alertas passam a ser do veículo novo sem precisar ativar de novo. Tocar na notificação abre a tela do motorista. **Desativar** desliga as notificações, o som e a vibração neste celular (o aviso na tela continua); sair da conta também apaga a inscrição. No iPhone (iOS 16.4 ou mais novo), o ColdTrack precisa estar adicionado à tela de início (Compartilhar → Adicionar à Tela de Início) e o botão é tocado por lá; fora disso, o botão ainda liga o som e a vibração com a tela aberta.
 
 **Sem internet.** Aparece a faixa vermelha "Sem conexão — última leitura às HH:MM" e o último valor continua na tela, com o selo **LEITURA ANTIGA**. Se a internet funciona mas o servidor não responde, a faixa diz "Sem resposta do servidor". Tudo volta sozinho quando a conexão volta.
 

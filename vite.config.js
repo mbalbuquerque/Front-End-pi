@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url";
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import prefixer from "postcss-prefix-selector";
-import { ROTAS_LEGADAS } from "./src/rotas.js";
+import { ROTAS_LEGADAS, ROTAS_REMOVIDAS } from "./src/rotas.js";
 
 const raiz = fileURLToPath(new URL(".", import.meta.url));
 const pastaEstilos = resolve(raiz, "src/styles");
@@ -68,7 +68,8 @@ function paginasLegadas() {
         .forEach(nome => copyFileSync(indice, join(dist, `${nome}.html`)));
       // Rotas limpas (/dashboard): o site estático serve <pasta>/index.html com
       // 200; sem isso a página abre pelo documento de erro, com status 404.
-      Object.values(ROTAS_LEGADAS)
+      // Rotas de telas removidas (/usuarios...) também, para o redirecionamento sair com 200.
+      [...Object.values(ROTAS_LEGADAS), ...Object.keys(ROTAS_REMOVIDAS)]
         .filter(rota => rota !== "/")
         .forEach(rota => {
           const pasta = join(dist, rota.slice(1));

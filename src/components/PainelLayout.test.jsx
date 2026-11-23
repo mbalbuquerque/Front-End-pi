@@ -58,10 +58,12 @@ describe("PainelLayout", () => {
     expect(document.title).toBe("ColdTrack Control");
   });
 
-  it("menu único com os grupos Operação e Gestão (11 telas) e a atual marcada", () => {
+  it("menu único com os grupos Operação e Gestão (9 telas para o gestor) e a atual marcada", () => {
     abrir();
     const menu = screen.getByRole("navigation", { name: "Menu principal" });
-    expect(within(menu).getAllByRole("link")).toHaveLength(11);
+    expect(within(menu).getAllByRole("link")).toHaveLength(9);
+    expect(within(menu).getByRole("link", { name: /Usuários/ })).toHaveAttribute("href", "/configuracoes#painelUsuarios");
+    expect(within(menu).queryByRole("link", { name: /Auditoria|Logística/ })).not.toBeInTheDocument();
     expect(within(menu).getByText("Operação")).toBeInTheDocument();
     expect(within(menu).getByText("Gestão")).toBeInTheDocument();
     expect(within(menu).getByRole("link", { name: /Monitoramento ThingSpeak/ })).toHaveAttribute("href", "/monitoramento");
@@ -87,11 +89,13 @@ describe("PainelLayout", () => {
     expect(sessao.sair).toHaveBeenCalledTimes(1);
   });
 
-  it("o formulário de novo usuário acende o item Usuários", () => {
-    abrir({}, "/cadastro-usuario");
+  it("Usuários só aparece para o gestor (a seção de usuários é só dele)", () => {
+    sessao.usuario = { nome: "Otto", perfil: "operador", empresa: "Frio Sul" };
+    abrir({}, "/configuracoes");
     const menu = screen.getByRole("navigation", { name: "Menu principal" });
-    expect(within(menu).getByRole("link", { name: /Usuários/ })).toHaveAttribute("aria-current", "page");
-    expect(within(menu).getAllByRole("link").filter(link => link.getAttribute("aria-current"))).toHaveLength(1);
+    expect(within(menu).queryByRole("link", { name: /Usuários/ })).not.toBeInTheDocument();
+    expect(within(menu).getAllByRole("link")).toHaveLength(8);
+    expect(within(menu).getByRole("link", { name: /Configurações/ })).toHaveAttribute("aria-current", "page");
   });
 
   it("Mais abre e fecha o menu do celular (botão, Escape, véu e clique num item)", async () => {
@@ -123,19 +127,19 @@ describe("PainelLayout", () => {
   });
 
   it("tela de gestão: família própria, sem barra superior, sem rodapé e sem assistente", () => {
-    document.title = "Gestão de Usuários | ColdTrack";
+    document.title = "Monitoramento | ColdTrack";
     const { container } = render(
-      <MemoryRouter initialEntries={["/usuarios"]}>
-        <PainelLayout familia="usuarios"><h1>Gestão de Usuários</h1></PainelLayout>
+      <MemoryRouter initialEntries={["/monitoramento"]}>
+        <PainelLayout familia="gestao"><h1>Monitoramento de sensores</h1></PainelLayout>
       </MemoryRouter>
     );
-    expect(container.querySelector(".escopo-usuarios")).not.toBeNull();
+    expect(container.querySelector(".escopo-gestao")).not.toBeNull();
     expect(container.querySelector(".ct-topbar")).toBeNull();
     expect(document.getElementById("fonteDados")).toBeNull();
     expect(screen.queryByText(/Projeto Integrador 2026/)).not.toBeInTheDocument();
     expect(screen.queryByTestId("assistente")).not.toBeInTheDocument();
     expect(screen.getAllByRole("heading", { level: 1 })).toHaveLength(1);
-    expect(document.title).toBe("Gestão de Usuários | ColdTrack");
+    expect(document.title).toBe("Monitoramento | ColdTrack");
   });
 
   it("extraTopo e diálogos são renderizados", () => {

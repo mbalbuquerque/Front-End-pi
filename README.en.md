@@ -37,7 +37,7 @@ Goals:
 - show the Wi-Fi connectivity (RSSI) and the situation of each sensor;
 - record trips and show the cargo condition on each route;
 - generate reports by period, with CSV export;
-- separate what the manager and the logistics operator can do;
+- separate what the manager, the logistics operator and the driver can do (the driver only sees their own vehicle, on a phone-first screen);
 - offer automated support to visitors, with hand-off to the developer;
 - keep the interface responsive and automatically tested.
 
@@ -62,7 +62,7 @@ source of the dashboard's data; the route specification is in the
 [API Swagger](https://func-coldtrack-7319.azurewebsites.net/api/docs) (OpenAPI 3.0) and, in text, in
 [`docs/api.md`](https://github.com/mbalbuquerque/projeto-integrador-4-periodo/blob/main/docs/api.md) of the back end.
 
-The **Monitoramento** (Monitoring) screen is a separate demonstration that reads the public
+The **Monitoramento** (Monitoring) screen (signed in only) shows the readings of the public
 ThingSpeak channel (`3515173`: field1 temperature, field2 humidity, field3 RSSI); ThingSpeak is not
 part of the dashboard's data path. The **Dashboard** uses the Open-Meteo forecast to estimate the
 heat along the Petrolina to Suape route.
@@ -210,8 +210,10 @@ bash publicar.sh
 | `/sensores` | situation of the sensors; USB cable connection and manual registration for managers only | logged in |
 | `/viagens` | trips and cargo condition on each route | logged in |
 | `/configuracoes` | account, password change, ranges, sensors; users for managers only | logged in |
-| `/usuarios`, `/auditoria`, `/cadastro-usuario`, `/logistica` | demonstration screens (sample data) | public |
-| `/monitoramento` | reading of the public ThingSpeak channel | public |
+| `/usuarios`, `/cadastro-usuario` | redirect to the Users section of `/configuracoes` (sample-data screens removed) | yes |
+| `/logistica` | redirects to `/viagens` (sample-data screen removed) | yes |
+| `/auditoria` | redirects to `/dashboard` (the API has no audit log) | yes |
+| `/monitoramento` | reading of the public ThingSpeak channel | yes |
 
 A logged-in route without a session goes to `/login`. An unknown route goes back to `/`.
 
@@ -305,8 +307,7 @@ What the front end does:
 
 Limitations:
 
-- Usuários (Users), Auditoria (Audit), Cadastro de usuário (User registration) and Gestão
-  Logística (Logistics management) remain demonstrations, with sample data and no persistence.
+- There is no audit screen: the API does not yet keep a queryable event log.
 - Chat ratings stay in the browser of whoever rated.
 
 ## 10. Documentation
@@ -317,6 +318,7 @@ Limitations:
 | [`docs/ARQUITETURA.md`](docs/ARQUITETURA.md) | technical contract: structure, CSS, `src/lib`, hooks, components, rules |
 | [`docs/guia-de-uso.md`](docs/guia-de-uso.md) | end-user guide, screen by screen |
 | [`docs/relatorio-de-testes.md`](docs/relatorio-de-testes.md) | test results (unit, mocked e2e and real) |
+| [`docs/design/motorista/`](docs/design/motorista/) | driver screens generated in Stitch and the design system used in the redesign |
 | [`coldtrack-qa/README.md`](coldtrack-qa/README.md) | e2e suite: cases, support and how to run |
 | [`coldtrack-qa/real/README.md`](coldtrack-qa/real/README.md) | real e2e suite against production (safety rules) |
 | [Back end: README](https://github.com/mbalbuquerque/projeto-integrador-4-periodo#readme) | API, firmware, infrastructure ([English version](https://github.com/mbalbuquerque/projeto-integrador-4-periodo/blob/main/README.en.md)) |
@@ -328,11 +330,11 @@ Limitations:
 
 ## 11. Integrative Project team
 
-- Antonio Henzo
+- Enzo Antônio
 - Everson
-- Emerson Luiz
+- Emmanuel Luís
 - Gabriel Eduardo
-- José Alanberg
+- José Allamberg
 - Marcelo Barbosa
 
 The development involves hardware, IoT, front end, back end, integration, documentation and tests.

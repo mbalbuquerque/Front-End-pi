@@ -1,5 +1,5 @@
 
-import { expect, test } from "./apoio.js";
+import { entrarComo, expect, simularApi, test } from "./apoio.js";
 
 const URL = "/monitoramento";
 
@@ -17,7 +17,22 @@ const feed = (
   field3
 });
 
+test("QA-034: monitoramento sem sessão volta para o login", async ({ page }) => {
+
+  await page.goto(URL);
+
+  await expect(page).toHaveURL(/\/login(\?|$)/);
+
+});
+
+
 test.describe("QA - Monitoramento ColdTrack", () => {
+
+  // Leituras reais do ThingSpeak, só no painel logado.
+  test.beforeEach(async ({ page }) => {
+    await entrarComo(page, "gestor");
+    await simularApi(page);
+  });
 
   test(
     "QA-035: página abre e apresenta a fonte dos dados",

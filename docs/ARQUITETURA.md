@@ -64,11 +64,11 @@ ficam dentro de `<Route element={<RequireAuth />}>`. Para criar uma tela nova, s
 | `/viagens` | `pages/Viagens/Viagens.jsx` | painel | sim |
 | `/configuracoes` | `pages/Configuracoes/Configuracoes.jsx` | painel | sim |
 | `/motorista` | `pages/Motorista/Motorista.jsx` | motorista | sim (só perfil motorista) |
-| `/usuarios` | `pages/Usuarios/Usuarios.jsx` | usuarios | não (demo) |
-| `/auditoria` | `pages/Auditoria/Auditoria.jsx` | auditoria | não (demo) |
-| `/cadastro-usuario` | `pages/CadastroUsuario/CadastroUsuario.jsx` | cadastro-usuario | não (demo) |
-| `/logistica` | `pages/Logistica/Logistica.jsx` | logistica | não (demo) |
-| `/monitoramento` | `pages/Monitoramento/Monitoramento.jsx` | monitoramento | não (demo) |
+| `/monitoramento` | `pages/Monitoramento/Monitoramento.jsx` | gestao | sim |
+
+As telas antigas com dados de exemplo (Usuários, Novo usuário, Auditoria, Logística) foram
+retiradas; `ROTAS_REMOVIDAS` em `rotas.js` leva o endereço à tela real (`/configuracoes#painelUsuarios`,
+`/viagens`, `/dashboard`).
 | (widget da `/`) | `components/ChatWidget/ChatWidget.jsx` | chat | não |
 | (botão de toda tela logada) | `components/AssistentePainel/AssistentePainel.jsx` (montado no `PainelLayout`) | painel | sim |
 
@@ -96,8 +96,7 @@ O CSS de cada família veio do site anterior (HTML + JS) e redefine `:root`, `*`
 | painel | `escopo-painel` | `style.css`, `telas.css`, `assistente.css`, `alertas.css`, `sensores.css`, `frota.css`, `configuracoes.css` (via `index.css`) | `styles/painel/index.css` (já feito no `PainelLayout`) |
 | home | `escopo-home` | `home.css` | `styles/home/home.css` |
 | login | `escopo-login` | `login.css` | `styles/login/login.css` |
-| cadastro-usuario | `escopo-cadastro-usuario` | `cadastro.css` | `styles/cadastro-usuario/cadastro.css` |
-| gestao | `escopo-gestao` | `gestao.css` (Usuários, Auditoria, Logística e Monitoramento: tiles, filtros, tabela, diálogo, quadro, linha do tempo) | `styles/gestao/gestao.css` |
+| gestao | `escopo-gestao` | `gestao.css` (Monitoramento: tiles, tabela, gráfico) | `styles/gestao/gestao.css` |
 | chat | `escopo-chat` | `chat.css` | `styles/chat/chat.css` (raiz do widget, sem `raiz-pagina`) |
 
 Regras:
@@ -113,8 +112,7 @@ Regras:
   (registre no commit).
 - `/login` e `/cadastro` usam a família login pela moldura `<AcessoLayout>`
   (`components/AcessoLayout.jsx`): painel navy com a marca e a régua de faixa, formulário num cartão.
-- Telas internas (as do painel e as de gestão: Usuários, Novo usuário, Auditoria, Logística,
-  Monitoramento) ficam dentro do shell: `<div class="escopo-shell">` com a barra lateral e, ao
+- Telas internas (as do painel e a de gestão: Monitoramento) ficam dentro do shell: `<div class="escopo-shell">` com a barra lateral e, ao
   lado, `<div class="escopo-<familia> ct-area">` com a barra superior e o `<main>`. O shell só usa
   classes `ct-*` (nada de regra por elemento), para não atingir o conteúdo das famílias.
 - Cadastro curto (veículo, viagem) abre na gaveta da direita, `components/Gaveta.jsx`: um
@@ -195,8 +193,10 @@ permissão, lê a chave pública em `GET /push/chave`, inscreve no `pushManager`
 cancela a inscrição local e repassa o erro) e `desativarPush()` (`DELETE /push/inscricao` com o
 `endpoint`, melhor esforço, e cancela no navegador). No dev não há service worker: ativar avisa em
 vez de travar. O hook `useAlertasPush` guarda o estado (`verificando`, ocupado, erro) e é usado
-pelo card `AlertasCelular` da tela de Configurações (operador e gestor) e pelo bloco
-`AlertasPushMotorista` da tela do motorista. A API manda ao motorista só os alertas do veículo
+pelo card `AlertasCelular` da tela de Configurações (operador e gestor) e, na tela do motorista,
+por `useAlertasMotorista`: um botão só (**Ativar alertas**) pede a permissão, inscreve o Web Push e
+liga o som e a vibração locais; a escolha fica no `localStorage` (`coldtrack.motorista.alertas`) e,
+depois de recarregar, o primeiro toque na página rearma o som (o navegador exige um gesto). A API manda ao motorista só os alertas do veículo
 vinculado a ele, com `url` `/motorista` (`projeto-integrador-4-periodo#88`).
 
 **`armazenamento.js`** — `ler`, `gravar`, `remover`, `lerJSON(chave, padrao)`, `gravarJSON` (com try/catch).
@@ -229,7 +229,7 @@ vinculado a ele, com `url` `/motorista` (`projeto-integrador-4-periodo#88`).
 - **`<PainelLayout titulo? subtitulo? tituloDocumento? conexao? extraTopo? dialogos? familia?>`** —
   moldura única das telas internas. Barra lateral `#sidebar` com `nav[aria-label="Menu principal"]`
   nos grupos Operação e Gestão (`GRUPOS_PAINEL` em `rotas.js`; item atual com `active` +
-  `aria-current="page"`; `tambem` acende o item em outra rota, ex.: `/cadastro-usuario` em Usuários),
+  `aria-current="page"`; `tambem` acende o item em outra rota; `gestor: true` mostra o item só ao gestor, ex.: Usuários, que abre `/configuracoes#painelUsuarios`),
   usuário logado, `#botaoSair`. Barra superior com `<h1>`/`<p>`, `extraTopo` e o indicador
   (`#fonteDados` + "atualizado às HH:MM"). `conexao`: `null` "Conectando...", `true` "Azure
   conectado", `false` "Sem conexão com Azure" (pílula vermelha); sem a prop (`undefined`) o
@@ -374,7 +374,7 @@ export default function Relatorios() {
   faixa normal do perfil do veículo; ou enviar `POST /api/telemetria` com a chave de um sensor de
   teste e uma temperatura fora da faixa, logo depois de uma leitura normal. A notificação chega uma
   vez por mudança de faixa; tocar nela abre `/alertas?veiculo=<código>`. Motorista: entrar com a
-  conta de motorista, tocar em **Ativar alertas no celular** na tela `/motorista`, fechar o
+  conta de motorista, tocar em **Ativar alertas** na tela `/motorista`, fechar o
   navegador e provocar a mudança de faixa no sensor do veículo dele (chega, e o toque abre
   `/motorista`) e no sensor de outro veículo (não chega).
 - `public/sw.js`: suba `CACHE_NAME` (`coldtrack-v14` → `v15`...) quando mudar o service worker.

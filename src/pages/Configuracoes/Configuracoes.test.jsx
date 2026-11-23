@@ -85,6 +85,23 @@ describe("Configurações", () => {
     expect(screen.getByTestId("conexao")).toHaveTextContent("true");
   });
 
+  it("a verificação em duas etapas só aparece quando a API informa totpAtivo", async () => {
+    sessao.usuario = OPERADOR;
+    const { unmount } = abrir();
+    expect(await screen.findByRole("heading", { name: "Minha conta" })).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Verificação em duas etapas" })).not.toBeInTheDocument();
+    unmount();
+
+    sessao.usuario = { ...OPERADOR, totpAtivo: false };
+    const segundo = abrir();
+    expect(await screen.findByRole("button", { name: "Ativar verificação em duas etapas" })).toBeInTheDocument();
+    segundo.unmount();
+
+    sessao.usuario = { ...GESTOR, totpAtivo: true };
+    abrir();
+    expect(await screen.findByText(/Verificação em duas etapas ativa/)).toBeInTheDocument();
+  });
+
   it("só o gestor vê a opção de excluir a empresa", async () => {
     respostas({});
     sessao.usuario = OPERADOR;
@@ -271,8 +288,12 @@ describe("Configurações: motorista vinculado a um veículo", () => {
     await screen.findByText("você");
     const form = document.getElementById("formUsuario");
     expect(within(form).queryByLabelText("Veículo do motorista")).not.toBeInTheDocument();
+    expect(document.getElementById("dicaMotorista")).toBeNull();
+    expect(document.getElementById("painelUsuarios")).toHaveTextContent("/motorista");
 
     await userEvent.selectOptions(within(form).getByLabelText("Perfil"), "motorista");
+    // Dica de acesso: mesmo /login, cai direto em /motorista.
+    expect(document.getElementById("dicaMotorista")).toHaveTextContent(/\/login.*\/motorista/);
     const veiculo = within(form).getByLabelText("Veículo do motorista");
     expect([...veiculo.options].map(o => o.value)).toEqual(["", "CT-001", "CT-002"]);
     expect(veiculo).toBeRequired();
