@@ -1,0 +1,13 @@
+﻿# Acompanha as dependências do painel e das Actions. Um PR por semana, no máximo 3 abertos.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 3
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 3
