@@ -42,7 +42,7 @@
     "@testing-library/jest-dom": "^7.0.1",
     "@testing-library/react": "^16.3.3",
     "@testing-library/user-event": "^14.6.12",
-    "@vitejs/plugin-react": "^4.3.4",
+    "@vitejs/plugin-react": "^6.3.0",
     "@vitest/coverage-v8": "^2.1.9",
     "eslint": "^9.39.5",
     "eslint-plugin-react-hooks": "^5.2.0",
