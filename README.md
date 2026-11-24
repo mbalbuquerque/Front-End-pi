@@ -150,6 +150,14 @@ cp .env.example .env.local
 | `npm run test:e2e:real` | suíte real (site publicado + API de produção), opt-in, fora do CI; veja `coldtrack-qa/real/README.md` |
 | `npm run test:e2e:real:limpar` | apaga pela API registros `QA-*` que a suíte real tenha deixado |
 
+### Usuário de teste
+
+Não há conta pronta em produção: senha compartilhada no repositório seria um segredo exposto.
+
+- **Produção:** abra o [painel](https://stcoldtrackweb7319.z15.web.core.windows.net), use *Cadastrar empresa* e crie o gestor com um e-mail e uma senha de sua escolha. Em *Configurações*, o gestor cria os outros perfis: **operador** (acompanha sensores e alertas) e **motorista** (entra direto na tela do motorista). A empresa e tudo o que foi criado podem ser apagados pelo próprio gestor em *Configurações > Excluir empresa*.
+- **Local, com a API no emulador do Cosmos:** no repositório da API, `python infra/ci/preparar_banco.py` cria o gestor `gestor.teste@exemplo.com`, senha `SenhaDeTeste-123` (fictícia, só vale no emulador), e `python infra/ci/dados_exemplo.py` acrescenta um sensor, um veículo, uma viagem e leituras sintéticas. Aponte `VITE_API_URL` para a API local e rode `npm run dev`.
+- **Testes e2e (`npm run test:e2e`):** não precisam de conta; a API é simulada dentro do Playwright.
+
 ## 5. Testes
 
 - **Unitários (Vitest):** regras sem tela em `src/lib` e em `src/pages/*/` (leituras,

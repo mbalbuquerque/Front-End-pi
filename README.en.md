@@ -152,6 +152,14 @@ restart `npm run dev` or build again.
 | `npm run test:e2e:real` | real suite (published site + production API), opt-in, outside CI; see `coldtrack-qa/real/README.md` |
 | `npm run test:e2e:real:limpar` | deletes through the API the `QA-*` records that the real suite may have left behind |
 
+### Test user
+
+There is no ready-made production account: a password shared in the repository would be an exposed secret.
+
+- **Production:** open the [dashboard](https://stcoldtrackweb7319.z15.web.core.windows.net), use *Cadastrar empresa* (register company) and create the manager with an e-mail and password of your choice. In *Configurações* (settings), the manager creates the other profiles: **operator** (follows sensors and alerts) and **driver** (goes straight to the driver screen). The company and everything created can be deleted by the manager in *Configurações > Excluir empresa*.
+- **Local, with the API on the Cosmos emulator:** in the API repository, `python infra/ci/preparar_banco.py` creates the manager `gestor.teste@exemplo.com`, password `SenhaDeTeste-123` (fictitious, valid only on the emulator), and `python infra/ci/dados_exemplo.py` adds a sensor, a vehicle, a trip and synthetic readings. Point `VITE_API_URL` to the local API and run `npm run dev`.
+- **E2E tests (`npm run test:e2e`):** no account needed; the API is mocked inside Playwright.
+
 ## 5. Tests
 
 - **Unit (Vitest):** screenless rules in `src/lib` and in `src/pages/*/` (readings,
