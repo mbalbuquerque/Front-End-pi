@@ -1,4 +1,6 @@
 // Seletor de veículo no topo (só aparece com mais de um veículo).
+// Cada veículo tem um sensor; a opção mostra os dois, então escolher o veículo
+// é escolher o sensor cujo histórico aparece na tela.
 // Vai no extraTopo do PainelLayout:
 //
 //   extraTopo={escolha && <SeletorVeiculo veiculos={escolha.veiculos}
@@ -19,7 +21,9 @@ export default function SeletorVeiculo({ veiculos, veiculo, aoTrocar }) {
         onChange={evento => aoTrocar(evento.target.value)}
       >
         {veiculos.map(v => (
-          <option key={v.id} value={v.id}>{v.id}</option>
+          <option key={v.id} value={v.id}>
+            {v.deviceId ? `${v.id} · sensor ${v.deviceId}` : v.id}
+          </option>
         ))}
       </select>
     </label>
