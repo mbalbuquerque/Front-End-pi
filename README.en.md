@@ -326,6 +326,7 @@ Limitations:
 | [`docs/ARQUITETURA.md`](docs/ARQUITETURA.md) | technical contract: structure, CSS, `src/lib`, hooks, components, rules |
 | [`docs/guia-de-uso.md`](docs/guia-de-uso.md) | end-user guide, screen by screen |
 | [`docs/relatorio-de-testes.md`](docs/relatorio-de-testes.md) | test results (unit, mocked e2e and real) |
+| [`docs/evidencias/painel/`](docs/evidencias/painel/README.md) | dashboard screenshots (history, alerts, AI, online/offline, profiles) taken with the mocked API (in Portuguese) |
 | [`docs/design/motorista/`](docs/design/motorista/) | driver screens generated in Stitch and the design system used in the redesign |
 | [`coldtrack-qa/README.md`](coldtrack-qa/README.md) | e2e suite: cases, support and how to run |
 | [`coldtrack-qa/real/README.md`](coldtrack-qa/real/README.md) | real e2e suite against production (safety rules) |

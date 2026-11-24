@@ -324,6 +324,7 @@ Limitações:
 | [`docs/ARQUITETURA.md`](docs/ARQUITETURA.md) | contrato técnico: estrutura, CSS, `src/lib`, hooks, componentes, regras |
 | [`docs/guia-de-uso.md`](docs/guia-de-uso.md) | guia do usuário final, tela por tela |
 | [`docs/relatorio-de-testes.md`](docs/relatorio-de-testes.md) | resultados dos testes (unitários, e2e simulado e real) |
+| [`docs/evidencias/painel/`](docs/evidencias/painel/README.md) | prints do painel (histórico, alertas, IA, online/offline, perfis) com a API simulada |
 | [`docs/design/motorista/`](docs/design/motorista/) | telas do motorista geradas no Stitch e design system usado no redesign |
 | [`coldtrack-qa/README.md`](coldtrack-qa/README.md) | suíte e2e: casos, apoio e como rodar |
 | [`coldtrack-qa/real/README.md`](coldtrack-qa/real/README.md) | suíte e2e real contra produção (regras de segurança) |
